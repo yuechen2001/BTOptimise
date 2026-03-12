@@ -7,7 +7,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "import:projects": "ts-node src/scripts/importProjects.ts"
+    "import:projects": "ts-node src/scripts/importProjects.ts",
+    "import:application-rates": "ts-node src/scripts/importApplicationRates.ts"
   },
   "keywords": [],
   "author": "",

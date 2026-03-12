@@ -4,6 +4,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import projectRoutes from "./modules/projectCatalog/project.routes";
+import applicationRateRoutes from "./modules/applicationRates/applicationRate.routes";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/projects", projectRoutes);
+app.use("/api/application-rates", applicationRateRoutes);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err);
