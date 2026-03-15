@@ -1,5 +1,11 @@
 export const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+export const SESSION_ALLOWED_FIELDS = [
+    "applicantType", "age", "partnerAge", "citizenship", "firstTimer",
+    "employmentStatus", "monthlyIncome", "partnerMonthlyIncome", "cpfOA", "cashSavings",
+    "preferredFlatTypes", "preferredRegions", "maxBudget",
+] as const;
+
 export const APPLICANT_TYPES = ["single", "couple"] as const;
 export const EMPLOYMENT_STATUSES = ["employed", "self-employed", "student", "nsf"] as const;
 export const CITIZENSHIP_STATUSES = ["SC", "SC/SC", "SC/PR"] as const;

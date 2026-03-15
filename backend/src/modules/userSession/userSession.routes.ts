@@ -20,6 +20,7 @@ import {
     FLAT_TYPE_PREFERENCES,
     REGIONS,
     SESSION_TTL_MS,
+    SESSION_ALLOWED_FIELDS,
 } from "../../constants";
 
 const router = express.Router();
@@ -93,16 +94,9 @@ function validateProfileFields(body: Record<string, unknown>): string | null {
     return null;
 }
 
-/** Fields that are allowed in from the client. deferredIncomeAssessment and expiresAt are server-controlled. */
-const ALLOWED_FIELDS = [
-    "applicantType", "age", "partnerAge", "citizenship", "firstTimer",
-    "employmentStatus", "monthlyIncome", "partnerMonthlyIncome", "cpfOA", "cashSavings",
-    "preferredFlatTypes", "preferredRegions", "maxBudget",
-];
-
 function pickAllowedFields(body: Record<string, unknown>): Record<string, unknown> {
     return Object.fromEntries(
-        Object.entries(body).filter(([key]) => ALLOWED_FIELDS.includes(key))
+        Object.entries(body).filter(([key]) => SESSION_ALLOWED_FIELDS.includes(key as never))
     );
 }
 
