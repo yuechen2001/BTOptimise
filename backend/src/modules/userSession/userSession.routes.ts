@@ -12,19 +12,19 @@
  */
 import express, { Request, Response, NextFunction } from "express";
 import { randomUUID } from "crypto";
-import UserSession, {
+import UserSession from "./userSession.model";
+import {
     APPLICANT_TYPES,
     CITIZENSHIP_STATUSES,
     EMPLOYMENT_STATUSES,
     FLAT_TYPE_PREFERENCES,
     REGIONS,
-} from "./userSession.model";
+    SESSION_TTL_MS,
+} from "../../constants";
 
 const router = express.Router();
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
-
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /** Returns true if the employment status qualifies for deferred income assessment. */
 function isDeferredIncome(employmentStatus?: string): boolean {
