@@ -1,5 +1,11 @@
 {
-  "dependencies": {
-    "mongodb": "^7.1.0"
-  }
+    "scripts": {
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "mongodb": "^7.1.0"
+    },
+    "devDependencies": {
+        "prettier": "^3.8.1"
+    }
 }

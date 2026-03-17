@@ -10,9 +10,9 @@
  * Sessions expire automatically after 24 hours via MongoDB TTL index.
  * No authentication is required; the client stores the sessionId locally.
  */
-import express, { Request, Response, NextFunction } from "express";
-import { randomUUID } from "crypto";
-import UserSession from "./userSession.model";
+import express, { Request, Response, NextFunction } from 'express';
+import { randomUUID } from 'crypto';
+import UserSession from './userSession.model';
 import {
     APPLICANT_TYPES,
     CITIZENSHIP_STATUSES,
@@ -21,7 +21,7 @@ import {
     REGIONS,
     SESSION_TTL_MS,
     SESSION_ALLOWED_FIELDS,
-} from "../../constants";
+} from '../../constants';
 
 const router = express.Router();
 
@@ -29,66 +29,89 @@ const router = express.Router();
 
 /** Returns true if the employment status qualifies for deferred income assessment. */
 function isDeferredIncome(employmentStatus?: string): boolean {
-    return employmentStatus === "student" || employmentStatus === "nsf";
+    return employmentStatus === 'student' || employmentStatus === 'nsf';
 }
 
 /** Validates and sanitises the profile fields that may appear in POST / PATCH bodies.
  *  Returns an error message string if validation fails, or null if all provided fields are valid. */
 function validateProfileFields(body: Record<string, unknown>): string | null {
     const {
-        applicantType, age, partnerAge, citizenship, firstTimer,
-        employmentStatus, monthlyIncome, partnerMonthlyIncome, cpfOA, cashSavings,
-        preferredFlatTypes, preferredRegions, maxBudget,
+        applicantType,
+        age,
+        partnerAge,
+        citizenship,
+        firstTimer,
+        employmentStatus,
+        monthlyIncome,
+        partnerMonthlyIncome,
+        cpfOA,
+        cashSavings,
+        preferredFlatTypes,
+        preferredRegions,
+        maxBudget,
     } = body;
 
     if (applicantType !== undefined && !APPLICANT_TYPES.includes(applicantType as never)) {
-        return `applicantType must be one of: ${APPLICANT_TYPES.join(", ")}`;
+        return `applicantType must be one of: ${APPLICANT_TYPES.join(', ')}`;
     }
 
     if (age !== undefined) {
-        if (typeof age !== "number" || !Number.isInteger(age) || age < 21) {
-            return "age must be an integer ≥ 21";
+        if (typeof age !== 'number' || !Number.isInteger(age) || age < 21) {
+            return 'age must be an integer ≥ 21';
         }
     }
 
     if (partnerAge !== undefined) {
-        if (typeof partnerAge !== "number" || !Number.isInteger(partnerAge) || partnerAge < 21) {
-            return "partnerAge must be an integer ≥ 21";
+        if (typeof partnerAge !== 'number' || !Number.isInteger(partnerAge) || partnerAge < 21) {
+            return 'partnerAge must be an integer ≥ 21';
         }
     }
 
-    if (applicantType === "couple" && partnerAge === undefined && body.partnerAge === undefined) {
+    if (applicantType === 'couple' && partnerAge === undefined && body.partnerAge === undefined) {
         // Only enforce this on full submission — allow partial PATCH to omit it
     }
 
     if (citizenship !== undefined && !CITIZENSHIP_STATUSES.includes(citizenship as never)) {
-        return `citizenship must be one of: ${CITIZENSHIP_STATUSES.join(", ")}`;
+        return `citizenship must be one of: ${CITIZENSHIP_STATUSES.join(', ')}`;
     }
 
-    if (firstTimer !== undefined && typeof firstTimer !== "boolean") {
-        return "firstTimer must be a boolean";
+    if (firstTimer !== undefined && typeof firstTimer !== 'boolean') {
+        return 'firstTimer must be a boolean';
     }
 
-    if (employmentStatus !== undefined && !EMPLOYMENT_STATUSES.includes(employmentStatus as never)) {
-        return `employmentStatus must be one of: ${EMPLOYMENT_STATUSES.join(", ")}`;
+    if (
+        employmentStatus !== undefined &&
+        !EMPLOYMENT_STATUSES.includes(employmentStatus as never)
+    ) {
+        return `employmentStatus must be one of: ${EMPLOYMENT_STATUSES.join(', ')}`;
     }
 
-    for (const [key, val] of Object.entries({ monthlyIncome, partnerMonthlyIncome, cpfOA, cashSavings, maxBudget })) {
-        if (val !== undefined && (typeof val !== "number" || val < 0)) {
+    for (const [key, val] of Object.entries({
+        monthlyIncome,
+        partnerMonthlyIncome,
+        cpfOA,
+        cashSavings,
+        maxBudget,
+    })) {
+        if (val !== undefined && (typeof val !== 'number' || val < 0)) {
             return `${key} must be a non-negative number`;
         }
     }
 
     if (preferredFlatTypes !== undefined) {
-        if (!Array.isArray(preferredFlatTypes)) return "preferredFlatTypes must be an array";
-        const invalid = (preferredFlatTypes as unknown[]).filter(f => !FLAT_TYPE_PREFERENCES.includes(f as never));
-        if (invalid.length > 0) return `Invalid flat types: ${invalid.join(", ")}`;
+        if (!Array.isArray(preferredFlatTypes)) return 'preferredFlatTypes must be an array';
+        const invalid = (preferredFlatTypes as unknown[]).filter(
+            (f) => !FLAT_TYPE_PREFERENCES.includes(f as never)
+        );
+        if (invalid.length > 0) return `Invalid flat types: ${invalid.join(', ')}`;
     }
 
     if (preferredRegions !== undefined) {
-        if (!Array.isArray(preferredRegions)) return "preferredRegions must be an array";
-        const invalid = (preferredRegions as unknown[]).filter(r => !REGIONS.includes(r as never));
-        if (invalid.length > 0) return `Invalid regions: ${invalid.join(", ")}`;
+        if (!Array.isArray(preferredRegions)) return 'preferredRegions must be an array';
+        const invalid = (preferredRegions as unknown[]).filter(
+            (r) => !REGIONS.includes(r as never)
+        );
+        if (invalid.length > 0) return `Invalid regions: ${invalid.join(', ')}`;
     }
 
     return null;
@@ -102,7 +125,7 @@ function pickAllowedFields(body: Record<string, unknown>): Record<string, unknow
 
 /* ─── POST /api/sessions ───────────────────────────────────────────────── */
 
-router.post("/", async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const body = req.body as Record<string, unknown>;
 
@@ -114,7 +137,9 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
         const fields = pickAllowedFields(body);
         const sessionId = randomUUID();
         const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-        const deferredIncomeAssessment = isDeferredIncome(fields.employmentStatus as string | undefined);
+        const deferredIncomeAssessment = isDeferredIncome(
+            fields.employmentStatus as string | undefined
+        );
 
         const session = await UserSession.create({
             sessionId,
@@ -134,12 +159,14 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
 
 /* ─── GET /api/sessions/:sessionId ────────────────────────────────────── */
 
-router.get("/:sessionId", async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:sessionId', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const session = await UserSession.findOne({ sessionId: req.params.sessionId }).lean();
 
         if (!session) {
-            return res.status(404).json({ success: false, message: "Session not found or expired" });
+            return res
+                .status(404)
+                .json({ success: false, message: 'Session not found or expired' });
         }
 
         return res.json({ success: true, data: session });
@@ -150,7 +177,7 @@ router.get("/:sessionId", async (req: Request, res: Response, next: NextFunction
 
 /* ─── PATCH /api/sessions/:sessionId ──────────────────────────────────── */
 
-router.patch("/:sessionId", async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:sessionId', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const body = req.body as Record<string, unknown>;
 
@@ -163,18 +190,22 @@ router.patch("/:sessionId", async (req: Request, res: Response, next: NextFuncti
 
         // Re-derive deferredIncomeAssessment if employmentStatus is being updated
         const update: Record<string, unknown> = { ...fields };
-        if ("employmentStatus" in fields) {
-            update.deferredIncomeAssessment = isDeferredIncome(fields.employmentStatus as string | undefined);
+        if ('employmentStatus' in fields) {
+            update.deferredIncomeAssessment = isDeferredIncome(
+                fields.employmentStatus as string | undefined
+            );
         }
 
         const session = await UserSession.findOneAndUpdate(
             { sessionId: req.params.sessionId },
             { $set: update },
-            { returnDocument: "after", runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         ).lean();
 
         if (!session) {
-            return res.status(404).json({ success: false, message: "Session not found or expired" });
+            return res
+                .status(404)
+                .json({ success: false, message: 'Session not found or expired' });
         }
 
         return res.json({ success: true, data: session });
@@ -185,15 +216,17 @@ router.patch("/:sessionId", async (req: Request, res: Response, next: NextFuncti
 
 /* ─── DELETE /api/sessions/:sessionId ─────────────────────────────────── */
 
-router.delete("/:sessionId", async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:sessionId', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const result = await UserSession.findOneAndDelete({ sessionId: req.params.sessionId });
 
         if (!result) {
-            return res.status(404).json({ success: false, message: "Session not found or expired" });
+            return res
+                .status(404)
+                .json({ success: false, message: 'Session not found or expired' });
         }
 
-        return res.json({ success: true, message: "Session deleted" });
+        return res.json({ success: true, message: 'Session deleted' });
     } catch (err) {
         next(err);
     }

@@ -1,14 +1,14 @@
 /**
  * Import application rates from CSV file into MongoDB
- * 
+ *
  * Reads application rates data, process it and then uploads to MongoDB using the ApplicationRate model.
  */
-import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
-import csv from "csv-parser";
-import mongoose from "mongoose";
-import ApplicationRate from "../modules/applicationRates/applicationRate.model";
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import csv from 'csv-parser';
+import mongoose from 'mongoose';
+import ApplicationRate from '../modules/applicationRates/applicationRate.model';
 
 dotenv.config();
 
@@ -41,7 +41,7 @@ function safeTrim(value: unknown): string | null {
         return null;
     }
     const trimmed = String(value).trim();
-    return trimmed === "" ? null : trimmed;
+    return trimmed === '' ? null : trimmed;
 }
 
 /**
@@ -54,7 +54,7 @@ function parseNumber(value: unknown): number | null {
         return null;
     }
 
-    const cleaned = trimmed.replace(/[^0-9.]/g, "");
+    const cleaned = trimmed.replace(/[^0-9.]/g, '');
     return cleaned ? Number(cleaned) : null;
 }
 
@@ -67,8 +67,8 @@ function parseDateDDMMYYYY(value: unknown): Date | null {
         return null;
     }
 
-    const datePart = v.split(" ")[0];
-    const parts = datePart.split("/");
+    const datePart = v.split(' ')[0];
+    const parts = datePart.split('/');
 
     if (parts.length !== 3) {
         return null;
@@ -93,7 +93,10 @@ function parseProjectCodes(value: unknown): string[] {
         return [];
     }
 
-    return trimmed.split("|").map((code) => code.trim()).filter(Boolean);
+    return trimmed
+        .split('|')
+        .map((code) => code.trim())
+        .filter(Boolean);
 }
 
 /**
@@ -103,10 +106,11 @@ async function readCsv(filePath: string): Promise<CsvRow[]> {
     const rows: CsvRow[] = [];
 
     await new Promise<void>((resolve, reject) => {
-        fs.createReadStream(filePath).pipe(csv())
-            .on("data", (row: CsvRow) => rows.push(row))
-            .on("end", () => resolve())
-            .on("error", reject);
+        fs.createReadStream(filePath)
+            .pipe(csv())
+            .on('data', (row: CsvRow) => rows.push(row))
+            .on('end', () => resolve())
+            .on('error', reject);
     });
 
     return rows;
@@ -116,17 +120,17 @@ async function run(): Promise<void> {
     const mongoURI = process.env.MONGO_URI;
 
     if (!mongoURI) {
-        throw new Error("MONGO_URI is not defined in environment variables");
+        throw new Error('MONGO_URI is not defined in environment variables');
     }
 
     await mongoose.connect(mongoURI, {
         family: 4,
-        serverSelectionTimeoutMS: 30000
+        serverSelectionTimeoutMS: 30000,
     });
 
-    console.log("Connected to MongoDB");
+    console.log('Connected to MongoDB');
 
-    const filePath = path.join(__dirname, "../../data/application_rates.csv");
+    const filePath = path.join(__dirname, '../../data/application_rates.csv');
     const rows = await readCsv(filePath);
 
     let importedCount = 0;
@@ -140,8 +144,15 @@ async function run(): Promise<void> {
         const noOfUnits = parseNumber(row.no_of_units);
         const noOfApplicants = parseNumber(row.no_of_applicants);
 
-        if (!launchCode || !estate || !projectGroup || !flatType || noOfUnits === null || noOfApplicants === null) {
-            console.warn("Skipping incomplete row:", row);
+        if (
+            !launchCode ||
+            !estate ||
+            !projectGroup ||
+            !flatType ||
+            noOfUnits === null ||
+            noOfApplicants === null
+        ) {
+            console.warn('Skipping incomplete row:', row);
             continue;
         }
 
@@ -163,8 +174,8 @@ async function run(): Promise<void> {
                     secondTimerFamiliesAppRate: parseNumber(row.second_timer_families_app_rate),
                     overallAppRate: parseNumber(row.overall_app_rate),
                     sourceAsOf: safeTrim(row.source_as_of),
-                    lastVerifiedAt: parseDateDDMMYYYY(row.last_verified_at)
-                }
+                    lastVerifiedAt: parseDateDDMMYYYY(row.last_verified_at),
+                },
             },
             { upsert: true, runValidators: true }
         );
@@ -175,11 +186,11 @@ async function run(): Promise<void> {
     console.log(`Imported ${importedCount} application rate rows`);
 
     await mongoose.disconnect();
-    console.log("Disconnected from MongoDB");
+    console.log('Disconnected from MongoDB');
 }
 
 void run().catch(async (err) => {
-    console.error("Import failed:", err);
+    console.error('Import failed:', err);
     try {
         await mongoose.disconnect();
     } catch {}

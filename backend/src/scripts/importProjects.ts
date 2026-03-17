@@ -3,12 +3,12 @@
  * This script reads project data from CSV files
  * and imports it into the MongoDB database using the Project model.
  */
-import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
-import csv from "csv-parser";
-import mongoose from "mongoose";
-import Project, { IFlatType } from "../modules/projectCatalog/project.model";
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import csv from 'csv-parser';
+import mongoose from 'mongoose';
+import Project, { IFlatType } from '../modules/projectCatalog/project.model';
 
 dotenv.config();
 
@@ -35,7 +35,7 @@ interface GroupedProject {
     projectCode: string;
     name: string;
     estate: string;
-    classification: "Standard" | "Plus" | "Prime";
+    classification: 'Standard' | 'Plus' | 'Prime';
     launchdate: Date | null;
     estimatedCompletion: string | null;
     flatTypes: IFlatType[];
@@ -53,8 +53,8 @@ function safeTrim(value: unknown): string | null {
         return null;
     }
 
-    const trimmed = String(value).trim();  
-    return trimmed === "" ? null : trimmed;
+    const trimmed = String(value).trim();
+    return trimmed === '' ? null : trimmed;
 }
 
 /**
@@ -65,8 +65,8 @@ function parseNumber(value: unknown): number | null {
         return null;
     }
 
-    const cleaned = String(value).replace(/[^0-9.]/g, "");
-    return cleaned === "" ? null : Number(cleaned);
+    const cleaned = String(value).replace(/[^0-9.]/g, '');
+    return cleaned === '' ? null : Number(cleaned);
 }
 
 /**
@@ -78,7 +78,7 @@ function parseDateDDMMYYYY(value: unknown): Date | null {
         return null;
     }
 
-    const parts = v.split("/");
+    const parts = v.split('/');
     if (parts.length !== 3) {
         return null;
     }
@@ -99,10 +99,10 @@ async function readCSV(filePath: string): Promise<CsvRow[]> {
 
     await new Promise((resolve, reject) => {
         fs.createReadStream(filePath)
-          .pipe(csv())
-          .on("data", (row) => rows.push(row))
-          .on("end", resolve)
-          .on("error", reject)
+            .pipe(csv())
+            .on('data', (row) => rows.push(row))
+            .on('end', resolve)
+            .on('error', reject);
     });
 
     return rows;
@@ -115,23 +115,23 @@ async function readCSV(filePath: string): Promise<CsvRow[]> {
  */
 async function run(): Promise<void> {
     const mongoURI = process.env.MONGO_URI;
-    console.log("Loaded MONGO_URI:", mongoURI);
+    console.log('Loaded MONGO_URI:', mongoURI);
 
     if (!mongoURI) {
-        throw new Error("MONGO_URI is missing in environment variables");
+        throw new Error('MONGO_URI is missing in environment variables');
     }
 
     await mongoose.connect(mongoURI, {
         family: 4,
-        serverSelectionTimeoutMS: 30000
+        serverSelectionTimeoutMS: 30000,
     });
-    console.log("Connected to MongoDB");
+    console.log('Connected to MongoDB');
 
-    const filePath = path.join(__dirname, "../../data/projects.csv");
+    const filePath = path.join(__dirname, '../../data/projects.csv');
     const rows = await readCSV(filePath);
 
     if (!rows.length) {
-        console.log("No data found in CSV");
+        console.log('No data found in CSV');
         await mongoose.disconnect();
         return;
     }
@@ -143,13 +143,13 @@ async function run(): Promise<void> {
         const projectCode = safeTrim(row.project_code);
         const name = safeTrim(row.name);
         const estate = safeTrim(row.estate);
-        const classification = safeTrim(row.classification) as "Standard" | "Plus" | "Prime" | null;
+        const classification = safeTrim(row.classification) as 'Standard' | 'Plus' | 'Prime' | null;
         const launchdate = parseDateDDMMYYYY(row.launch_date);
         const estimatedCompletion = safeTrim(row.estimated_completion);
         const lastVerifiedAt = parseDateDDMMYYYY(row.last_verified_at);
 
         if (!projectCode || !name || !estate || !classification) {
-            console.warn("Skipping incomplete row:", row); ;
+            console.warn('Skipping incomplete row:', row);
             continue;
         }
 
@@ -163,18 +163,18 @@ async function run(): Promise<void> {
                 launchdate,
                 estimatedCompletion,
                 flatTypes: [],
-                lastVerifiedAt
+                lastVerifiedAt,
             });
         }
 
         // Add the flat type information to the corresponding project in the map
         groupedProjects.get(projectCode).flatTypes.push({
-            type: safeTrim(row.flat_type) || "Unknown",
+            type: safeTrim(row.flat_type) || 'Unknown',
             estimatedFloorArea: parseNumber(row.estimated_floor_area),
             estimatedInternalFloorArea: parseNumber(row.estimated_internal_floor_area),
             minIndicativePrice: parseNumber(row.min_indicative_price_range),
             maxIndicativePrice: parseNumber(row.max_indicative_price_range),
-            unitCount: parseNumber(row.unit_count)
+            unitCount: parseNumber(row.unit_count),
         });
     }
 
@@ -191,11 +191,11 @@ async function run(): Promise<void> {
     console.log(`Imported ${importedCount} projects.`);
 
     await mongoose.disconnect();
-    console.log("Disconnected from MongoDB");
+    console.log('Disconnected from MongoDB');
 }
 
 void run().catch(async (err) => {
-    console.error("Import failed:", err);
+    console.error('Import failed:', err);
     try {
         await mongoose.disconnect();
     } catch {}

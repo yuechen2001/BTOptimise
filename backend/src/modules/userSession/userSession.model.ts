@@ -4,16 +4,32 @@
  * Sessions are identified by a UUID (sessionId) and expire after 24 hours via a TTL index.
  * No account creation is required — the client stores the sessionId locally.
  */
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export {
-    APPLICANT_TYPES, EMPLOYMENT_STATUSES, CITIZENSHIP_STATUSES, FLAT_TYPE_PREFERENCES, REGIONS,
-    type ApplicantType, type EmploymentStatus, type CitizenshipStatus, type FlatTypePreference, type Region,
-} from "../../constants";
+    APPLICANT_TYPES,
+    EMPLOYMENT_STATUSES,
+    CITIZENSHIP_STATUSES,
+    FLAT_TYPE_PREFERENCES,
+    REGIONS,
+    type ApplicantType,
+    type EmploymentStatus,
+    type CitizenshipStatus,
+    type FlatTypePreference,
+    type Region,
+} from '../../constants';
 import {
-    APPLICANT_TYPES, EMPLOYMENT_STATUSES, CITIZENSHIP_STATUSES, FLAT_TYPE_PREFERENCES, REGIONS,
-    type ApplicantType, type EmploymentStatus, type CitizenshipStatus, type FlatTypePreference, type Region,
-} from "../../constants";
+    APPLICANT_TYPES,
+    EMPLOYMENT_STATUSES,
+    CITIZENSHIP_STATUSES,
+    FLAT_TYPE_PREFERENCES,
+    REGIONS,
+    type ApplicantType,
+    type EmploymentStatus,
+    type CitizenshipStatus,
+    type FlatTypePreference,
+    type Region,
+} from '../../constants';
 
 /* ─── Interface ────────────────────────────────────────────────────────── */
 
@@ -77,6 +93,9 @@ const UserSessionSchema = new Schema<IUserSession>(
 
 /* ─── Model ────────────────────────────────────────────────────────────── */
 
-const UserSession: Model<IUserSession> = mongoose.model<IUserSession>("UserSession", UserSessionSchema);
+const UserSession: Model<IUserSession> = mongoose.model<IUserSession>(
+    'UserSession',
+    UserSessionSchema
+);
 
 export default UserSession;
