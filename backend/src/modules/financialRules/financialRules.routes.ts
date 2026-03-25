@@ -41,12 +41,7 @@ function validatePositiveNumber(value: unknown, fieldName: string): string | nul
 /**
  * Validates that a value is within a reasonable range.
  */
-function validateRange(
-    value: number,
-    fieldName: string,
-    min: number,
-    max: number
-): string | null {
+function validateRange(value: number, fieldName: string, min: number, max: number): string | null {
     if (value < min || value > max) {
         return `${fieldName} must be between ${min} and ${max}`;
     }
@@ -251,7 +246,9 @@ router.get('/eligibility/:sessionId', async (req: Request, res: Response) => {
             data: {
                 eligible: result.canPurchaseBTO,
                 checks: {
-                    citizenship: session.citizenship ? ['SC/SC', 'SC/PR'].includes(session.citizenship) : false,
+                    citizenship: session.citizenship
+                        ? ['SC/SC', 'SC/PR'].includes(session.citizenship)
+                        : false,
                     incomeCeiling: result.incomeCeilingCheck,
                     firstTimer: session.firstTimer || false,
                 },

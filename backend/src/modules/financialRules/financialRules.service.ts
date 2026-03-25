@@ -108,10 +108,7 @@ function getTotalIncome(session: IUserSession): number {
  * @param flatType - Desired flat type (optional)
  * @returns Eligibility result with reasons
  */
-export function checkEligibility(
-    session: IUserSession,
-    flatType?: string
-): EligibilityResult {
+export function checkEligibility(session: IUserSession, flatType?: string): EligibilityResult {
     const reasons: string[] = [];
     let canPurchase = true;
     let incomeCeilingCheck = false;
@@ -346,7 +343,7 @@ export function calculateCashFlow(
     } else if (eligibleForSDS) {
         signingPercentage = 0.05; // 5% for standard SDS
     } else {
-        signingPercentage = 0.10; // 10% for non-SDS
+        signingPercentage = 0.1; // 10% for non-SDS
     }
 
     const signingAmount = Math.round(priceAfterGrant * signingPercentage) - optionFee;
@@ -452,8 +449,7 @@ export function calculateClawback(
     }
 
     const subsidy = marketValue - purchasePrice;
-    const lockInYears =
-        projectType === 'Plus' ? PLUS_FLAT_LOCK_IN_YEARS : PRIME_FLAT_LOCK_IN_YEARS;
+    const lockInYears = projectType === 'Plus' ? PLUS_FLAT_LOCK_IN_YEARS : PRIME_FLAT_LOCK_IN_YEARS;
 
     let clawbackAmount = 0;
     if (yearsBeforeSale < lockInYears) {

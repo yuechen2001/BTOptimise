@@ -2,4 +2,4 @@
 
 React + Vite + Tanstack
 
-Express + MongoDB
+Node.js + Express + MongoDB

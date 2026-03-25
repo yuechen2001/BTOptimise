@@ -7,6 +7,8 @@ import projectRoutes from './modules/projectCatalog/project.routes';
 import applicationRateRoutes from './modules/applicationRates/applicationRate.routes';
 import userSessionRoutes from './modules/userSession/userSession.routes';
 import financialRulesRoutes from './modules/financialRules/financialRules.routes';
+import matchingRecommendationRules from './modules/matchingRecommendation/matchingRecommendation.routes';
+import { match } from 'node:assert';
 
 const app = express();
 
@@ -21,6 +23,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/application-rates', applicationRateRoutes);
 app.use('/api/sessions', userSessionRoutes);
 app.use('/api/financial-rules', financialRulesRoutes);
+app.use('/api/matching-recommendation', matchingRecommendationRules);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err);

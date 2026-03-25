@@ -22,7 +22,7 @@ export const SESSION_ALLOWED_FIELDS = [
 export const HDB_LOAN_INTEREST_RATE = 0.026; // 2.6% p.a.
 
 /** Maximum Mortgage Servicing Ratio - capped at 30% of gross monthly income */
-export const MAX_MSR = 0.30;
+export const MAX_MSR = 0.3;
 
 /** HDB Loan-to-Value ratio (updated Aug 2024) */
 export const HDB_LTV_RATIO = 0.75; // 75% of purchase price
@@ -117,3 +117,6 @@ export type EmploymentStatus = (typeof EMPLOYMENT_STATUSES)[number];
 export type CitizenshipStatus = (typeof CITIZENSHIP_STATUSES)[number];
 export type FlatTypePreference = (typeof FLAT_TYPE_PREFERENCES)[number];
 export type Region = (typeof REGIONS)[number];
+
+export const CLASSIFICATION_COLOURS = ['green', 'red', 'yellow'] as const;
+export type DemandColor = (typeof CLASSIFICATION_COLOURS)[number];
