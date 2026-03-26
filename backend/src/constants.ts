@@ -120,3 +120,9 @@ export type Region = (typeof REGIONS)[number];
 
 export const CLASSIFICATION_COLOURS = ['green', 'red', 'yellow'] as const;
 export type DemandColor = (typeof CLASSIFICATION_COLOURS)[number];
+
+export enum AffordabilityStatus {
+    CAN_AFFORD = 'canAfford',
+    STRETCH_REQUIRED = 'stretchRequired',
+    OUT_OF_REACH = 'outOfReach',
+}

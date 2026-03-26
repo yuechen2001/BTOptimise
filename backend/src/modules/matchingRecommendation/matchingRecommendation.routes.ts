@@ -4,7 +4,7 @@ import Project from '../projectCatalog/project.model';
 import { calculateFinancials } from '../financialRules/financialRules.service';
 import ApplicationRate from '../applicationRates/applicationRate.model';
 import {
-    checkIsAffordable,
+    getAffordabilityDetails,
     getDemandColour,
     isFlatTypePreferred,
 } from './matchingRecommendations.utils';
@@ -58,12 +58,17 @@ router.get('/:sessionId', async (req: Request, res: Response, next: NextFunction
                         });
                         const rate = rateData?.overallAppRate || 0;
 
+                        const afford = getAffordabilityDetails(session, flat, financials);
+
                         return {
                             ...project,
                             selectedFlat: {
                                 ...flat,
                                 financials,
-                                isAffordable: checkIsAffordable(session, flat),
+                                affordability: {
+                                    status: afford.status,
+                                    colour: afford.colour,
+                                },
                                 demandInfo: {
                                     rate: rate,
                                     colour: getDemandColour(rate),
