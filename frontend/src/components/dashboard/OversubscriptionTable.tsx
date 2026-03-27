@@ -1,11 +1,16 @@
 import { useMemo, useState } from 'react';
-import { projectCatalogue } from '../../data/projects';
+import { useApplicationRates, useProjects } from '../../hooks/useApi';
 import type { FlatTypePreference } from '../../types';
 
 export default function OversubscriptionTable() {
     const [filter, setFilter] = useState<FlatTypePreference | 'all'>('all');
 
+    const { data: applicationRates, isLoading: ratesLoading } = useApplicationRates();
+    const { data: projects, isLoading: projectsLoading } = useProjects();
+
     const rows = useMemo(() => {
+        if (!applicationRates || !projects) return [];
+
         const data: {
             project: string;
             estate: string;
@@ -17,30 +22,42 @@ export default function OversubscriptionTable() {
             launch: string;
         }[] = [];
 
-        for (const p of projectCatalogue) {
-            for (const o of p.oversubscription) {
-                if (filter !== 'all' && o.flatType !== filter) continue;
-                data.push({
-                    project: p.name,
-                    estate: p.estate,
-                    classification: p.classification,
-                    flatType: o.flatType,
-                    applicants: o.applicants,
-                    units: o.units,
-                    ratio: o.ratio,
-                    launch: p.launchDate,
-                });
-            }
+        for (const rate of applicationRates) {
+            if (filter !== 'all' && rate.flatType !== filter) continue;
+
+            // Find matching project for classification and launch date
+            const matchingProject = projects.find((p) => rate.projectCodes.includes(p.projectCode));
+
+            const classification = matchingProject?.classification || 'Standard';
+            const launchDate = matchingProject?.launchdate
+                ? new Date(matchingProject.launchdate).toLocaleDateString('en-SG', {
+                      month: 'short',
+                      year: 'numeric',
+                  })
+                : 'N/A';
+
+            data.push({
+                project: rate.projectGroup,
+                estate: rate.estate,
+                classification,
+                flatType: rate.flatType,
+                applicants: rate.noOfApplicants,
+                units: rate.noOfUnits,
+                ratio: rate.overallAppRate,
+                launch: launchDate,
+            });
         }
 
         return data.sort((a, b) => b.ratio - a.ratio);
-    }, [filter]);
+    }, [applicationRates, projects, filter]);
 
     const ratioColor = (ratio: number) => {
         if (ratio >= 10) return 'var(--clr-red)';
         if (ratio >= 5) return 'var(--clr-yellow)';
         return 'var(--clr-green)';
     };
+
+    const isLoading = ratesLoading || projectsLoading;
 
     return (
         <div>
@@ -67,49 +84,61 @@ export default function OversubscriptionTable() {
                 </select>
             </div>
 
-            <div className="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Project</th>
-                            <th>Estate</th>
-                            <th>Type</th>
-                            <th>Flat</th>
-                            <th className="text-right">Applicants</th>
-                            <th className="text-right">Units</th>
-                            <th className="text-right">Ratio</th>
-                            <th>Launch</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.map((r, i) => (
-                            <tr key={i}>
-                                <td style={{ fontWeight: 500 }}>{r.project}</td>
-                                <td>{r.estate}</td>
-                                <td>
-                                    <span
-                                        className={`badge badge--${r.classification.toLowerCase()}`}
-                                    >
-                                        {r.classification}
-                                    </span>
-                                </td>
-                                <td>{r.flatType}</td>
-                                <td className="text-right font-mono">
-                                    {r.applicants.toLocaleString()}
-                                </td>
-                                <td className="text-right font-mono">{r.units.toLocaleString()}</td>
-                                <td
-                                    className="text-right font-mono"
-                                    style={{ fontWeight: 700, color: ratioColor(r.ratio) }}
-                                >
-                                    {r.ratio.toFixed(1)}x
-                                </td>
-                                <td>{r.launch}</td>
+            {isLoading ? (
+                <div style={{ padding: 'var(--sp-xl)', textAlign: 'center' }}>
+                    Loading application rates...
+                </div>
+            ) : rows.length === 0 ? (
+                <div style={{ padding: 'var(--sp-xl)', textAlign: 'center' }}>
+                    No application rate data available.
+                </div>
+            ) : (
+                <div className="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Estate</th>
+                                <th>Type</th>
+                                <th>Flat</th>
+                                <th className="text-right">Applicants</th>
+                                <th className="text-right">Units</th>
+                                <th className="text-right">Ratio</th>
+                                <th>Launch</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {rows.map((r, i) => (
+                                <tr key={i}>
+                                    <td style={{ fontWeight: 500 }}>{r.project}</td>
+                                    <td>{r.estate}</td>
+                                    <td>
+                                        <span
+                                            className={`badge badge--${r.classification.toLowerCase()}`}
+                                        >
+                                            {r.classification}
+                                        </span>
+                                    </td>
+                                    <td>{r.flatType}</td>
+                                    <td className="text-right font-mono">
+                                        {r.applicants.toLocaleString()}
+                                    </td>
+                                    <td className="text-right font-mono">
+                                        {r.units.toLocaleString()}
+                                    </td>
+                                    <td
+                                        className="text-right font-mono"
+                                        style={{ fontWeight: 700, color: ratioColor(r.ratio) }}
+                                    >
+                                        {r.ratio.toFixed(1)}x
+                                    </td>
+                                    <td>{r.launch}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 }

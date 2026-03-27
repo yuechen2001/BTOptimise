@@ -56,6 +56,11 @@ export default function StepDemographics() {
                     value={p.age ?? ''}
                     onChange={(e) => update({ age: Number(e.target.value) })}
                 />
+                {p.age !== undefined && p.age < 21 && (
+                    <span className="hint" style={{ color: 'var(--clr-red)' }}>
+                        You must be at least 21 years old to apply for a BTO.
+                    </span>
+                )}
             </div>
 
             {/* Partner age */}
@@ -71,6 +76,11 @@ export default function StepDemographics() {
                         value={p.partnerAge ?? ''}
                         onChange={(e) => update({ partnerAge: Number(e.target.value) })}
                     />
+                    {p.partnerAge !== undefined && p.partnerAge < 21 && (
+                        <span className="hint" style={{ color: 'var(--clr-red)' }}>
+                            Partner must be at least 21 years old to apply for a BTO.
+                        </span>
+                    )}
                 </div>
             )}
 

@@ -1,53 +1,49 @@
-import type { AffordabilityResult } from '../../types';
+import type { ProjectAffordabilityResult } from '../../types';
 import { useAppState } from '../../context/AppContext';
+import { getFlatVariantLabel, getResultIdentity } from '../../utils/resultIdentity';
 
 interface Props {
-    result: AffordabilityResult;
+    result: ProjectAffordabilityResult;
 }
 
 export default function ProjectCard({ result }: Props) {
     const { state, dispatch } = useAppState();
-    const {
-        project,
-        selectedFlatType,
-        indicativePrice,
-        grant,
-        loan,
-        classification,
-        classificationReason,
-    } = result;
+    const { project, selectedFlat } = result;
+    const { financials, demandInfo } = selectedFlat;
+    const affordability = selectedFlat.affordability;
+    const resultIdentity = getResultIdentity(result);
+    const flatVariantLabel = getFlatVariantLabel(result);
 
     const isSelected = state.comparison.some(
-        (c) => c.project.id === project.id && c.selectedFlatType === selectedFlatType
+        (c) => getResultIdentity(c) === resultIdentity
     );
     const canAdd = state.comparison.length < 3;
 
-    const classMap = {
-        green: 'card--green',
-        yellow: 'card--yellow',
-        red: 'card--red',
-    };
-
-    const badgeMap = {
-        green: 'badge--green',
-        yellow: 'badge--yellow',
-        red: 'badge--red',
-    };
-
-    const classLabel = {
-        green: 'Affordable',
-        yellow: 'Stretch',
-        red: 'Out of Reach',
-    };
-
-    const classificationBadge = {
+    const classificationBadge: Record<string, string> = {
         Standard: 'badge--standard',
         Plus: 'badge--plus',
         Prime: 'badge--prime',
     };
 
+    const affordabilityLabel = {
+        canAfford: 'Affordable',
+        stretchRequired: 'Stretch',
+        outOfReach: 'Out of Reach',
+    };
+
+    // Format launch date
+    const formatLaunchDate = (dateStr: string | null): string => {
+        if (!dateStr) return 'TBA';
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+        } catch {
+            return dateStr;
+        }
+    };
+
     return (
-        <div className={`card ${classMap[classification]}`}>
+        <div className={`card card--${affordability.colour}`}>
             {/* Header */}
             <div className="flex-between" style={{ marginBottom: 'var(--sp-md)' }}>
                 <div>
@@ -58,13 +54,15 @@ export default function ProjectCard({ result }: Props) {
                         <span className="text-secondary" style={{ fontSize: '0.82rem' }}>
                             {project.estate}
                         </span>
-                        <span className={`badge ${classificationBadge[project.classification]}`}>
+                        <span
+                            className={`badge ${classificationBadge[project.classification] || ''}`}
+                        >
                             {project.classification}
                         </span>
                     </div>
                 </div>
-                <span className={`badge ${badgeMap[classification]}`}>
-                    {classLabel[classification]}
+                <span className={`badge badge--${affordability.colour}`}>
+                    {affordabilityLabel[affordability.status]}
                 </span>
             </div>
 
@@ -88,7 +86,7 @@ export default function ProjectCard({ result }: Props) {
                     >
                         Flat Type
                     </div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{selectedFlatType}</div>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{flatVariantLabel}</div>
                 </div>
                 <div>
                     <div
@@ -99,10 +97,12 @@ export default function ProjectCard({ result }: Props) {
                             letterSpacing: '0.04em',
                         }}
                     >
-                        Indicative Price
+                        Price Range
                     </div>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem' }} className="font-mono">
-                        ${indicativePrice.toLocaleString()}
+                        {selectedFlat.minIndicativePrice != null && selectedFlat.maxIndicativePrice != null
+                            ? `$${selectedFlat.minIndicativePrice.toLocaleString()} - $${selectedFlat.maxIndicativePrice.toLocaleString()}`
+                            : 'TBA'}
                     </div>
                 </div>
                 <div>
@@ -120,7 +120,7 @@ export default function ProjectCard({ result }: Props) {
                         style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--clr-green)' }}
                         className="font-mono"
                     >
-                        -${grant.totalGrant.toLocaleString()}
+                        -${financials.grants.totalGrant.toLocaleString()}
                     </div>
                 </div>
                 <div>
@@ -135,26 +135,35 @@ export default function ProjectCard({ result }: Props) {
                         Monthly Loan
                     </div>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem' }} className="font-mono">
-                        ${loan.monthlyInstalment.toLocaleString()}/mth
+                        ${financials.loan.monthlyInstalment.toLocaleString()}/mth
                     </div>
                 </div>
             </div>
 
-            {/* Timeline */}
+            {/* Timeline & Application Rate */}
             <div
                 style={{
                     display: 'flex',
-                    gap: 'var(--sp-lg)',
+                    flexWrap: 'wrap',
+                    gap: 'var(--sp-md)',
                     fontSize: '0.8rem',
                     color: 'var(--clr-text-secondary)',
                     marginBottom: 'var(--sp-md)',
                 }}
             >
-                <span>Launch: {project.launchDate}</span>
-                <span>Est. Completion: {project.estimatedCompletion}</span>
+                <span>Launch: {formatLaunchDate(project.launchdate)}</span>
+                <span>Est. Completion: {project.estimatedCompletion || 'TBA'}</span>
+                {demandInfo.rate != null && (
+                    <span
+                        style={{
+                            color: demandInfo.rate > 5 ? 'var(--clr-red)' : undefined,
+                        }}
+                    >
+                        Demand: {demandInfo.rate.toFixed(1)}x
+                    </span>
+                )}
             </div>
 
-            {/* Reason */}
             <p
                 style={{
                     fontSize: '0.8rem',
@@ -163,7 +172,11 @@ export default function ProjectCard({ result }: Props) {
                     lineHeight: 1.5,
                 }}
             >
-                {classificationReason}
+                {selectedFlat.affordability.status === 'stretchRequired'
+                    ? `Stretch required. Monthly income buffer: $${financials.affordability.monthlyIncomeBuffer.toLocaleString()}.`
+                    : financials.affordability.cashShortfall > 0
+                      ? `Cash shortfall: $${financials.affordability.cashShortfall.toLocaleString()}.`
+                      : `Monthly income buffer: $${financials.affordability.monthlyIncomeBuffer.toLocaleString()}.`}
             </p>
 
             {/* Compare toggle */}

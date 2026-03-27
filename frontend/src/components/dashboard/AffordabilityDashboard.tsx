@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
+import { getResultIdentity } from '../../utils/resultIdentity';
 import ProjectCard from './ProjectCard';
 
 export default function AffordabilityDashboard() {
@@ -9,10 +10,14 @@ export default function AffordabilityDashboard() {
     const results = state.results;
 
     const counts = useMemo(() => {
-        const g = results.filter((r) => r.classification === 'green').length;
-        const y = results.filter((r) => r.classification === 'yellow').length;
-        const r = results.filter((r) => r.classification === 'red').length;
-        return { green: g, yellow: y, red: r, total: results.length };
+        const green = results.filter((r) => r.selectedFlat.affordability.colour === 'green').length;
+        const yellow = results.filter((r) => r.selectedFlat.affordability.colour === 'yellow').length;
+        const red = results.filter((r) => r.selectedFlat.affordability.colour === 'red').length;
+        return { green, yellow, red, total: results.length };
+    }, [results]);
+
+    const uniqueProjects = useMemo(() => {
+        return new Set(results.map((r) => r.project.projectCode)).size;
     }, [results]);
 
     if (!state.onboarding.completed || results.length === 0) {
@@ -36,8 +41,8 @@ export default function AffordabilityDashboard() {
                 <div>
                     <h2 className="section-title">Your BTO Dashboard</h2>
                     <p className="section-subtitle" style={{ marginBottom: 0 }}>
-                        {counts.total} project-flat combinations evaluated across{' '}
-                        {new Set(results.map((r) => r.project.id)).size} projects.
+                        {counts.total} project-flat combinations evaluated across {uniqueProjects}{' '}
+                        projects.
                     </p>
                 </div>
                 {state.comparison.length > 0 && (
@@ -60,7 +65,10 @@ export default function AffordabilityDashboard() {
             {/* Cards grid */}
             <div className="grid-cards">
                 {results.map((r) => (
-                    <ProjectCard key={`${r.project.id}-${r.selectedFlatType}`} result={r} />
+                    <ProjectCard
+                        key={getResultIdentity(r)}
+                        result={r}
+                    />
                 ))}
             </div>
         </div>

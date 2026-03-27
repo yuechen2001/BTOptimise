@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
+import { getFlatVariantLabel, getResultIdentity } from '../../utils/resultIdentity';
 
 export default function ComparisonMatrix() {
     const { state, dispatch } = useAppState();
@@ -22,6 +23,37 @@ export default function ComparisonMatrix() {
 
     const fmt = (n: number) => `$${n.toLocaleString()}`;
     const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+    const affordabilityLabel = {
+        canAfford: 'Affordable',
+        stretchRequired: 'Stretch',
+        outOfReach: 'Out of Reach',
+    } as const;
+    const columnTone = {
+        green: {
+            background: 'rgba(22, 163, 74, 0.08)',
+        },
+        yellow: {
+            background: 'rgba(202, 138, 4, 0.08)',
+        },
+        red: {
+            background: 'rgba(220, 38, 38, 0.08)',
+        },
+    } as const;
+
+    const getColumnStyle = (colour: 'green' | 'yellow' | 'red') => ({
+        background: columnTone[colour].background,
+    });
+
+    // Format launch date
+    const formatLaunchDate = (dateStr: string | null): string => {
+        if (!dateStr) return 'TBA';
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+        } catch {
+            return dateStr;
+        }
+    };
 
     return (
         <div>
@@ -54,7 +86,10 @@ export default function ComparisonMatrix() {
                         <tr>
                             <th style={{ minWidth: 180 }}>Metric</th>
                             {items.map((item) => (
-                                <th key={`${item.project.id}-${item.selectedFlatType}`}>
+                                <th
+                                    key={getResultIdentity(item)}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
                                     <div>{item.project.name}</div>
                                     <div
                                         style={{
@@ -64,34 +99,38 @@ export default function ComparisonMatrix() {
                                             letterSpacing: 0,
                                         }}
                                     >
-                                        {item.selectedFlatType}
+                                        {getFlatVariantLabel(item)}
                                     </div>
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {/* Classification */}
+                        {/* Backend affordability */}
                         <tr>
                             <td style={{ fontWeight: 600 }}>Affordability</td>
                             {items.map((item) => (
-                                <td key={`${item.project.id}-${item.selectedFlatType}-class`}>
-                                    <span className={`badge badge--${item.classification}`}>
-                                        {item.classification === 'green'
-                                            ? 'Affordable'
-                                            : item.classification === 'yellow'
-                                              ? 'Stretch'
-                                              : 'Out of Reach'}
+                                <td
+                                    key={`${getResultIdentity(item)}-class`}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
+                                    <span
+                                        className={`badge badge--${item.selectedFlat.affordability.colour}`}
+                                    >
+                                        {affordabilityLabel[item.selectedFlat.affordability.status]}
                                     </span>
                                 </td>
                             ))}
                         </tr>
 
-                        {/* Classification */}
+                        {/* Project Classification */}
                         <tr>
                             <td style={{ fontWeight: 600 }}>Project Classification</td>
                             {items.map((item) => (
-                                <td key={`${item.project.id}-${item.selectedFlatType}-pclass`}>
+                                <td
+                                    key={`${getResultIdentity(item)}-pclass`}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
                                     <span
                                         className={`badge badge--${item.project.classification.toLowerCase()}`}
                                     >
@@ -105,21 +144,65 @@ export default function ComparisonMatrix() {
                         <tr>
                             <td>Estate</td>
                             {items.map((item) => (
-                                <td key={`${item.project.id}-${item.selectedFlatType}-estate`}>
+                                <td
+                                    key={`${getResultIdentity(item)}-estate`}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
                                     {item.project.estate}
                                 </td>
                             ))}
                         </tr>
 
-                        {/* Price */}
+                        {/* Demand */}
                         <tr>
-                            <td>Indicative Price</td>
+                            <td>Demand</td>
                             {items.map((item) => (
                                 <td
-                                    key={`${item.project.id}-${item.selectedFlatType}-price`}
-                                    className="font-mono"
+                                    key={`${getResultIdentity(item)}-apprate`}
+                                    style={{
+                                        ...getColumnStyle(item.selectedFlat.affordability.colour),
+                                        color:
+                                            item.selectedFlat.demandInfo.rate > 5
+                                                ? 'var(--clr-red)'
+                                                : undefined,
+                                    }}
                                 >
-                                    {fmt(item.indicativePrice)}
+                                    {item.selectedFlat.demandInfo.rate != null
+                                        ? `${item.selectedFlat.demandInfo.rate.toFixed(1)}x (${item.selectedFlat.demandInfo.totalApplicants ?? 0}/${item.selectedFlat.demandInfo.totalUnits ?? 0})`
+                                        : 'N/A'}
+                                </td>
+                            ))}
+                        </tr>
+
+                        <tr>
+                            <td>Floor Area</td>
+                            {items.map((item) => (
+                                <td
+                                    key={`${getResultIdentity(item)}-area`}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
+                                    {item.selectedFlat.estimatedFloorArea != null
+                                        ? `${item.selectedFlat.estimatedFloorArea} sqm`
+                                        : item.selectedFlat.estimatedInternalFloorArea != null
+                                          ? `${item.selectedFlat.estimatedInternalFloorArea} sqm`
+                                          : 'TBA'}
+                                </td>
+                            ))}
+                        </tr>
+
+                        {/* Price range */}
+                        <tr>
+                            <td>Price Range</td>
+                            {items.map((item) => (
+                                <td
+                                    key={`${getResultIdentity(item)}-price`}
+                                    className="font-mono"
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
+                                    {item.selectedFlat.minIndicativePrice != null &&
+                                    item.selectedFlat.maxIndicativePrice != null
+                                        ? `${fmt(item.selectedFlat.minIndicativePrice)} - ${fmt(item.selectedFlat.maxIndicativePrice)}`
+                                        : 'TBA'}
                                 </td>
                             ))}
                         </tr>
@@ -129,25 +212,14 @@ export default function ComparisonMatrix() {
                             <td>Total Grant</td>
                             {items.map((item) => (
                                 <td
-                                    key={`${item.project.id}-${item.selectedFlatType}-grant`}
+                                    key={`${getResultIdentity(item)}-grant`}
                                     className="font-mono"
-                                    style={{ color: 'var(--clr-green)' }}
+                                    style={{
+                                        ...getColumnStyle(item.selectedFlat.affordability.colour),
+                                        color: 'var(--clr-green)',
+                                    }}
                                 >
-                                    -{fmt(item.grant.totalGrant)}
-                                </td>
-                            ))}
-                        </tr>
-
-                        {/* Effective price */}
-                        <tr>
-                            <td>Effective Price</td>
-                            {items.map((item) => (
-                                <td
-                                    key={`${item.project.id}-${item.selectedFlatType}-eff`}
-                                    className="font-mono"
-                                    style={{ fontWeight: 600 }}
-                                >
-                                    {fmt(item.effectivePrice)}
+                                    -{fmt(item.selectedFlat.financials.grants.totalGrant)}
                                 </td>
                             ))}
                         </tr>
@@ -157,10 +229,11 @@ export default function ComparisonMatrix() {
                             <td>HDB Loan Amount</td>
                             {items.map((item) => (
                                 <td
-                                    key={`${item.project.id}-${item.selectedFlatType}-loan`}
+                                    key={`${getResultIdentity(item)}-loan`}
                                     className="font-mono"
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
                                 >
-                                    {fmt(item.loan.maxLoanAmount)}
+                                    {fmt(item.selectedFlat.financials.loan.maxLoanAmount)}
                                 </td>
                             ))}
                         </tr>
@@ -170,10 +243,11 @@ export default function ComparisonMatrix() {
                             <td>Monthly Instalment</td>
                             {items.map((item) => (
                                 <td
-                                    key={`${item.project.id}-${item.selectedFlatType}-mth`}
+                                    key={`${getResultIdentity(item)}-mth`}
                                     className="font-mono"
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
                                 >
-                                    {fmt(item.loan.monthlyInstalment)}/mth
+                                    {fmt(item.selectedFlat.financials.loan.monthlyInstalment)}/mth
                                 </td>
                             ))}
                         </tr>
@@ -182,18 +256,21 @@ export default function ComparisonMatrix() {
                         <tr>
                             <td>MSR Usage</td>
                             {items.map((item) => (
-                                <td key={`${item.project.id}-${item.selectedFlatType}-msr`}>
+                                <td
+                                    key={`${getResultIdentity(item)}-msr`}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
                                     <span
                                         style={{
                                             color:
-                                                item.loan.msrUsed > 0.3
+                                                item.selectedFlat.financials.loan.msrUsed > 0.3
                                                     ? 'var(--clr-red)'
-                                                    : item.loan.msrUsed > 0.25
+                                                    : item.selectedFlat.financials.loan.msrUsed > 0.25
                                                       ? 'var(--clr-yellow)'
                                                       : 'var(--clr-green)',
                                         }}
                                     >
-                                        {pct(item.loan.msrUsed)}
+                                        {pct(item.selectedFlat.financials.loan.msrUsed)}
                                     </span>
                                 </td>
                             ))}
@@ -214,24 +291,28 @@ export default function ComparisonMatrix() {
                                 Milestone Cash Flow
                             </td>
                         </tr>
-                        {items[0].milestones.map((_, mi) => (
+                        {items[0].selectedFlat.financials.cashFlow.milestones.map((_, mi) => (
                             <tr key={`milestone-${mi}`}>
-                                <td>{items[0].milestones[mi].stage}</td>
+                                <td>{items[0].selectedFlat.financials.cashFlow.milestones[mi].stage}</td>
                                 {items.map((item) => (
                                     <td
-                                        key={`${item.project.id}-${item.selectedFlatType}-m${mi}`}
+                                        key={`${getResultIdentity(item)}-m${mi}`}
                                         className="font-mono"
-                                        style={{ fontSize: '0.82rem' }}
+                                        style={{
+                                            ...getColumnStyle(item.selectedFlat.affordability.colour),
+                                            fontSize: '0.82rem',
+                                        }}
                                     >
-                                        <div>{fmt(item.milestones[mi].amountDue)}</div>
+                                        <div>
+                                            Cash: {fmt(item.selectedFlat.financials.cashFlow.milestones[mi].amountCash)}
+                                        </div>
                                         <div
                                             style={{
                                                 fontSize: '0.72rem',
                                                 color: 'var(--clr-text-muted)',
                                             }}
                                         >
-                                            CPF: {fmt(item.milestones[mi].cpfUsable)} / Cash:{' '}
-                                            {fmt(item.milestones[mi].cashRequired)}
+                                            CPF: {fmt(item.selectedFlat.financials.cashFlow.milestones[mi].amountCPF)}
                                         </div>
                                     </td>
                                 ))}
@@ -240,45 +321,58 @@ export default function ComparisonMatrix() {
 
                         {/* Totals */}
                         <tr>
-                            <td style={{ fontWeight: 600 }}>Total Cash Needed</td>
+                            <td style={{ fontWeight: 600 }}>Total Cash Required</td>
                             {items.map((item) => (
                                 <td
-                                    key={`${item.project.id}-${item.selectedFlatType}-cash`}
+                                    key={`${getResultIdentity(item)}-cash`}
                                     className="font-mono"
-                                    style={{ fontWeight: 600 }}
+                                    style={{
+                                        ...getColumnStyle(item.selectedFlat.affordability.colour),
+                                        fontWeight: 600,
+                                    }}
                                 >
-                                    {fmt(item.totalCashNeeded)}
+                                    {fmt(item.selectedFlat.financials.cashFlow.totalCashRequired)}
                                 </td>
                             ))}
                         </tr>
                         <tr>
-                            <td style={{ fontWeight: 600 }}>Total CPF Needed</td>
+                            <td style={{ fontWeight: 600 }}>Total CPF Required</td>
                             {items.map((item) => (
                                 <td
-                                    key={`${item.project.id}-${item.selectedFlatType}-cpf`}
+                                    key={`${getResultIdentity(item)}-cpf`}
                                     className="font-mono"
-                                    style={{ fontWeight: 600 }}
+                                    style={{
+                                        ...getColumnStyle(item.selectedFlat.affordability.colour),
+                                        fontWeight: 600,
+                                    }}
                                 >
-                                    {fmt(item.totalCpfNeeded)}
+                                    {fmt(item.selectedFlat.financials.cashFlow.totalCPFRequired)}
                                 </td>
                             ))}
                         </tr>
 
-                        {/* Clawback */}
                         <tr>
-                            <td>Clawback (if resold after MOP)</td>
+                            <td>Cash Shortfall</td>
                             {items.map((item) => (
                                 <td
-                                    key={`${item.project.id}-${item.selectedFlatType}-claw`}
+                                    key={`${getResultIdentity(item)}-shortfall`}
                                     className="font-mono"
-                                    style={{
-                                        color:
-                                            item.clawbackEstimate > 0
-                                                ? 'var(--clr-red)'
-                                                : undefined,
-                                    }}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
                                 >
-                                    {item.clawbackEstimate > 0 ? fmt(item.clawbackEstimate) : 'N/A'}
+                                    {fmt(item.selectedFlat.financials.affordability.cashShortfall)}
+                                </td>
+                            ))}
+                        </tr>
+
+                        <tr>
+                            <td>Monthly Income Buffer</td>
+                            {items.map((item) => (
+                                <td
+                                    key={`${getResultIdentity(item)}-buffer`}
+                                    className="font-mono"
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
+                                    {fmt(item.selectedFlat.financials.affordability.monthlyIncomeBuffer)}
                                 </td>
                             ))}
                         </tr>
@@ -287,18 +381,24 @@ export default function ComparisonMatrix() {
                         <tr>
                             <td>Est. Completion</td>
                             {items.map((item) => (
-                                <td key={`${item.project.id}-${item.selectedFlatType}-comp`}>
-                                    {item.project.estimatedCompletion}
+                                <td
+                                    key={`${getResultIdentity(item)}-comp`}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
+                                    {item.project.estimatedCompletion || 'TBA'}
                                 </td>
                             ))}
                         </tr>
 
-                        {/* Wait time */}
+                        {/* Launch date */}
                         <tr>
                             <td>Launch Date</td>
                             {items.map((item) => (
-                                <td key={`${item.project.id}-${item.selectedFlatType}-launch`}>
-                                    {item.project.launchDate}
+                                <td
+                                    key={`${getResultIdentity(item)}-launch`}
+                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
+                                >
+                                    {formatLaunchDate(item.project.launchdate)}
                                 </td>
                             ))}
                         </tr>

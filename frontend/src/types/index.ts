@@ -15,7 +15,7 @@ export interface UserProfile {
 
     /* Step 2 – Financials */
     employmentStatus: EmploymentStatus;
-    monthlyIncome: number; // gross combined
+    monthlyIncome: number; // applicant's gross monthly income
     partnerMonthlyIncome?: number;
     cpfOA: number; // current CPF-OA balance
     cashSavings: number;
@@ -57,32 +57,46 @@ export type Region =
 
 export type ProjectClassification = 'Standard' | 'Plus' | 'Prime';
 
+/** Backend project flat type structure */
 export interface FlatOption {
-    type: FlatTypePreference;
-    units: number;
-    priceMin: number; // SGD
-    priceMax: number; // SGD
+    type: string;
+    estimatedFloorArea: number | null;
+    estimatedInternalFloorArea: number | null;
+    minIndicativePrice: number | null;
+    maxIndicativePrice: number | null;
+    unitCount: number | null;
 }
 
-export interface OversubscriptionData {
-    flatType: FlatTypePreference;
-    applicants: number;
-    units: number;
-    ratio: number; // applicants-to-unit
-}
-
+/** Backend project structure from API */
 export interface BTOProject {
-    id: string;
+    _id: string;
+    projectCode: string;
     name: string;
-    estate: Region;
+    estate: string;
     classification: ProjectClassification;
-    launchDate: string; // e.g. "Oct 2025"
-    estimatedCompletion: string; // e.g. "Q4 2029"
-    flatOptions: FlatOption[];
-    clawbackRate: number; // 0 for Standard, e.g. 0.06 for Plus, 0.09 for Prime (fraction of resale)
-    subsidyRecoveryYears: number; // MOP + clawback window
-    oversubscription: OversubscriptionData[];
-    imageUrl?: string;
+    launchdate: string | null;
+    estimatedCompletion: string | null;
+    flatTypes: FlatOption[];
+    lastVerifiedAt: string | null;
+}
+
+/** Application rate from backend */
+export interface ApplicationRate {
+    _id: string;
+    launchCode: string;
+    estate: string;
+    projectGroup: string;
+    flatType: string;
+    noOfApplicants: number;
+    noOfUnits: number;
+    overallAppRate: number;
+    firstTimerFamiliesAppRate: number;
+    firstTimerSinglesAppRate: number;
+    secondTimerFamiliesAppRate: number;
+    seniorsAppRate: number;
+    projectCodes: string[];
+    sourceAsOf: string;
+    lastVerifiedAt: string | null;
 }
 
 /* ───────────────────────── Financial Computation Types ───────────────── */
@@ -91,7 +105,7 @@ export interface GrantResult {
     ehgAmount: number;
     proximityGrant: number;
     totalGrant: number;
-    breakdown: string[]; // human-readable line items
+    breakdown: string[];
 }
 
 export interface LoanResult {
@@ -99,31 +113,78 @@ export interface LoanResult {
     monthlyInstalment: number;
     loanTenureYears: number;
     interestRate: number;
-    msrUsed: number; // fraction of income consumed
+    msrUsed: number;
 }
 
-export interface MilestoneCashFlow {
-    stage: string; // e.g. "Option Fee", "Signing", "Key Collection"
-    percentageOfPrice: number;
-    amountDue: number;
-    cpfUsable: number;
-    cashRequired: number;
-    cumulativePaid: number;
+export interface MilestonePayment {
+    stage: string;
+    amountCash: number;
+    amountCPF: number;
+    cumulativeCash: number;
+    cumulativeCPF: number;
 }
 
-export interface AffordabilityResult {
-    project: BTOProject;
-    selectedFlatType: FlatTypePreference;
-    indicativePrice: number; // mid-point of range
-    grant: GrantResult;
+export interface CashFlowResult {
+    milestones: MilestonePayment[];
+    totalCashRequired: number;
+    totalCPFRequired: number;
+}
+
+export interface AffordabilityCheckResult {
+    canAfford: boolean;
+    cashShortfall: number;
+    monthlyIncomeBuffer: number;
+}
+
+export interface EligibilityResult {
+    canPurchaseBTO: boolean;
+    reasons: string[];
+    incomeCeilingCheck: boolean;
+    deferredIncomeAssessment: boolean;
+}
+
+export interface FinancialCalculationResult {
+    eligibility: EligibilityResult;
+    grants: GrantResult;
     loan: LoanResult;
-    effectivePrice: number; // price - grants
-    milestones: MilestoneCashFlow[];
-    totalCashNeeded: number;
-    totalCpfNeeded: number;
-    clawbackEstimate: number; // if resold after MOP
-    classification: 'green' | 'yellow' | 'red';
-    classificationReason: string;
+    cashFlow: CashFlowResult;
+    affordability: AffordabilityCheckResult;
+}
+
+export interface ClawbackResult {
+    subsidy: number;
+    clawbackAmount: number;
+    netProceeds: number;
+    effectivePrice: number;
+}
+
+export interface DemandInfoResult {
+    rate: number;
+    colour: string;
+    totalUnits?: number;
+    totalApplicants?: number;
+}
+
+export interface AffordabilityClassificationResult {
+    status: 'canAfford' | 'stretchRequired' | 'outOfReach';
+    colour: 'green' | 'yellow' | 'red';
+}
+
+export interface RecommendedFlatResult extends FlatOption {
+    financials: FinancialCalculationResult;
+    affordability: AffordabilityClassificationResult;
+    demandInfo: DemandInfoResult;
+}
+
+/* ───────────────────────── Display Types for Dashboard/Compare ───────── */
+
+/**
+ * Combined result for displaying affordability on a per-project+flat-type basis.
+ * This is used by the Dashboard and Compare components.
+ */
+export interface ProjectAffordabilityResult {
+    project: BTOProject;
+    selectedFlat: RecommendedFlatResult;
 }
 
 /* ───────────────────────── Onboarding State ──────────────────────────── */
@@ -132,4 +193,12 @@ export interface OnboardingState {
     currentStep: number;
     profile: Partial<UserProfile>;
     completed: boolean;
+}
+
+/* ───────────────────────── Session State ─────────────────────────────── */
+
+export interface SessionState {
+    sessionId: string | null;
+    isLoading: boolean;
+    error: string | null;
 }

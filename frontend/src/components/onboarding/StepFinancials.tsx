@@ -1,6 +1,8 @@
 import { useAppState } from '../../context/AppContext';
 import type { EmploymentStatus } from '../../types';
 
+const INCOME_CEILING_COUPLE = 14000;
+
 const EMPLOYMENT_OPTIONS: { value: EmploymentStatus; label: string; hint: string }[] = [
     { value: 'employed', label: 'Employed', hint: 'Full-time or part-time' },
     { value: 'self-employed', label: 'Self-Employed', hint: 'Freelance / business owner' },
@@ -17,6 +19,11 @@ export default function StepFinancials() {
     }
 
     const isDeferred = p.employmentStatus === 'student' || p.employmentStatus === 'nsf';
+    const totalHouseholdIncome = (p.monthlyIncome ?? 0) + (p.partnerMonthlyIncome ?? 0);
+    const exceedsCoupleIncomeCeiling =
+        !isDeferred &&
+        p.applicantType === 'couple' &&
+        totalHouseholdIncome > INCOME_CEILING_COUPLE;
 
     return (
         <div>
@@ -61,6 +68,23 @@ export default function StepFinancials() {
                         As a {p.employmentStatus === 'student' ? 'student' : 'national serviceman'},
                         your income assessment will be deferred. We will use $0 assessed income for
                         maximum grant estimation.
+                    </p>
+                </div>
+            )}
+
+            {exceedsCoupleIncomeCeiling && (
+                <div
+                    className="card"
+                    style={{
+                        background: 'var(--clr-red-bg)',
+                        borderColor: 'var(--clr-red)',
+                        marginBottom: 'var(--sp-lg)',
+                    }}
+                >
+                    <p style={{ fontSize: '0.85rem', color: '#991b1b' }}>
+                        Your combined household income is ${totalHouseholdIncome.toLocaleString()}
+                        /month, which exceeds the BTO couple income ceiling of $
+                        {INCOME_CEILING_COUPLE.toLocaleString()}/month.
                     </p>
                 </div>
             )}
