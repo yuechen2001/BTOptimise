@@ -8,6 +8,29 @@ export default function AffordabilityDashboard() {
     const { state } = useAppState();
     const navigate = useNavigate();
     const results = state.results;
+    const sortedResults = useMemo(() => {
+        const affordabilityOrder = { green: 0, yellow: 1, red: 2 } as const;
+
+        return [...results].sort((left, right) => {
+            const colourDifference =
+                affordabilityOrder[left.selectedFlat.affordability.colour] -
+                affordabilityOrder[right.selectedFlat.affordability.colour];
+
+            if (colourDifference !== 0) {
+                return colourDifference;
+            }
+
+            const demandDifference =
+                (left.selectedFlat.demandInfo.rate ?? Number.POSITIVE_INFINITY) -
+                (right.selectedFlat.demandInfo.rate ?? Number.POSITIVE_INFINITY);
+
+            if (demandDifference !== 0) {
+                return demandDifference;
+            }
+
+            return left.project.name.localeCompare(right.project.name);
+        });
+    }, [results]);
 
     const counts = useMemo(() => {
         const green = results.filter((r) => r.selectedFlat.affordability.colour === 'green').length;
@@ -64,7 +87,7 @@ export default function AffordabilityDashboard() {
 
             {/* Cards grid */}
             <div className="grid-cards">
-                {results.map((r) => (
+                {sortedResults.map((r) => (
                     <ProjectCard
                         key={getResultIdentity(r)}
                         result={r}

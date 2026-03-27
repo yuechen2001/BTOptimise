@@ -26,6 +26,8 @@ const STEPS = [
 ];
 
 const INCOME_CEILING_COUPLE = 14000;
+const SINGLE_MINIMUM_AGE = 35;
+const COUPLE_MINIMUM_AGE = 21;
 
 function isMissingSessionError(error: unknown): boolean {
     return (
@@ -56,15 +58,22 @@ export default function OnboardingWizard() {
 
         switch (step) {
             case 0: {
-                const ageValid = p.age !== undefined && p.age >= 21;
+                const ageValid =
+                    p.age !== undefined &&
+                    p.age >= (p.applicantType === 'single' ? SINGLE_MINIMUM_AGE : COUPLE_MINIMUM_AGE);
                 const partnerAgeValid =
                     p.applicantType !== 'couple' ||
-                    (p.partnerAge !== undefined && p.partnerAge >= 21);
+                    (p.partnerAge !== undefined && p.partnerAge >= COUPLE_MINIMUM_AGE);
+                const citizenshipValid =
+                    (p.applicantType === 'single' && p.citizenship === 'SC') ||
+                    (p.applicantType === 'couple' &&
+                        (p.citizenship === 'SC/SC' || p.citizenship === 'SC/PR'));
+
                 return !!(
                     p.applicantType &&
                     ageValid &&
                     partnerAgeValid &&
-                    p.citizenship &&
+                    citizenshipValid &&
                     p.firstTimer !== undefined
                 );
             }

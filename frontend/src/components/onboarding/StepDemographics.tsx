@@ -1,18 +1,44 @@
 import { useAppState } from '../../context/AppContext';
 import type { ApplicantType, CitizenshipStatus } from '../../types';
 
-const CITIZENSHIP_OPTIONS: { value: CitizenshipStatus; label: string }[] = [
+const COUPLE_CITIZENSHIP_OPTIONS: { value: CitizenshipStatus; label: string }[] = [
     { value: 'SC/SC', label: 'Both Singapore Citizens' },
     { value: 'SC/PR', label: 'SC + Permanent Resident' },
+];
+
+const SINGLE_CITIZENSHIP_OPTIONS: { value: CitizenshipStatus; label: string }[] = [
     { value: 'SC', label: 'Singapore Citizen (Single)' },
 ];
 
 export default function StepDemographics() {
     const { state, dispatch } = useAppState();
     const p = state.onboarding.profile;
+    const minimumAge = p.applicantType === 'single' ? 35 : 21;
+    const citizenshipOptions =
+        p.applicantType === 'single'
+            ? SINGLE_CITIZENSHIP_OPTIONS
+            : p.applicantType === 'couple'
+              ? COUPLE_CITIZENSHIP_OPTIONS
+              : [...COUPLE_CITIZENSHIP_OPTIONS, ...SINGLE_CITIZENSHIP_OPTIONS];
 
     function update(payload: Record<string, unknown>) {
         dispatch({ type: 'UPDATE_PROFILE', payload });
+    }
+
+    function handleApplicantTypeChange(applicantType: ApplicantType) {
+        if (applicantType === 'single') {
+            update({
+                applicantType,
+                partnerAge: undefined,
+                citizenship: 'SC',
+            });
+            return;
+        }
+
+        update({
+            applicantType,
+            citizenship: p.citizenship === 'SC' ? undefined : p.citizenship,
+        });
     }
 
     return (
@@ -36,7 +62,7 @@ export default function StepDemographics() {
                                 type="radio"
                                 name="applicantType"
                                 checked={p.applicantType === t}
-                                onChange={() => update({ applicantType: t })}
+                                onChange={() => handleApplicantTypeChange(t)}
                             />
                             {t === 'couple' ? 'Couple / Fiancé(e)' : 'Single (35+)'}
                         </label>
@@ -50,15 +76,17 @@ export default function StepDemographics() {
                 <input
                     className="form-input"
                     type="number"
-                    min={21}
+                    min={minimumAge}
                     max={80}
-                    placeholder="e.g. 28"
+                    placeholder={p.applicantType === 'single' ? 'e.g. 35' : 'e.g. 28'}
                     value={p.age ?? ''}
                     onChange={(e) => update({ age: Number(e.target.value) })}
                 />
-                {p.age !== undefined && p.age < 21 && (
+                {p.age !== undefined && p.age < minimumAge && (
                     <span className="hint" style={{ color: 'var(--clr-red)' }}>
-                        You must be at least 21 years old to apply for a BTO.
+                        {p.applicantType === 'single'
+                            ? 'Single applicants must be at least 35 years old to apply for a BTO.'
+                            : 'You must be at least 21 years old to apply for a BTO.'}
                     </span>
                 )}
             </div>
@@ -95,7 +123,7 @@ export default function StepDemographics() {
                     <option value="" disabled>
                         Select...
                     </option>
-                    {CITIZENSHIP_OPTIONS.map((o) => (
+                    {citizenshipOptions.map((o) => (
                         <option key={o.value} value={o.value}>
                             {o.label}
                         </option>
