@@ -10,7 +10,7 @@ export default function ComparisonMatrix() {
     if (items.length === 0) {
         return (
             <div style={{ textAlign: 'center', padding: 'var(--sp-2xl)' }}>
-                <h2 className="section-title">Comparison Matrix</h2>
+                <h2 className="section-title">Comparison</h2>
                 <p className="section-subtitle">
                     Select up to 3 projects from the dashboard to compare side by side.
                 </p>
@@ -59,7 +59,7 @@ export default function ComparisonMatrix() {
         <div>
             <div className="flex-between" style={{ marginBottom: 'var(--sp-lg)' }}>
                 <div>
-                    <h2 className="section-title">Comparison Matrix</h2>
+                    <h2 className="section-title">Comparison</h2>
                     <p className="section-subtitle" style={{ marginBottom: 0 }}>
                         Side-by-side breakdown of your shortlisted projects.
                     </p>
@@ -265,7 +265,8 @@ export default function ComparisonMatrix() {
                                             color:
                                                 item.selectedFlat.financials.loan.msrUsed > 0.3
                                                     ? 'var(--clr-red)'
-                                                    : item.selectedFlat.financials.loan.msrUsed > 0.25
+                                                    : item.selectedFlat.financials.loan.msrUsed >
+                                                        0.25
                                                       ? 'var(--clr-yellow)'
                                                       : 'var(--clr-green)',
                                         }}
@@ -293,18 +294,26 @@ export default function ComparisonMatrix() {
                         </tr>
                         {items[0].selectedFlat.financials.cashFlow.milestones.map((_, mi) => (
                             <tr key={`milestone-${mi}`}>
-                                <td>{items[0].selectedFlat.financials.cashFlow.milestones[mi].stage}</td>
+                                <td>
+                                    {items[0].selectedFlat.financials.cashFlow.milestones[mi].stage}
+                                </td>
                                 {items.map((item) => (
                                     <td
                                         key={`${getResultIdentity(item)}-m${mi}`}
                                         className="font-mono"
                                         style={{
-                                            ...getColumnStyle(item.selectedFlat.affordability.colour),
+                                            ...getColumnStyle(
+                                                item.selectedFlat.affordability.colour
+                                            ),
                                             fontSize: '0.82rem',
                                         }}
                                     >
                                         <div>
-                                            Cash: {fmt(item.selectedFlat.financials.cashFlow.milestones[mi].amountCash)}
+                                            Cash:{' '}
+                                            {fmt(
+                                                item.selectedFlat.financials.cashFlow.milestones[mi]
+                                                    .amountCash
+                                            )}
                                         </div>
                                         <div
                                             style={{
@@ -312,7 +321,11 @@ export default function ComparisonMatrix() {
                                                 color: 'var(--clr-text-muted)',
                                             }}
                                         >
-                                            CPF: {fmt(item.selectedFlat.financials.cashFlow.milestones[mi].amountCPF)}
+                                            CPF:{' '}
+                                            {fmt(
+                                                item.selectedFlat.financials.cashFlow.milestones[mi]
+                                                    .amountCPF
+                                            )}
                                         </div>
                                     </td>
                                 ))}
@@ -372,7 +385,10 @@ export default function ComparisonMatrix() {
                                     className="font-mono"
                                     style={getColumnStyle(item.selectedFlat.affordability.colour)}
                                 >
-                                    {fmt(item.selectedFlat.financials.affordability.monthlyIncomeBuffer)}
+                                    {fmt(
+                                        item.selectedFlat.financials.affordability
+                                            .monthlyIncomeBuffer
+                                    )}
                                 </td>
                             ))}
                         </tr>
