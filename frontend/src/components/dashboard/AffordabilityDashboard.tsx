@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
 import { getResultIdentity } from '../../utils/resultIdentity';
@@ -8,6 +8,7 @@ export default function AffordabilityDashboard() {
     const { state } = useAppState();
     const navigate = useNavigate();
     const results = state.results;
+    const [affordabilityFilter, setAffordabilityFilter] = useState<'all' | 'green' | 'yellow' | 'red'>('all');
     const sortedResults = useMemo(() => {
         const affordabilityOrder = { green: 0, yellow: 1, red: 2 } as const;
 
@@ -31,6 +32,15 @@ export default function AffordabilityDashboard() {
             return left.project.name.localeCompare(right.project.name);
         });
     }, [results]);
+    const filteredResults = useMemo(() => {
+        if (affordabilityFilter === 'all') {
+            return sortedResults;
+        }
+
+        return sortedResults.filter(
+            (result) => result.selectedFlat.affordability.colour === affordabilityFilter
+        );
+    }, [sortedResults, affordabilityFilter]);
 
     const counts = useMemo(() => {
         const green = results.filter((r) => r.selectedFlat.affordability.colour === 'green').length;
@@ -38,6 +48,43 @@ export default function AffordabilityDashboard() {
         const red = results.filter((r) => r.selectedFlat.affordability.colour === 'red').length;
         return { green, yellow, red, total: results.length };
     }, [results]);
+    const filterStyles = {
+        all: {
+            active: { background: 'var(--clr-primary)', color: '#fff', borderColor: 'var(--clr-primary)' },
+            idle: {
+                background: 'var(--clr-surface)',
+                color: 'var(--clr-text)',
+                borderColor: 'var(--clr-border)',
+            },
+        },
+        green: {
+            active: { background: 'var(--clr-green)', color: '#fff', borderColor: 'var(--clr-green)' },
+            idle: {
+                background: 'var(--clr-green-bg)',
+                color: 'var(--clr-green)',
+                borderColor: 'rgba(22, 163, 74, 0.25)',
+            },
+        },
+        yellow: {
+            active: { background: 'var(--clr-yellow)', color: '#fff', borderColor: 'var(--clr-yellow)' },
+            idle: {
+                background: 'var(--clr-yellow-bg)',
+                color: 'var(--clr-yellow)',
+                borderColor: 'rgba(202, 138, 4, 0.25)',
+            },
+        },
+        red: {
+            active: { background: 'var(--clr-red)', color: '#fff', borderColor: 'var(--clr-red)' },
+            idle: {
+                background: 'var(--clr-red-bg)',
+                color: 'var(--clr-red)',
+                borderColor: 'rgba(220, 38, 38, 0.2)',
+            },
+        },
+    } as const;
+
+    const getFilterButtonStyle = (filter: keyof typeof filterStyles) =>
+        affordabilityFilter === filter ? filterStyles[filter].active : filterStyles[filter].idle;
 
     const uniqueProjects = useMemo(() => {
         return new Set(results.map((r) => r.project.projectCode)).size;
@@ -78,16 +125,44 @@ export default function AffordabilityDashboard() {
                 )}
             </div>
 
-            {/* Summary pills */}
-            <div className="flex-gap" style={{ marginBottom: 'var(--sp-xl)' }}>
-                <span className="badge badge--green">{counts.green} Affordable</span>
-                <span className="badge badge--yellow">{counts.yellow} Stretch</span>
-                <span className="badge badge--red">{counts.red} Out of Reach</span>
+            {/* Affordability filters */}
+            <div
+                className="flex-gap"
+                style={{ marginBottom: 'var(--sp-xl)', flexWrap: 'wrap', alignItems: 'center' }}
+            >
+                <button
+                    className={`btn btn--small ${affordabilityFilter === 'all' ? 'btn--primary' : 'btn--secondary'}`}
+                    onClick={() => setAffordabilityFilter('all')}
+                    style={getFilterButtonStyle('all')}
+                >
+                    All ({counts.total})
+                </button>
+                <button
+                    className={`btn btn--small ${affordabilityFilter === 'green' ? 'btn--primary' : 'btn--secondary'}`}
+                    onClick={() => setAffordabilityFilter('green')}
+                    style={getFilterButtonStyle('green')}
+                >
+                    Affordable ({counts.green})
+                </button>
+                <button
+                    className={`btn btn--small ${affordabilityFilter === 'yellow' ? 'btn--primary' : 'btn--secondary'}`}
+                    onClick={() => setAffordabilityFilter('yellow')}
+                    style={getFilterButtonStyle('yellow')}
+                >
+                    Stretch ({counts.yellow})
+                </button>
+                <button
+                    className={`btn btn--small ${affordabilityFilter === 'red' ? 'btn--primary' : 'btn--secondary'}`}
+                    onClick={() => setAffordabilityFilter('red')}
+                    style={getFilterButtonStyle('red')}
+                >
+                    Out of Reach ({counts.red})
+                </button>
             </div>
 
             {/* Cards grid */}
             <div className="grid-cards">
-                {sortedResults.map((r) => (
+                {filteredResults.map((r) => (
                     <ProjectCard
                         key={getResultIdentity(r)}
                         result={r}
