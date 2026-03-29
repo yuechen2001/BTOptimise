@@ -90,7 +90,7 @@ export default function AffordabilityDashboard() {
         return new Set(results.map((r) => r.project.projectCode)).size;
     }, [results]);
 
-    if (!state.onboarding.completed || results.length === 0) {
+    if (!state.onboarding.completed) {
         return (
             <div style={{ textAlign: 'center', padding: 'var(--sp-2xl)' }}>
                 <h2 className="section-title">No Results Yet</h2>
@@ -100,6 +100,21 @@ export default function AffordabilityDashboard() {
                 </p>
                 <button className="btn btn--primary" onClick={() => navigate({ to: '/' })}>
                     Start Onboarding
+                </button>
+            </div>
+        );
+    }
+
+    if (results.length === 0) {
+        return (
+            <div style={{ textAlign: 'center', padding: 'var(--sp-2xl)' }}>
+                <h2 className="section-title">No Recommendations</h2>
+                <p className="section-subtitle">
+                    We could not find any project-flat matches for your current profile and
+                    preferences. Try adjusting your preferences or financial details.
+                </p>
+                <button className="btn btn--primary" onClick={() => navigate({ to: '/' })}>
+                    Update Onboarding
                 </button>
             </div>
         );
