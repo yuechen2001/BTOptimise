@@ -41,3 +41,22 @@ resource "google_project_iam_member" "compute_sa_user" {
   role    = "roles/iam.serviceAccountUser"
   member  = local.compute_default_sa
 }
+
+# ── Public access to Cloud Run services ──────────────────────────────────────
+# Note: run terraform apply after the first Cloud Build deploy creates the services.
+
+resource "google_cloud_run_v2_service_iam_member" "frontend_public" {
+  project  = var.project_id
+  location = var.region
+  name     = "btoptimise-frontend"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+resource "google_cloud_run_v2_service_iam_member" "backend_public" {
+  project  = var.project_id
+  location = var.region
+  name     = "btoptimise-backend"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}

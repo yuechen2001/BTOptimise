@@ -18,7 +18,7 @@ Deployments are triggered manually via **Cloud Build**. On each deploy, Cloud Bu
 2. Pushes both images to Artifact Registry.
 3. Deploys the backend Cloud Run service with the MongoDB secret injected.
 4. Resolves the backend's live URL, then deploys the frontend with that URL set as an environment variable (used by nginx to proxy API calls).
-5. Grants public (`allUsers`) invoker access to both services.
+5. Deploys the frontend with the backend URL injected as an environment variable.
 
 To trigger a deploy, run `gcloud builds submit` from the repo root with the current git SHA as a substitution. No GCP console interaction is required after initial setup.
 
@@ -29,6 +29,8 @@ Team members without GCP access can trigger a deploy directly from GitHub. Go to
 ## Initial Setup (one-time)
 
 Before the first deploy, a human must run the bootstrap script (`infra/bootstrap.sh`) to enable GCP APIs and create the Terraform state bucket. Then `terraform apply` inside `infra/` provisions the remaining infrastructure. The MongoDB secret value must also be stored in Secret Manager manually.
+
+After the first successful deploy (which creates the Cloud Run services), run `terraform apply` once more — this sets the public `allUsers` IAM bindings on both services, which Terraform manages but can only apply once the services exist.
 
 ## Developer Guide
 
