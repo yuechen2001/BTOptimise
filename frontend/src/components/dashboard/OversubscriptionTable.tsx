@@ -10,6 +10,7 @@ export default function OversubscriptionTable() {
 
     const rows = useMemo(() => {
         if (!applicationRates || !projects) return [];
+        const normalizeFlatType = (flatType: string) => flatType.trim().toLowerCase();
 
         const data: {
             project: string;
@@ -23,7 +24,9 @@ export default function OversubscriptionTable() {
         }[] = [];
 
         for (const rate of applicationRates) {
-            if (filter !== 'all' && rate.flatType !== filter) continue;
+            if (filter !== 'all' && normalizeFlatType(rate.flatType) !== normalizeFlatType(filter)) {
+                continue;
+            }
 
             // Find matching project for classification and launch date
             const matchingProject = projects.find((p) => rate.projectCodes.includes(p.projectCode));
