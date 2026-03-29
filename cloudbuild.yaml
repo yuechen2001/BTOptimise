@@ -1,0 +1,111 @@
+substitutions:
+  _REGION: asia-southeast1
+  _PROJECT: btoptimise
+  _REGISTRY: asia-southeast1-docker.pkg.dev/btoptimise/btoptimise
+
+steps:
+  # ── Backend ──────────────────────────────────────────────────────────────────
+
+  - id: build-backend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - $_REGISTRY/backend:$COMMIT_SHA
+      - -t
+      - $_REGISTRY/backend:latest
+      - ./backend
+
+  - id: push-backend
+    name: gcr.io/cloud-builders/docker
+    args: [push, --all-tags, $_REGISTRY/backend]
+    waitFor: [build-backend]
+
+  - id: deploy-backend
+    name: gcr.io/cloud-builders/gcloud
+    args:
+      - run
+      - deploy
+      - btoptimise-backend
+      - --image=$_REGISTRY/backend:$COMMIT_SHA
+      - --region=$_REGION
+      - --allow-unauthenticated
+      - --port=5050
+      - --memory=512Mi
+      - --cpu=1
+      - --min-instances=0
+      - --max-instances=3
+      - --no-cpu-boost
+      - --set-secrets=MONGO_URI=mongo-uri:latest
+      - --service-account=btoptimise-backend@$_PROJECT.iam.gserviceaccount.com
+    waitFor: [push-backend]
+
+  # ── Frontend (build in parallel with backend) ─────────────────────────────
+
+  - id: build-frontend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - $_REGISTRY/frontend:$COMMIT_SHA
+      - -t
+      - $_REGISTRY/frontend:latest
+      - ./frontend
+    waitFor: ["-"]   # start immediately, no wait
+
+  - id: push-frontend
+    name: gcr.io/cloud-builders/docker
+    args: [push, --all-tags, $_REGISTRY/frontend]
+    waitFor: [build-frontend]
+
+  # ── Wire backend URL into frontend at deploy time ─────────────────────────
+
+  - id: get-backend-url
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud run services describe btoptimise-backend \
+          --region=$_REGION \
+          --format='value(status.url)' > /workspace/backend_url.txt
+        echo "Backend URL: $(cat /workspace/backend_url.txt)"
+    waitFor: [deploy-backend]
+
+  - id: deploy-frontend
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        BACKEND_URL=$(cat /workspace/backend_url.txt)
+        gcloud run deploy btoptimise-frontend \
+          --image=$_REGISTRY/frontend:$COMMIT_SHA \
+          --region=$_REGION \
+          --allow-unauthenticated \
+          --port=80 \
+          --memory=256Mi \
+          --cpu=1 \
+          --min-instances=0 \
+          --max-instances=3 \
+          --no-cpu-boost \
+          --set-env-vars="BACKEND_URL=$$BACKEND_URL" \
+          --service-account=btoptimise-frontend@$_PROJECT.iam.gserviceaccount.com
+        gcloud run services add-iam-policy-binding btoptimise-frontend \
+          --region=$_REGION \
+          --member="allUsers" \
+          --role="roles/run.invoker"
+        gcloud run services add-iam-policy-binding btoptimise-backend \
+          --region=$_REGION \
+          --member="allUsers" \
+          --role="roles/run.invoker"
+    waitFor: [push-frontend, get-backend-url]
+
+images:
+  - $_REGISTRY/backend:$COMMIT_SHA
+  - $_REGISTRY/backend:latest
+  - $_REGISTRY/frontend:$COMMIT_SHA
+  - $_REGISTRY/frontend:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
