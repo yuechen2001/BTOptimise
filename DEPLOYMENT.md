@@ -22,6 +22,10 @@ Deployments are triggered manually via **Cloud Build**. On each deploy, Cloud Bu
 
 To trigger a deploy, run `gcloud builds submit` from the repo root with the current git SHA as a substitution. No GCP console interaction is required after initial setup.
 
+### Deploying via GitHub Actions
+
+Team members without GCP access can trigger a deploy directly from GitHub. Go to **Actions → Deploy to Cloud Run → Run workflow**. This submits the same Cloud Build pipeline under the hood using a service account key stored in repository secrets (`GCP_SA_KEY`). No local GCP setup required.
+
 ## Initial Setup (one-time)
 
 Before the first deploy, a human must run the bootstrap script (`infra/bootstrap.sh`) to enable GCP APIs and create the Terraform state bucket. Then `terraform apply` inside `infra/` provisions the remaining infrastructure. The MongoDB secret value must also be stored in Secret Manager manually.
