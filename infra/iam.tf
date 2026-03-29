@@ -36,10 +36,17 @@ resource "google_project_iam_member" "compute_registry_writer" {
   member  = local.compute_default_sa
 }
 
-resource "google_project_iam_member" "compute_sa_user" {
-  project = var.project_id
-  role    = "roles/iam.serviceAccountUser"
-  member  = local.compute_default_sa
+# Scoped to only the two Cloud Run SAs Cloud Build needs to deploy as
+resource "google_service_account_iam_member" "compute_act_as_backend" {
+  service_account_id = google_service_account.backend.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = local.compute_default_sa
+}
+
+resource "google_service_account_iam_member" "compute_act_as_frontend" {
+  service_account_id = google_service_account.frontend.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = local.compute_default_sa
 }
 
 # ── Public access to Cloud Run services ──────────────────────────────────────
