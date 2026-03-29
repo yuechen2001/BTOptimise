@@ -42,7 +42,34 @@ export default function ComparisonMatrix() {
 
     const getColumnStyle = (colour: 'green' | 'yellow' | 'red') => ({
         background: columnTone[colour].background,
+        borderLeft: '1px solid rgba(148, 163, 184, 0.35)',
     });
+    const renderSectionHeader = (title: string) => (
+        <tr>
+            <td
+                colSpan={items.length + 1}
+                style={{
+                    background: '#f8fafc',
+                    borderTop: '1px solid var(--clr-border)',
+                    borderBottom: '1px solid var(--clr-border)',
+                    padding: '1rem',
+                }}
+            >
+                <div
+                    style={{
+                        fontSize: '0.95rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase',
+                        color: 'var(--clr-text)',
+                        marginBottom: 0,
+                    }}
+                >
+                    {title}
+                </div>
+            </td>
+        </tr>
+    );
 
     // Format launch date
     const formatLaunchDate = (dateStr: string | null): string => {
@@ -61,7 +88,8 @@ export default function ComparisonMatrix() {
                 <div>
                     <h2 className="section-title">Comparison</h2>
                     <p className="section-subtitle" style={{ marginBottom: 0 }}>
-                        Side-by-side breakdown of your shortlisted projects.
+                        Side-by-side view of your shortlisted projects, grouped into overview,
+                        financing, cash flow, and timeline.
                     </p>
                 </div>
                 <div className="flex-gap">
@@ -90,57 +118,54 @@ export default function ComparisonMatrix() {
                                     key={getResultIdentity(item)}
                                     style={getColumnStyle(item.selectedFlat.affordability.colour)}
                                 >
-                                    <div>{item.project.name}</div>
+                                    <div
+                                        style={{
+                                            fontSize: '1rem',
+                                            fontWeight: 700,
+                                            color: 'var(--clr-text)',
+                                            marginBottom: '0.25rem',
+                                            textTransform: 'none',
+                                            letterSpacing: '-0.01em',
+                                        }}
+                                    >
+                                        {item.project.name}
+                                    </div>
                                     <div
                                         style={{
                                             fontWeight: 400,
-                                            fontSize: '0.72rem',
+                                            fontSize: '0.78rem',
                                             textTransform: 'none',
                                             letterSpacing: 0,
+                                            color: 'var(--clr-text-secondary)',
                                         }}
                                     >
                                         {getFlatVariantLabel(item)}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            gap: '0.4rem',
+                                            flexWrap: 'wrap',
+                                            marginTop: '0.6rem',
+                                        }}
+                                    >
+                                        <span
+                                            className={`badge badge--${item.selectedFlat.affordability.colour}`}
+                                        >
+                                            {affordabilityLabel[item.selectedFlat.affordability.status]}
+                                        </span>
+                                        <span
+                                            className={`badge badge--${item.project.classification.toLowerCase()}`}
+                                        >
+                                            {item.project.classification}
+                                        </span>
                                     </div>
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {/* Backend affordability */}
-                        <tr>
-                            <td style={{ fontWeight: 600 }}>Affordability</td>
-                            {items.map((item) => (
-                                <td
-                                    key={`${getResultIdentity(item)}-class`}
-                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
-                                >
-                                    <span
-                                        className={`badge badge--${item.selectedFlat.affordability.colour}`}
-                                    >
-                                        {affordabilityLabel[item.selectedFlat.affordability.status]}
-                                    </span>
-                                </td>
-                            ))}
-                        </tr>
-
-                        {/* Project Classification */}
-                        <tr>
-                            <td style={{ fontWeight: 600 }}>Project Classification</td>
-                            {items.map((item) => (
-                                <td
-                                    key={`${getResultIdentity(item)}-pclass`}
-                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
-                                >
-                                    <span
-                                        className={`badge badge--${item.project.classification.toLowerCase()}`}
-                                    >
-                                        {item.project.classification}
-                                    </span>
-                                </td>
-                            ))}
-                        </tr>
-
-                        {/* Estate */}
+                        {renderSectionHeader('Overview')}
                         <tr>
                             <td>Estate</td>
                             {items.map((item) => (
@@ -152,8 +177,6 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        {/* Demand */}
                         <tr>
                             <td>Demand</td>
                             {items.map((item) => (
@@ -173,24 +196,7 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        <tr>
-                            <td>Floor Area</td>
-                            {items.map((item) => (
-                                <td
-                                    key={`${getResultIdentity(item)}-area`}
-                                    style={getColumnStyle(item.selectedFlat.affordability.colour)}
-                                >
-                                    {item.selectedFlat.estimatedFloorArea != null
-                                        ? `${item.selectedFlat.estimatedFloorArea} sqm`
-                                        : item.selectedFlat.estimatedInternalFloorArea != null
-                                          ? `${item.selectedFlat.estimatedInternalFloorArea} sqm`
-                                          : 'TBA'}
-                                </td>
-                            ))}
-                        </tr>
-
-                        {/* Price range */}
+                        {renderSectionHeader('Financing')}
                         <tr>
                             <td>Price Range</td>
                             {items.map((item) => (
@@ -206,8 +212,6 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        {/* Grant */}
                         <tr>
                             <td>Total Grant</td>
                             {items.map((item) => (
@@ -223,8 +227,6 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        {/* Loan */}
                         <tr>
                             <td>HDB Loan Amount</td>
                             {items.map((item) => (
@@ -237,8 +239,6 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        {/* Monthly instalment */}
                         <tr>
                             <td>Monthly Instalment</td>
                             {items.map((item) => (
@@ -251,8 +251,6 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        {/* MSR */}
                         <tr>
                             <td>MSR Usage</td>
                             {items.map((item) => (
@@ -276,22 +274,7 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        {/* Milestones header */}
-                        <tr>
-                            <td
-                                colSpan={items.length + 1}
-                                style={{
-                                    background: '#f8fafc',
-                                    fontWeight: 700,
-                                    fontSize: '0.78rem',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.04em',
-                                }}
-                            >
-                                Milestone Cash Flow
-                            </td>
-                        </tr>
+                        {renderSectionHeader('Cash Flow')}
                         {items[0].selectedFlat.financials.cashFlow.milestones.map((_, mi) => (
                             <tr key={`milestone-${mi}`}>
                                 <td>
@@ -302,9 +285,7 @@ export default function ComparisonMatrix() {
                                         key={`${getResultIdentity(item)}-m${mi}`}
                                         className="font-mono"
                                         style={{
-                                            ...getColumnStyle(
-                                                item.selectedFlat.affordability.colour
-                                            ),
+                                            ...getColumnStyle(item.selectedFlat.affordability.colour),
                                             fontSize: '0.82rem',
                                         }}
                                     >
@@ -331,8 +312,6 @@ export default function ComparisonMatrix() {
                                 ))}
                             </tr>
                         ))}
-
-                        {/* Totals */}
                         <tr>
                             <td style={{ fontWeight: 600 }}>Total Cash Required</td>
                             {items.map((item) => (
@@ -363,7 +342,6 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
                         <tr>
                             <td>Cash Shortfall</td>
                             {items.map((item) => (
@@ -376,7 +354,6 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
                         <tr>
                             <td>Monthly Income Buffer</td>
                             {items.map((item) => (
@@ -392,8 +369,7 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        {/* Completion */}
+                        {renderSectionHeader('Timeline')}
                         <tr>
                             <td>Est. Completion</td>
                             {items.map((item) => (
@@ -405,8 +381,6 @@ export default function ComparisonMatrix() {
                                 </td>
                             ))}
                         </tr>
-
-                        {/* Launch date */}
                         <tr>
                             <td>Launch Date</td>
                             {items.map((item) => (
