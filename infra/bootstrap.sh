@@ -4,9 +4,7 @@
 set -euo pipefail
 
 PROJECT_ID="btoptimise"
-PROJECT_NUMBER="119271118270"
 REGION="asia-southeast1"
-CLOUDBUILD_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
 
 echo "==> Setting active project"
 gcloud config set project "$PROJECT_ID"
@@ -23,20 +21,6 @@ echo "==> Creating Terraform state bucket"
 gsutil mb -p "$PROJECT_ID" -l "$REGION" "gs://${PROJECT_ID}-tfstate" 2>/dev/null \
   || echo "  Bucket already exists, skipping"
 gsutil versioning set on "gs://${PROJECT_ID}-tfstate"
-
-echo "==> Granting Cloud Build service account the permissions Terraform will also set"
-echo "    (needed for the very first 'gcloud builds submit' before terraform apply)"
-for ROLE in \
-  "roles/run.admin" \
-  "roles/artifactregistry.writer" \
-  "roles/iam.serviceAccountUser" \
-  "roles/secretmanager.viewer" \
-  "roles/storage.admin"; do
-  gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-    --member="serviceAccount:${CLOUDBUILD_SA}" \
-    --role="$ROLE" \
-    --quiet
-done
 
 echo ""
 echo "==> Bootstrap complete!"
