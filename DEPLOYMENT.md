@@ -30,8 +30,6 @@ Team members without GCP access can trigger a deploy directly from GitHub. Go to
 
 Before the first deploy, a human must run the bootstrap script (`infra/bootstrap.sh`) to enable GCP APIs and create the Terraform state bucket. Then `terraform apply` inside `infra/` provisions the remaining infrastructure. The MongoDB secret value must also be stored in Secret Manager manually.
 
-Connecting a GitHub trigger for automatic deploys on push requires a one-time OAuth step in the GCP console to authorise repository access.
-
 ## Developer Guide
 
 ### Monorepo structure
