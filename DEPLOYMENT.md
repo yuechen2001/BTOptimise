@@ -2,7 +2,7 @@
 
 ## Architecture
 
-BTOptimise runs as two public Cloud Run services on GCP (region: `asia-southeast1`):
+BTOptimise runs as two public Cloud Run services on GCP (region: `asia-southeast1`). Cloud Run is serverless — there are no VMs to manage. Google handles the underlying infrastructure, spinning containers up on incoming requests and back down when idle. Both services scale to zero when unused, meaning no cost when idle.
 
 - **Frontend** — React/Vite app served by nginx. All `/api/*` requests are proxied at runtime to the backend service URL via an nginx reverse proxy, so the frontend image is backend-URL-agnostic at build time.
 - **Backend** — Express/Node.js API on port 5050. Reads `MONGO_URI` from GCP Secret Manager at startup.
