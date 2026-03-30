@@ -1,5 +1,5 @@
 locals {
-  cloudbuild_sa = "serviceAccount:${var.project_number}@cloudbuild.gserviceaccount.com"
+  compute_default_sa = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
 }
 
 # ── Cloud Run service accounts ────────────────────────────────────────────────
@@ -22,29 +22,48 @@ resource "google_secret_manager_secret_iam_member" "backend_mongo" {
   member    = "serviceAccount:${google_service_account.backend.email}"
 }
 
-# ── Cloud Build: deploy Cloud Run ─────────────────────────────────────────────
+# ── Cloud Build (runs as Compute Engine default SA since 2024) ────────────────
 
-resource "google_project_iam_member" "cloudbuild_run_admin" {
+resource "google_project_iam_member" "compute_run_admin" {
   project = var.project_id
   role    = "roles/run.admin"
-  member  = local.cloudbuild_sa
+  member  = local.compute_default_sa
 }
 
-resource "google_project_iam_member" "cloudbuild_registry_writer" {
+resource "google_project_iam_member" "compute_registry_writer" {
   project = var.project_id
   role    = "roles/artifactregistry.writer"
-  member  = local.cloudbuild_sa
+  member  = local.compute_default_sa
 }
 
-# Cloud Build must be able to act as the Cloud Run service accounts
-resource "google_service_account_iam_member" "cloudbuild_act_as_backend" {
+# Scoped to only the two Cloud Run SAs Cloud Build needs to deploy as
+resource "google_service_account_iam_member" "compute_act_as_backend" {
   service_account_id = google_service_account.backend.name
   role               = "roles/iam.serviceAccountUser"
-  member             = local.cloudbuild_sa
+  member             = local.compute_default_sa
 }
 
-resource "google_service_account_iam_member" "cloudbuild_act_as_frontend" {
+resource "google_service_account_iam_member" "compute_act_as_frontend" {
   service_account_id = google_service_account.frontend.name
   role               = "roles/iam.serviceAccountUser"
-  member             = local.cloudbuild_sa
+  member             = local.compute_default_sa
+}
+
+# ── Public access to Cloud Run services ──────────────────────────────────────
+# Note: run terraform apply after the first Cloud Build deploy creates the services.
+
+resource "google_cloud_run_v2_service_iam_member" "frontend_public" {
+  project  = var.project_id
+  location = var.region
+  name     = "btoptimise-frontend"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+resource "google_cloud_run_v2_service_iam_member" "backend_public" {
+  project  = var.project_id
+  location = var.region
+  name     = "btoptimise-backend"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }

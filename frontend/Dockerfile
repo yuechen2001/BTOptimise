@@ -10,9 +10,7 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-# Bake /api as the API base URL so requests go through the nginx proxy
-ARG VITE_API_URL=/api
-ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_API_URL=/api
 RUN pnpm run build
 
 # ── Production stage (nginx) ──────────────────────────────────────────────────

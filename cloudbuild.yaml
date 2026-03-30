@@ -91,14 +91,6 @@ steps:
           --no-cpu-boost \
           --set-env-vars="BACKEND_URL=$$BACKEND_URL" \
           --service-account=btoptimise-frontend@$_PROJECT.iam.gserviceaccount.com
-        gcloud run services add-iam-policy-binding btoptimise-frontend \
-          --region=$_REGION \
-          --member="allUsers" \
-          --role="roles/run.invoker"
-        gcloud run services add-iam-policy-binding btoptimise-backend \
-          --region=$_REGION \
-          --member="allUsers" \
-          --role="roles/run.invoker"
     waitFor: [push-frontend, get-backend-url]
 
 images:

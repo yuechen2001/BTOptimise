@@ -2,7 +2,7 @@
 
 ## Architecture
 
-BTOptimise runs as two public Cloud Run services on GCP (region: `asia-southeast1`):
+BTOptimise runs as two public Cloud Run services on GCP (region: `asia-southeast1`). Cloud Run is serverless — there are no VMs to manage. Google handles the underlying infrastructure, spinning containers up on incoming requests and back down when idle. Both services scale to zero when unused, meaning no cost when idle.
 
 - **Frontend** — React/Vite app served by nginx. All `/api/*` requests are proxied at runtime to the backend service URL via an nginx reverse proxy, so the frontend image is backend-URL-agnostic at build time.
 - **Backend** — Express/Node.js API on port 5050. Reads `MONGO_URI` from GCP Secret Manager at startup.
@@ -18,15 +18,19 @@ Deployments are triggered manually via **Cloud Build**. On each deploy, Cloud Bu
 2. Pushes both images to Artifact Registry.
 3. Deploys the backend Cloud Run service with the MongoDB secret injected.
 4. Resolves the backend's live URL, then deploys the frontend with that URL set as an environment variable (used by nginx to proxy API calls).
-5. Grants public (`allUsers`) invoker access to both services.
+5. Deploys the frontend with the backend URL injected as an environment variable.
 
 To trigger a deploy, run `gcloud builds submit` from the repo root with the current git SHA as a substitution. No GCP console interaction is required after initial setup.
+
+### Deploying via GitHub Actions
+
+Team members without GCP access can trigger a deploy directly from GitHub. Go to **Actions → Deploy to Cloud Run → Run workflow**. This submits the same Cloud Build pipeline under the hood using a service account key stored in repository secrets (`GCP_SA_KEY`). No local GCP setup required.
 
 ## Initial Setup (one-time)
 
 Before the first deploy, a human must run the bootstrap script (`infra/bootstrap.sh`) to enable GCP APIs and create the Terraform state bucket. Then `terraform apply` inside `infra/` provisions the remaining infrastructure. The MongoDB secret value must also be stored in Secret Manager manually.
 
-Connecting a GitHub trigger for automatic deploys on push requires a one-time OAuth step in the GCP console to authorise repository access.
+After the first successful deploy (which creates the Cloud Run services), run `terraform apply` once more — this sets the public `allUsers` IAM bindings on both services, which Terraform manages but can only apply once the services exist.
 
 ## Developer Guide
 
