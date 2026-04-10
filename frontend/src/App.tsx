@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { AppProvider } from './context/AppContext';
 import Layout from './components/layout/Layout';
+import LandingPage from './pages/LandingPage';
 import OnboardingPage from './pages/OnboardingPage';
 import DashboardPage from './pages/DashboardPage';
 import ComparePage from './pages/ComparePage';
@@ -25,6 +26,12 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
+    component: LandingPage,
+});
+
+const onboardingRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/onboarding',
     component: OnboardingPage,
 });
 
@@ -48,6 +55,7 @@ const oversubscriptionRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
     indexRoute,
+    onboardingRoute,
     dashboardRoute,
     compareRoute,
     oversubscriptionRoute,

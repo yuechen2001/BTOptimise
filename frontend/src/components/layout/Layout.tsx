@@ -6,9 +6,11 @@ export default function Layout({ children }: { children: ReactNode }) {
     const { state, dispatch } = useAppState();
     const routerState = useRouterState();
     const pathname = routerState.location.pathname;
+    const isLandingPage = pathname === '/';
 
     const navItems = [
-        { to: '/' as const, label: 'Onboarding' },
+        { to: '/' as const, label: 'Home' },
+        { to: '/onboarding' as const, label: 'Onboarding' },
         { to: '/dashboard' as const, label: 'Dashboard' },
         { to: '/compare' as const, label: 'Compare' },
         { to: '/oversubscription' as const, label: 'Oversubscription' },
@@ -38,12 +40,16 @@ export default function Layout({ children }: { children: ReactNode }) {
                 </nav>
             </header>
 
-            <main className="layout__main">{children}</main>
+            <main className={`layout__main${isLandingPage ? ' layout__main--landing' : ''}`}>
+                {children}
+            </main>
 
-            <footer className="layout__footer">
-                BTOptimise — Prototype for educational purposes. Not financial advice. Data sourced
-                from HDB public releases.
-            </footer>
+            {!isLandingPage && (
+                <footer className="layout__footer">
+                    BTOptimise — Prototype for educational purposes. Not financial advice. Data
+                    sourced from HDB public releases.
+                </footer>
+            )}
         </div>
     );
 }
