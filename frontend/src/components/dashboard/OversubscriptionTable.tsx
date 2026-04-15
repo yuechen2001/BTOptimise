@@ -12,6 +12,10 @@ export default function OversubscriptionTable() {
         if (!applicationRates || !projects) return [];
         const normalizeFlatType = (flatType: string) => flatType.trim().toLowerCase();
 
+        const getFlatTypeParts = (flatType: string) => 
+            flatType.split('/').map((part) => normalizeFlatType(part)).filter(Boolean);
+        
+
         const data: {
             project: string;
             estate: string;
@@ -24,8 +28,13 @@ export default function OversubscriptionTable() {
         }[] = [];
 
         for (const rate of applicationRates) {
-            if (filter !== 'all' && normalizeFlatType(rate.flatType) !== normalizeFlatType(filter)) {
-                continue;
+            if (filter !== 'all') {
+                const selected = normalizeFlatType(filter);
+                const rateFlatTypes = getFlatTypeParts(rate.flatType);
+
+                if (!rateFlatTypes.includes(selected)) {
+                    continue;
+                }
             }
 
             // Find matching project for classification and launch date
