@@ -202,3 +202,123 @@ export interface SessionState {
     isLoading: boolean;
     error: string | null;
 }
+
+/* ───────────────────────── Timeline Visualizer Types ──────────────────── */
+
+export type IncomeGrowthScenario = 'conservative' | 'moderate' | 'aggressive';
+export type PropertyType = 'BTO' | 'Resale' | 'EC';
+export type ComparisonStrategy = 'apply_now' | 'wait_6m' | 'wait_12m' | 'wait_24m' | 'custom';
+export type AffordabilityLevel = 'comfortable' | 'stretch' | 'unaffordable';
+
+export interface TimelineConfig {
+    startYear: number;
+    endYear: number;
+    intervalMonths: number;
+    incomeGrowthScenario: IncomeGrowthScenario;
+    assumeEmploymentDate?: string;
+    assumedStartingSalary?: number;
+    currentMonthlyRent?: number;
+    includeOpportunityCost?: boolean;
+    cpfContributionRate?: number;
+    cashSavingsRate?: number;
+}
+
+export interface TimelineSnapshot {
+    date: string;
+    monthsFromNow: number;
+    projectedMonthlyIncome: number;
+    projectedPartnerMonthlyIncome?: number;
+    projectedCPFOA: number;
+    projectedCashSavings: number;
+    totalHouseholdIncome: number;
+    age: number;
+    partnerAge?: number;
+    employmentStatus: EmploymentStatus;
+    isDeferredIncome: boolean;
+    eligibility: EligibilityResult;
+    grants: GrantResult;
+    maxLoan: LoanResult;
+    affordabilityBands: AffordabilityBand[];
+    opportunityCost?: OpportunityCostSnapshot;
+}
+
+export interface AffordabilityBand {
+    flatType: FlatTypePreference;
+    classification: ProjectClassification;
+    priceRange: { min: number; max: number };
+    affordabilityLevel: AffordabilityLevel;
+    cashRequired: number;
+    cpfRequired: number;
+    monthlyInstalment: number;
+    cashShortfall: number;
+    bufferPercentage: number;
+}
+
+export interface OpportunityCostSnapshot {
+    cumulativeRentPaid: number;
+    cpfInterestGained: number;
+    netOpportunityCost: number;
+}
+
+export type MilestoneType =
+    | 'dia_expires'
+    | 'grant_tier_drop'
+    | 'grant_disqualified'
+    | 'optimal_application_window'
+    | 'bto_launch_cycle'
+    | 'income_milestone';
+
+export interface TimelineMilestone {
+    date: string;
+    monthsFromNow: number;
+    type: MilestoneType;
+    title: string;
+    description: string;
+    significance: 'critical' | 'important' | 'informational';
+    impactOnGrants?: number;
+    impactOnEligibility?: string;
+}
+
+export interface OptimalWindow {
+    startDate: string;
+    endDate: string;
+    reason: string;
+    grantAmount: number;
+    priority: 'high' | 'medium' | 'low';
+    expiryWarning?: string;
+}
+
+export interface ScenarioComparison {
+    scenarioName: string;
+    strategy: ComparisonStrategy;
+    applicationDate: string;
+    totalGrantsReceived: number;
+    totalCashRequired: number;
+    monthlyInstalment: number;
+    totalInterestPaid: number;
+    rentPaidBeforePurchase: number;
+    cpfInterestGainedFromWaiting: number;
+    netOpportunityCost: number;
+    keyCollectionDate: string;
+    affordabilityLevel: AffordabilityLevel;
+    cashShortfall: number;
+}
+
+export interface ProjectionAssumptions {
+    incomeGrowthRate: number;
+    cpfOAInterestRate: number;
+    cpfContributionRate: number;
+    cashSavingsRate: number;
+    rentInflationRate?: number;
+}
+
+export interface TimelineProjectionResult {
+    sessionId: string;
+    config: TimelineConfig;
+    generatedAt: string;
+    snapshots: TimelineSnapshot[];
+    milestones: TimelineMilestone[];
+    optimalApplicationWindows: OptimalWindow[];
+    scenarioComparisons: ScenarioComparison[];
+    assumptions: ProjectionAssumptions;
+}

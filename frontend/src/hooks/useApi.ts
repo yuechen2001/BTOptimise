@@ -18,12 +18,16 @@ import {
     simulateClawback,
     checkEligibility,
     calculateMatching,
+    generateTimelineProjection,
+    getOptimalWindows,
+    compareScenarios,
     type ProjectFilters,
     type ApplicationRateFilters,
     type SessionCreateInput,
     type FinancialCalculateInput,
     type ClawbackSimulationInput,
     type MatchingInput,
+    type TimelineProjectionInput,
     type Project,
     type ApplicationRate,
     type UserSession,
@@ -31,6 +35,9 @@ import {
     type ClawbackResult,
     type EligibilityCheckResult,
     type MatchingResponse,
+    type TimelineProjectionResult,
+    type OptimalWindowsResponse,
+    type ScenarioComparisonResponse,
 } from '../services/api';
 
 /* ─── Query Keys ───────────────────────────────────────────────────── */
@@ -56,6 +63,14 @@ export const queryKeys = {
             ['financial', 'calculation', input] as const,
         clawback: (input: ClawbackSimulationInput) => ['financial', 'clawback', input] as const,
         eligibility: (sessionId: string) => ['financial', 'eligibility', sessionId] as const,
+    },
+    timeline: {
+        all: ['timeline'] as const,
+        projection: (sessionId: string, config: string) =>
+            [...queryKeys.timeline.all, 'projection', sessionId, config] as const,
+        windows: (sessionId: string) => [...queryKeys.timeline.all, 'windows', sessionId] as const,
+        scenarios: (sessionId: string) =>
+            [...queryKeys.timeline.all, 'scenarios', sessionId] as const,
     },
 };
 
@@ -114,6 +129,13 @@ export function useUpdateSession() {
             updateSession(sessionId, updates),
         onSuccess: (data) => {
             queryClient.setQueryData(queryKeys.sessions.detail(data.sessionId), data);
+            // Invalidate timeline cache when profile is updated
+            queryClient.invalidateQueries({ queryKey: queryKeys.timeline.all });
+            
+            // Also invalidate localStorage timeline cache
+            import('../utils/timelineCache').then(({ invalidateTimelineCache }) => {
+                invalidateTimelineCache(data.sessionId);
+            });
         },
     });
 }
@@ -159,6 +181,65 @@ export function useCalculateMatching() {
     });
 }
 
+/* ─── Timeline Visualizer Hooks ────────────────────────────────────── */
+
+import type { TimelineConfig } from '../types';
+
+/**
+ * Generate timeline projection with financial snapshots
+ */
+export function useTimelineProjection(sessionId: string | null, config: TimelineConfig | null) {
+    const configKey = config ? JSON.stringify(config) : 'null';
+    
+    return useQuery({
+        queryKey: queryKeys.timeline.projection(sessionId || '', configKey),
+        queryFn: () => {
+            if (!sessionId || !config) {
+                throw new Error('Session ID and config are required');
+            }
+            return generateTimelineProjection({ sessionId, config });
+        },
+        enabled: !!sessionId && !!config,
+        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
+}
+
+/**
+ * Get optimal application windows for grant maximization (Story 2)
+ */
+export function useOptimalWindows(sessionId: string | null, scenario?: string) {
+    return useQuery({
+        queryKey: queryKeys.timeline.windows(sessionId || ''),
+        queryFn: () => {
+            if (!sessionId) {
+                throw new Error('Session ID is required');
+            }
+            return getOptimalWindows(sessionId, scenario);
+        },
+        enabled: !!sessionId,
+    });
+}
+
+/**
+ * Compare application timing scenarios (Story 6)
+ */
+export function useCompareScenarios(
+    sessionId: string | null,
+    includeOpportunityCost?: boolean,
+    currentMonthlyRent?: number
+) {
+    return useQuery({
+        queryKey: queryKeys.timeline.scenarios(sessionId || ''),
+        queryFn: () => {
+            if (!sessionId) {
+                throw new Error('Session ID is required');
+            }
+            return compareScenarios(sessionId, includeOpportunityCost, currentMonthlyRent);
+        },
+        enabled: !!sessionId,
+    });
+}
+
 /* ─── Type Exports ─────────────────────────────────────────────────── */
 
 export type {
@@ -169,9 +250,13 @@ export type {
     ClawbackResult,
     EligibilityCheckResult,
     MatchingResponse,
+    TimelineProjectionResult,
+    OptimalWindowsResponse,
+    ScenarioComparisonResponse,
     ProjectFilters,
     ApplicationRateFilters,
     SessionCreateInput,
     FinancialCalculateInput,
     ClawbackSimulationInput,
+    TimelineProjectionInput,
 };

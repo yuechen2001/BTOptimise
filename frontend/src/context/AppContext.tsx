@@ -1,10 +1,15 @@
 /**
  * Application-wide state management via React Context.
- * Holds the session ID, onboarding profile, matched results, and comparison selections.
+ * Holds the session ID, onboarding profile, matched results, comparison selections, and timeline config.
  */
 
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
-import type { UserProfile, ProjectAffordabilityResult, OnboardingState } from '../types';
+import type {
+    UserProfile,
+    ProjectAffordabilityResult,
+    OnboardingState,
+    TimelineConfig,
+} from '../types';
 import { getResultIdentity } from '../utils/resultIdentity';
 
 /* ─── Storage Keys ────────────────────────────────────────────────── */
@@ -18,6 +23,10 @@ interface AppState {
     onboarding: OnboardingState;
     results: ProjectAffordabilityResult[];
     comparison: ProjectAffordabilityResult[]; // up to 3
+    timeline: {
+        config: TimelineConfig | null;
+        selectedScenario: 'apply_now' | 'wait_6m' | 'wait_12m' | 'wait_24m';
+    };
     isLoading: boolean;
     error: string | null;
 }
@@ -31,6 +40,10 @@ const initialState: AppState = {
     },
     results: [],
     comparison: [],
+    timeline: {
+        config: null,
+        selectedScenario: 'apply_now',
+    },
     isLoading: false,
     error: null,
 };
@@ -45,6 +58,8 @@ type Action =
     | { type: 'SET_RESULTS'; results: ProjectAffordabilityResult[] }
     | { type: 'TOGGLE_COMPARISON'; result: ProjectAffordabilityResult }
     | { type: 'CLEAR_COMPARISON' }
+    | { type: 'SET_TIMELINE_CONFIG'; config: TimelineConfig }
+    | { type: 'SELECT_SCENARIO'; scenario: 'apply_now' | 'wait_6m' | 'wait_12m' | 'wait_24m' }
     | { type: 'SET_LOADING'; isLoading: boolean }
     | { type: 'SET_ERROR'; error: string | null }
     | { type: 'RESET' };
@@ -96,6 +111,18 @@ function reducer(state: AppState, action: Action): AppState {
 
         case 'CLEAR_COMPARISON':
             return { ...state, comparison: [] };
+
+        case 'SET_TIMELINE_CONFIG':
+            return {
+                ...state,
+                timeline: { ...state.timeline, config: action.config },
+            };
+
+        case 'SELECT_SCENARIO':
+            return {
+                ...state,
+                timeline: { ...state.timeline, selectedScenario: action.scenario },
+            };
 
         case 'SET_LOADING':
             return { ...state, isLoading: action.isLoading };

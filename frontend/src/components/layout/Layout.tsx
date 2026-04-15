@@ -13,6 +13,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         { to: '/onboarding' as const, label: 'Onboarding' },
         { to: '/dashboard' as const, label: 'Dashboard' },
         { to: '/compare' as const, label: 'Compare' },
+        { to: '/timeline' as const, label: 'Timeline' },
         { to: '/oversubscription' as const, label: 'Oversubscription' },
     ];
 
