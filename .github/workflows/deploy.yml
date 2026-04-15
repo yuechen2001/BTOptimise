@@ -1,30 +1,30 @@
 name: Deploy to Cloud Run
 
 on:
-  workflow_dispatch:
-    inputs:
-      reason:
-        description: "Reason for deploying (optional)"
-        required: false
+    workflow_dispatch:
+        inputs:
+            reason:
+                description: 'Reason for deploying (optional)'
+                required: false
 
 jobs:
-  deploy:
-    name: Submit Cloud Build
-    runs-on: ubuntu-latest
+    deploy:
+        name: Submit Cloud Build
+        runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-      - uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+            - uses: google-github-actions/auth@v2
+              with:
+                  credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - uses: google-github-actions/setup-gcloud@v2
+            - uses: google-github-actions/setup-gcloud@v2
 
-      - name: Submit build to Cloud Build
-        run: |
-          gcloud builds submit \
-            --config=cloudbuild.yaml \
-            --substitutions="COMMIT_SHA=${{ github.sha }}" \
-            --project=btoptimise \
-            .
+            - name: Submit build to Cloud Build
+              run: |
+                  gcloud builds submit \
+                    --config=cloudbuild.yaml \
+                    --substitutions="COMMIT_SHA=${{ github.sha }}" \
+                    --project=btoptimise \
+                    .

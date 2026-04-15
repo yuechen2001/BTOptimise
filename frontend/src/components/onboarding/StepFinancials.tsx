@@ -21,9 +21,7 @@ export default function StepFinancials() {
     const isDeferred = p.employmentStatus === 'student' || p.employmentStatus === 'nsf';
     const totalHouseholdIncome = (p.monthlyIncome ?? 0) + (p.partnerMonthlyIncome ?? 0);
     const exceedsCoupleIncomeCeiling =
-        !isDeferred &&
-        p.applicantType === 'couple' &&
-        totalHouseholdIncome > INCOME_CEILING_COUPLE;
+        !isDeferred && p.applicantType === 'couple' && totalHouseholdIncome > INCOME_CEILING_COUPLE;
 
     return (
         <div>

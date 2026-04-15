@@ -118,7 +118,10 @@ export function checkEligibility(session: IUserSession, flatType?: string): Elig
     if (!session.citizenship) {
         reasons.push('Citizenship status not provided');
         canPurchase = false;
-    } else if (session.applicantType === 'couple' && !['SC/SC', 'SC/PR'].includes(session.citizenship)) {
+    } else if (
+        session.applicantType === 'couple' &&
+        !['SC/SC', 'SC/PR'].includes(session.citizenship)
+    ) {
         reasons.push('At least one Singapore Citizen required');
         canPurchase = false;
     }
