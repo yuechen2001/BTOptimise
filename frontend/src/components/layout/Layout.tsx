@@ -18,27 +18,29 @@ export default function Layout({ children }: { children: ReactNode }) {
 
     return (
         <div className="layout">
-            <header className="layout__header">
-                <Link to="/" style={{ textDecoration: 'none' }}>
-                    <div className="layout__logo">
-                        BT<span>Optimise</span>
-                    </div>
-                </Link>
-                <nav className="layout__nav">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.to}
-                            to={item.to}
-                            className={pathname === item.to ? 'active' : ''}
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
-                    {state.onboarding.completed && (
-                        <button onClick={() => dispatch({ type: 'RESET' })}>Reset</button>
-                    )}
-                </nav>
-            </header>
+            {!isLandingPage && (
+                <header className="layout__header">
+                    <Link to="/" style={{ textDecoration: 'none' }}>
+                        <div className="layout__logo">
+                            BT<span>Optimise</span>
+                        </div>
+                    </Link>
+                    <nav className="layout__nav">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.to}
+                                to={item.to}
+                                className={pathname === item.to ? 'active' : ''}
+                            >
+                                {item.label}
+                            </Link>
+                        ))}
+                        {state.onboarding.completed && (
+                            <button onClick={() => dispatch({ type: 'RESET' })}>Reset</button>
+                        )}
+                    </nav>
+                </header>
+            )}
 
             <main className={`layout__main${isLandingPage ? ' layout__main--landing' : ''}`}>
                 {children}

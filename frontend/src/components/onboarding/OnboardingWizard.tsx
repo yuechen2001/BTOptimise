@@ -10,11 +10,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
 import type { UserProfile } from '../../types';
 import { ApiError } from '../../services/api';
-import {
-    useCreateSession,
-    useUpdateSession,
-    useCalculateMatching,
-} from '../../hooks/useApi';
+import { useCreateSession, useUpdateSession, useCalculateMatching } from '../../hooks/useApi';
 import StepDemographics from './StepDemographics';
 import StepFinancials from './StepFinancials';
 import StepPreferences from './StepPreferences';
@@ -60,7 +56,8 @@ export default function OnboardingWizard() {
             case 0: {
                 const ageValid =
                     p.age !== undefined &&
-                    p.age >= (p.applicantType === 'single' ? SINGLE_MINIMUM_AGE : COUPLE_MINIMUM_AGE);
+                    p.age >=
+                        (p.applicantType === 'single' ? SINGLE_MINIMUM_AGE : COUPLE_MINIMUM_AGE);
                 const partnerAgeValid =
                     p.applicantType !== 'couple' ||
                     (p.partnerAge !== undefined && p.partnerAge >= COUPLE_MINIMUM_AGE);

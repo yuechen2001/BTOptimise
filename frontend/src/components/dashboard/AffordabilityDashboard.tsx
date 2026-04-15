@@ -8,7 +8,9 @@ export default function AffordabilityDashboard() {
     const { state } = useAppState();
     const navigate = useNavigate();
     const results = state.results;
-    const [affordabilityFilter, setAffordabilityFilter] = useState<'all' | 'green' | 'yellow' | 'red'>('all');
+    const [affordabilityFilter, setAffordabilityFilter] = useState<
+        'all' | 'green' | 'yellow' | 'red'
+    >('all');
     const sortedResults = useMemo(() => {
         const affordabilityOrder = { green: 0, yellow: 1, red: 2 } as const;
 
@@ -44,13 +46,19 @@ export default function AffordabilityDashboard() {
 
     const counts = useMemo(() => {
         const green = results.filter((r) => r.selectedFlat.affordability.colour === 'green').length;
-        const yellow = results.filter((r) => r.selectedFlat.affordability.colour === 'yellow').length;
+        const yellow = results.filter(
+            (r) => r.selectedFlat.affordability.colour === 'yellow'
+        ).length;
         const red = results.filter((r) => r.selectedFlat.affordability.colour === 'red').length;
         return { green, yellow, red, total: results.length };
     }, [results]);
     const filterStyles = {
         all: {
-            active: { background: 'var(--clr-primary)', color: '#fff', borderColor: 'var(--clr-primary)' },
+            active: {
+                background: 'var(--clr-primary)',
+                color: '#fff',
+                borderColor: 'var(--clr-primary)',
+            },
             idle: {
                 background: 'var(--clr-surface)',
                 color: 'var(--clr-text)',
@@ -58,7 +66,11 @@ export default function AffordabilityDashboard() {
             },
         },
         green: {
-            active: { background: 'var(--clr-green)', color: '#fff', borderColor: 'var(--clr-green)' },
+            active: {
+                background: 'var(--clr-green)',
+                color: '#fff',
+                borderColor: 'var(--clr-green)',
+            },
             idle: {
                 background: 'var(--clr-green-bg)',
                 color: 'var(--clr-green)',
@@ -66,7 +78,11 @@ export default function AffordabilityDashboard() {
             },
         },
         yellow: {
-            active: { background: 'var(--clr-yellow)', color: '#fff', borderColor: 'var(--clr-yellow)' },
+            active: {
+                background: 'var(--clr-yellow)',
+                color: '#fff',
+                borderColor: 'var(--clr-yellow)',
+            },
             idle: {
                 background: 'var(--clr-yellow-bg)',
                 color: 'var(--clr-yellow)',
@@ -178,10 +194,7 @@ export default function AffordabilityDashboard() {
             {/* Cards grid */}
             <div className="grid-cards">
                 {filteredResults.map((r) => (
-                    <ProjectCard
-                        key={getResultIdentity(r)}
-                        result={r}
-                    />
+                    <ProjectCard key={getResultIdentity(r)} result={r} />
                 ))}
             </div>
         </div>

@@ -89,7 +89,8 @@ export default function ComparisonMatrix() {
                     <h2 className="section-title">Comparison</h2>
                     <p className="section-subtitle" style={{ marginBottom: 0 }}>
                         Side-by-side view of your shortlisted projects, grouped into overview,
-                        financing, cash flow, and timeline.
+                        financing, cash flow, and timeline. <br />
+                        <em>Note that all calculations are based on the minimum price.</em>
                     </p>
                 </div>
                 <div className="flex-gap">
@@ -152,7 +153,11 @@ export default function ComparisonMatrix() {
                                         <span
                                             className={`badge badge--${item.selectedFlat.affordability.colour}`}
                                         >
-                                            {affordabilityLabel[item.selectedFlat.affordability.status]}
+                                            {
+                                                affordabilityLabel[
+                                                    item.selectedFlat.affordability.status
+                                                ]
+                                            }
                                         </span>
                                         <span
                                             className={`badge badge--${item.project.classification.toLowerCase()}`}
@@ -285,7 +290,9 @@ export default function ComparisonMatrix() {
                                         key={`${getResultIdentity(item)}-m${mi}`}
                                         className="font-mono"
                                         style={{
-                                            ...getColumnStyle(item.selectedFlat.affordability.colour),
+                                            ...getColumnStyle(
+                                                item.selectedFlat.affordability.colour
+                                            ),
                                             fontSize: '0.82rem',
                                         }}
                                     >

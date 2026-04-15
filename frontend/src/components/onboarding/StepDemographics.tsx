@@ -31,6 +31,7 @@ export default function StepDemographics() {
                 applicantType,
                 partnerAge: undefined,
                 citizenship: 'SC',
+                preferredFlatTypes: ['2-Room Flexi'],
             });
             return;
         }
