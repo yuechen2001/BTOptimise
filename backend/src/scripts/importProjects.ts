@@ -1,6 +1,3 @@
-/**
- * Import Projects Script
- */
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -10,9 +7,6 @@ import Project, { IFlatType } from '../modules/projectCatalog/project.model';
 
 dotenv.config();
 
-/**
- * Interfaces
- */
 interface CsvRow {
     project_code?: string;
     name?: string;
@@ -40,9 +34,6 @@ interface GroupedProject {
     lastVerifiedAt: Date | null;
 }
 
-/**
- * Utility functions for parsing CSV data
- */
 function safeTrim(value: unknown): string | null {
     if (value === undefined || value === null) {
         return null;

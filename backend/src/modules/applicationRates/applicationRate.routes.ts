@@ -44,7 +44,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * GET /api/application-rates/:launchCode/:flatType
- * Example: /api/application-rates/Feb2026/3%20Room
+ * Example: /api/application-rates/FEB2026/3-room
  */
 router.get('/:launchCode/:flatType', async (req: Request, res: Response, next: NextFunction) => {
     try {

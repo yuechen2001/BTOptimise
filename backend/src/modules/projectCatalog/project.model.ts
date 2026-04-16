@@ -1,9 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
-/**
- * Interfaces
- */
-
 export interface IFlatType {
     type: string;
     estimatedFloorArea: number | null;
@@ -24,9 +20,6 @@ export interface IProject extends Document {
     lastVerifiedAt: Date | null;
 }
 
-/**
- * Schemas
- */
 const FlatTypeSchema = new Schema<IFlatType>(
     {
         type: { type: String, required: true },

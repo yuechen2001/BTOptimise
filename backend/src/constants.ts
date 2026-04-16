@@ -18,28 +18,20 @@ export const SESSION_ALLOWED_FIELDS = [
 
 /* ─── Financial Rules Constants ────────────────────────────────────── */
 
-/** HDB concessionary loan interest rate (CPF OA rate + 0.1%) */
-export const HDB_LOAN_INTEREST_RATE = 0.026; // 2.6% p.a.
+export const HDB_LOAN_INTEREST_RATE = 0.026;
 
-/** Maximum Mortgage Servicing Ratio - capped at 30% of gross monthly income */
 export const MAX_MSR = 0.3;
 
-/** HDB Loan-to-Value ratio (updated Aug 2024) */
-export const HDB_LTV_RATIO = 0.75; // 75% of purchase price
+export const HDB_LTV_RATIO = 0.75;
 
-/** Maximum loan tenure for HDB loans */
 export const MAX_LOAN_TENURE_YEARS = 25;
 
-/** Enhanced CPF Housing Grant income ceiling */
 export const EHG_INCOME_CEILING = 9000;
 
-/** Income ceiling for couples purchasing 3-room or larger */
 export const INCOME_CEILING_COUPLE = 14000;
 
-/** Income ceiling for singles purchasing 2-room Flexi */
 export const INCOME_CEILING_SINGLE = 7000;
 
-/** Enhanced CPF Housing Grant quantum table (income ceiling -> grant amount) */
 export const EHG_TABLE: [number, number][] = [
     [1500, 120000],
     [2000, 105000],
@@ -59,7 +51,6 @@ export const EHG_TABLE: [number, number][] = [
     [9000, 5000],
 ];
 
-/** Option fee amounts by flat type */
 export const OPTION_FEE_BY_FLAT_TYPE: Record<string, number> = {
     '2-Room Flexi': 500,
     '3-Room': 1000,
@@ -68,10 +59,8 @@ export const OPTION_FEE_BY_FLAT_TYPE: Record<string, number> = {
     '3Gen': 2000,
 };
 
-/** Plus flat lock-in period in years */
 export const PLUS_FLAT_LOCK_IN_YEARS = 10;
 
-/** Prime flat lock-in period in years */
 export const PRIME_FLAT_LOCK_IN_YEARS = 6;
 
 export const APPLICANT_TYPES = ['single', 'couple'] as const;

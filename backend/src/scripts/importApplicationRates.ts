@@ -1,6 +1,3 @@
-/**
- * Import application rates from CSV file into MongoDB
- */
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -10,9 +7,6 @@ import ApplicationRate from '../modules/applicationRates/applicationRate.model';
 
 dotenv.config();
 
-/**
- * Interfaces
- */
 interface CsvRow {
     launch_code?: string;
     estate?: string;
@@ -30,9 +24,6 @@ interface CsvRow {
     last_verified_at?: string;
 }
 
-/**
- * Utility functions to trim data and parse them
- */
 function safeTrim(value: unknown): string | null {
     if (value === undefined || value === null) {
         return null;
