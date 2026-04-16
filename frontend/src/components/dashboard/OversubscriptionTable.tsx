@@ -12,7 +12,6 @@ export default function OversubscriptionTable() {
         if (!applicationRates || !projects) return [];
         const normalizeFlatType = (flatType: string) => flatType.trim().toLowerCase();
 
-        // Accounts for application rates with multiple flat types ("5-Room / 3Gen")
         const getFlatTypeParts = (flatType: string) =>
             flatType
                 .split('/')

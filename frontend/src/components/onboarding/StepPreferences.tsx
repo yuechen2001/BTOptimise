@@ -35,7 +35,6 @@ export default function StepPreferences() {
     const { state, dispatch } = useAppState();
     const p = state.onboarding.profile;
 
-    // Ensure preferred flat types are valid for applicant type (singles can only select 2-Room Flexi)
     const availableFlatTypes = p.applicantType === 'single' ? ['2-Room Flexi'] : FLAT_TYPES;
     const selectedFlatTypes = (p.preferredFlatTypes ?? []).filter((ft) =>
         availableFlatTypes.includes(ft)
@@ -43,7 +42,6 @@ export default function StepPreferences() {
     const selectedRegions = p.preferredRegions ?? [];
 
     function toggleFlatType(ft: FlatTypePreference) {
-        // Prevent singles from selecting other flat types
         if (p.applicantType === 'single' && ft !== '2-Room Flexi') {
             return;
         }
@@ -79,8 +77,7 @@ export default function StepPreferences() {
                 </span>
                 <div className="check-group">
                     {FLAT_TYPES.map((ft) => {
-                        const isDisabled =
-                            p.applicantType === 'single' && ft !== '2-Room Flexi';
+                        const isDisabled = p.applicantType === 'single' && ft !== '2-Room Flexi';
 
                         return (
                             <label

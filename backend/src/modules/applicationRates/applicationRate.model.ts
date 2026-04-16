@@ -1,9 +1,3 @@
-/**
- * ApplicationRate model definition using Mongoose
- * Defines schema and model for application rates data
- * Fields include launch code, estate, project group, flat type, number of units, number of applicants, application rates for different categories, and timestamps
- * Indexes are set on launch code, estate, and flat type for efficient querying
- */
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IApplicationRate extends Document {
@@ -18,8 +12,8 @@ export interface IApplicationRate extends Document {
     firstTimerFamiliesAppRate: number | null;
     firstTimerSinglesAppRate: number | null;
     secondTimerFamiliesAppRate: number | null;
-    overallAppRate: number | null; // number of applicants / number of units
-    sourceAsOf: string | null; // source date of data retrieved
+    overallAppRate: number | null;
+    sourceAsOf: string | null;
     lastVerifiedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
@@ -51,7 +45,6 @@ const ApplicationRateSchema = new Schema<IApplicationRate>(
     }
 );
 
-// Compound the index to ensure uniqueness of application rate data
 ApplicationRateSchema.index({ launchCode: 1, estate: 1, flatType: 1 }, { unique: true });
 
 const ApplicationRate: Model<IApplicationRate> = mongoose.model<IApplicationRate>(

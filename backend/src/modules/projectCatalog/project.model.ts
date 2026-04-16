@@ -1,16 +1,9 @@
-/**
- * Project Model
- * Defines the structure of the Project documents in MongoDB using Mongoose.
- */
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 /**
  * Interfaces
  */
 
-/**
- * IFlatType represents the structure of each flat type within a project, including details such as floor area and price range.
- */
 export interface IFlatType {
     type: string;
     estimatedFloorArea: number | null;
@@ -20,9 +13,6 @@ export interface IFlatType {
     unitCount: number | null;
 }
 
-/**
- * IProject represents the structure of a project document in MongoDB.
- */
 export interface IProject extends Document {
     projectCode: string;
     name: string;
@@ -67,9 +57,6 @@ const ProjectSchema = new Schema<IProject>(
     { timestamps: true }
 );
 
-/**
- * Adding indexes to optimize queries based on estate, classification, and flat type.
- */
 ProjectSchema.index({ estate: 1, classification: 1 });
 ProjectSchema.index({ 'flatTypes.type': 1 });
 

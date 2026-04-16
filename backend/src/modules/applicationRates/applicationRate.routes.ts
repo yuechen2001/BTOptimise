@@ -1,12 +1,3 @@
-/**
- * Application Rate Routes
- *
- * Endpoints:
- * - GET /api/application-rates: Retrieve a list of application rates with optional filters (launchCode, estate, flatType, projectCode).
- * - GET /api/application-rates/:launchCode/:flatType: Retrieve a specific application rate by launch code and flat type.
- *
- * The routes use the ApplicationRate model to query the MongoDB database and return the results in JSON format.
- */
 import express, { Request, Response, NextFunction } from 'express';
 import ApplicationRate from './applicationRate.model';
 
@@ -53,8 +44,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * GET /api/application-rates/:launchCode/:flatType
- * Retrieves a specific application rate by launch code and flat type.
- * Example: /api/application-rates/LC123/3%20Room
+ * Example: /api/application-rates/Feb2026/3%20Room
  */
 router.get('/:launchCode/:flatType', async (req: Request, res: Response, next: NextFunction) => {
     try {
