@@ -1,7 +1,5 @@
 /**
  * Import application rates from CSV file into MongoDB
- *
- * Reads application rates data, process it and then uploads to MongoDB using the ApplicationRate model.
  */
 import dotenv from 'dotenv';
 import fs from 'fs';
@@ -35,7 +33,6 @@ interface CsvRow {
 /**
  * Utility functions to trim data and parse them
  */
-// Trims the string and returns null if the value is undefined, null, or an empty string after trimming.
 function safeTrim(value: unknown): string | null {
     if (value === undefined || value === null) {
         return null;
@@ -44,9 +41,6 @@ function safeTrim(value: unknown): string | null {
     return trimmed === '' ? null : trimmed;
 }
 
-/**
- * Parses the string to convert it into a number if the field is a number
- */
 function parseNumber(value: unknown): number | null {
     const trimmed = safeTrim(value);
 
@@ -58,9 +52,6 @@ function parseNumber(value: unknown): number | null {
     return cleaned ? Number(cleaned) : null;
 }
 
-/**
- * Parses a date string in the format "DD/MM/YYYY" and returns a date object.
- */
 function parseDateDDMMYYYY(value: unknown): Date | null {
     const v = safeTrim(value);
     if (!v) {
@@ -82,11 +73,6 @@ function parseDateDDMMYYYY(value: unknown): Date | null {
     return new Date(year, month - 1, day);
 }
 
-/**
- * Parses the project codes string, splitting by "|" and trimming each code.
- * It then returns an array of project codes.
- * Due to the nature of application rates provided by HDB, there are projects grouped together for particular flat types.
- */
 function parseProjectCodes(value: unknown): string[] {
     const trimmed = safeTrim(value);
     if (!trimmed) {
@@ -99,9 +85,6 @@ function parseProjectCodes(value: unknown): string[] {
         .filter(Boolean);
 }
 
-/**
- *  Reads the CSV file and then returns an array of rows.
- */
 async function readCsv(filePath: string): Promise<CsvRow[]> {
     const rows: CsvRow[] = [];
 
@@ -156,7 +139,6 @@ async function run(): Promise<void> {
             continue;
         }
 
-        // Update existing document if it exists, otherwise create a new one
         await ApplicationRate.updateOne(
             { launchCode, projectGroup, flatType },
             {

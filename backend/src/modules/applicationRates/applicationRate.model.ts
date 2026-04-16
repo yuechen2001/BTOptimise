@@ -22,7 +22,6 @@ export interface IApplicationRate extends Document {
 /**
  * Schemas
  */
-// Schema for application rates data
 const ApplicationRateSchema = new Schema<IApplicationRate>(
     {
         launchCode: { type: String, required: true, index: true },
