@@ -112,7 +112,22 @@ export default function ComparisonMatrix() {
         background: columnTone[colour].background,
         borderLeft: '1px solid rgba(148, 163, 184, 0.35)',
     });
-    const renderSectionHeader = (title: string) => (
+
+    const getCashFlowStageTooltip = (stage: string) => {
+        const normalizedStage = stage.trim().toLowerCase();
+        const shouldShowTooltip =
+            normalizedStage.includes('option fee') ||
+            normalizedStage.includes('signing of agreement') ||
+            normalizedStage.includes('key collection');
+
+        if (!shouldShowTooltip) {
+            return null;
+        }
+
+        return 'Cash is the minimum amount you need to pay out-of-pocket, while CPF is the maximum amount that can be paid using CPF at this stage.';
+    };
+
+    const renderSectionHeader = (title: string, tooltipText?: string) => (
         <tr>
             <td
                 colSpan={items.length + 1}
@@ -125,15 +140,19 @@ export default function ComparisonMatrix() {
             >
                 <div
                     style={{
+                        alignItems: 'center',
                         fontSize: '0.95rem',
                         fontWeight: 800,
+                        gap: '0.45rem',
                         letterSpacing: '0.04em',
+                        display: 'inline-flex',
                         textTransform: 'uppercase',
                         color: 'var(--clr-text)',
                         marginBottom: 0,
                     }}
                 >
                     {title}
+                    {tooltipText ? <InfoTooltip text={tooltipText} /> : null}
                 </div>
             </td>
         </tr>
@@ -328,7 +347,7 @@ export default function ComparisonMatrix() {
                             <td>
                                 <span className="metric-with-help">
                                     MSR Usage
-                                    <InfoTooltip text="MSR = Mortgage Servicing Ratio" />
+                                    <InfoTooltip text="Mortgage Servicing Ratio" />
                                 </span>
                             </td>
                             {items.map((item) => (
@@ -356,7 +375,22 @@ export default function ComparisonMatrix() {
                         {items[0].selectedFlat.financials.cashFlow.milestones.map((_, mi) => (
                             <tr key={`milestone-${mi}`}>
                                 <td>
-                                    {items[0].selectedFlat.financials.cashFlow.milestones[mi].stage}
+                                    <span className="metric-with-help">
+                                        {items[0].selectedFlat.financials.cashFlow.milestones[mi].stage}
+                                        {getCashFlowStageTooltip(
+                                            items[0].selectedFlat.financials.cashFlow.milestones[mi]
+                                                .stage
+                                        ) ? (
+                                            <InfoTooltip
+                                                text={
+                                                    getCashFlowStageTooltip(
+                                                        items[0].selectedFlat.financials.cashFlow
+                                                            .milestones[mi].stage
+                                                    )!
+                                                }
+                                            />
+                                        ) : null}
+                                    </span>
                                 </td>
                                 {items.map((item) => (
                                     <td
