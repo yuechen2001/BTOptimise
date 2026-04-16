@@ -319,6 +319,16 @@ a:hover {
     color: var(--clr-primary);
     font-weight: 600;
 }
+.check-chip.disabled {
+    background: var(--clr-surface);
+    border-color: var(--clr-border);
+    color: var(--clr-text-secondary);
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+.check-chip.disabled:hover {
+    border-color: var(--clr-border);
+}
 .check-chip input {
     display: none;
 }
