@@ -1,9 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
 import { getFlatVariantLabel, getResultIdentity } from '../../utils/resultIdentity';
 
-function InfoTooltip({ text }: { text: string }) {
+function TooltipTrigger({
+    text,
+    children,
+    triggerClassName,
+}: {
+    text: string;
+    children: ReactNode;
+    triggerClassName: string;
+}) {
     const [isOpen, setIsOpen] = useState(false);
     const [isFocusVisible, setIsFocusVisible] = useState(false);
     const wrapperRef = useRef<HTMLSpanElement | null>(null);
@@ -47,7 +55,7 @@ function InfoTooltip({ text }: { text: string }) {
         >
             <button
                 type="button"
-                className="metric-help__button"
+                className={triggerClassName}
                 aria-label={text}
                 aria-expanded={isOpen}
                 onFocus={(event) => {
@@ -61,12 +69,28 @@ function InfoTooltip({ text }: { text: string }) {
                     setIsOpen((current) => !current);
                 }}
             >
-                i
+                {children}
             </button>
             <span className="metric-help__tooltip" role="tooltip">
                 {text}
             </span>
         </span>
+    );
+}
+
+function InfoTooltip({ text }: { text: string }) {
+    return (
+        <TooltipTrigger text={text} triggerClassName="metric-help__button">
+            i
+        </TooltipTrigger>
+    );
+}
+
+function TextTooltip({ text, children }: { text: string; children: ReactNode }) {
+    return (
+        <TooltipTrigger text={text} triggerClassName="metric-help__text-trigger">
+            {children}
+        </TooltipTrigger>
     );
 }
 
@@ -346,8 +370,8 @@ export default function ComparisonMatrix() {
                         <tr>
                             <td>
                                 <span className="metric-with-help">
-                                    MSR Usage
-                                    <InfoTooltip text="Mortgage Servicing Ratio" />
+                                    <TextTooltip text="Mortgage Servicing Ratio">MSR</TextTooltip>
+                                    <span>Usage</span>
                                 </span>
                             </td>
                             {items.map((item) => (
