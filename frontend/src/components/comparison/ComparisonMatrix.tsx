@@ -1,6 +1,74 @@
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
 import { getFlatVariantLabel, getResultIdentity } from '../../utils/resultIdentity';
+
+function InfoTooltip({ text }: { text: string }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isFocusVisible, setIsFocusVisible] = useState(false);
+    const wrapperRef = useRef<HTMLSpanElement | null>(null);
+    const isTouchLikeDevice = () =>
+        typeof window !== 'undefined' &&
+        window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+    useEffect(() => {
+        if (!isOpen) {
+            return;
+        }
+
+        const handlePointerDown = (event: PointerEvent) => {
+            if (!wrapperRef.current?.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen]);
+
+    return (
+        <span
+            ref={wrapperRef}
+            className={`metric-help${isOpen ? ' is-open' : ''}${
+                isFocusVisible ? ' is-focus-visible' : ''
+            }`}
+            onMouseLeave={() => setIsOpen(false)}
+        >
+            <button
+                type="button"
+                className="metric-help__button"
+                aria-label={text}
+                aria-expanded={isOpen}
+                onFocus={(event) => {
+                    setIsFocusVisible(event.currentTarget.matches(':focus-visible'));
+                }}
+                onBlur={() => setIsFocusVisible(false)}
+                onClick={() => {
+                    if (!isTouchLikeDevice()) {
+                        return;
+                    }
+                    setIsOpen((current) => !current);
+                }}
+            >
+                i
+            </button>
+            <span className="metric-help__tooltip" role="tooltip">
+                {text}
+            </span>
+        </span>
+    );
+}
 
 export default function ComparisonMatrix() {
     const { state, dispatch } = useAppState();
@@ -257,7 +325,12 @@ export default function ComparisonMatrix() {
                             ))}
                         </tr>
                         <tr>
-                            <td>MSR Usage</td>
+                            <td>
+                                <span className="metric-with-help">
+                                    MSR Usage
+                                    <InfoTooltip text="MSR = Mortgage Servicing Ratio" />
+                                </span>
+                            </td>
                             {items.map((item) => (
                                 <td
                                     key={`${getResultIdentity(item)}-msr`}
