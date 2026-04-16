@@ -479,13 +479,9 @@ export function calculateFinancials(
     flatPrice: number,
     flatType: string
 ): FinancialCalculationResult {
-    // 1. Eligibility check
     const eligibility = checkEligibility(session, flatType);
-
-    // 2. Calculate grants
     const grants = calculateEHG(session);
 
-    // 3. Calculate cash flow
     const cashFlow = calculateCashFlow(
         flatPrice,
         grants.totalGrant,
@@ -496,11 +492,9 @@ export function calculateFinancials(
         session.employmentStatus
     );
 
-    // 4. Calculate loan (actual)
     const totalDownpayment = cashFlow.totalCashRequired + cashFlow.totalCPFRequired;
     const loan = calculateActualLoan(session, flatPrice, grants.totalGrant, totalDownpayment);
 
-    // 5. Check affordability
     const totalIncome = getTotalIncome(session);
     const affordability = checkAffordability(
         cashFlow,

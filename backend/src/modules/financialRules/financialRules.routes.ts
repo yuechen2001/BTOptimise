@@ -60,7 +60,6 @@ router.post('/calculate', async (req: Request, res: Response) => {
             });
         }
 
-        // Fetch user session
         const session = await UserSession.findOne({ sessionId });
         if (!session) {
             return res.status(404).json({

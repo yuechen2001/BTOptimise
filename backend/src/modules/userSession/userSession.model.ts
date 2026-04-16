@@ -31,26 +31,24 @@ import {
     type Region,
 } from '../../constants';
 
-/* ─── Interface ────────────────────────────────────────────────────────── */
-
 export interface IUserSession extends Document {
     sessionId: string;
 
-    /* Step 1 – Demographics */
+    /* Demographics */
     applicantType?: ApplicantType;
     age?: number;
     partnerAge?: number;
     citizenship?: CitizenshipStatus;
     firstTimer?: boolean;
 
-    /* Step 2 – Financials */
+    /* Financials */
     employmentStatus?: EmploymentStatus;
     monthlyIncome?: number;
     partnerMonthlyIncome?: number;
     cpfOA?: number;
     cashSavings?: number;
 
-    /* Step 3 – Preferences */
+    /* Preferences */
     preferredFlatTypes?: FlatTypePreference[];
     preferredRegions?: Region[];
     maxBudget?: number;
@@ -58,11 +56,8 @@ export interface IUserSession extends Document {
     /* Derived — set server-side, never accepted from client */
     deferredIncomeAssessment: boolean;
 
-    /* TTL */
     expiresAt: Date;
 }
-
-/* ─── Schema ───────────────────────────────────────────────────────────── */
 
 const UserSessionSchema = new Schema<IUserSession>(
     {
@@ -90,8 +85,6 @@ const UserSessionSchema = new Schema<IUserSession>(
     },
     { timestamps: true }
 );
-
-/* ─── Model ────────────────────────────────────────────────────────────── */
 
 const UserSession: Model<IUserSession> = mongoose.model<IUserSession>(
     'UserSession',
