@@ -27,7 +27,6 @@ const router = express.Router();
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
 
-/** Returns true if the employment status qualifies for deferred income assessment. */
 function isDeferredIncome(employmentStatus?: string): boolean {
     return employmentStatus === 'student' || employmentStatus === 'nsf';
 }

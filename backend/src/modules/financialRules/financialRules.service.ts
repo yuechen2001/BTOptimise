@@ -84,17 +84,10 @@ export interface FinancialCalculationResult {
 }
 
 /* ─── Helper Functions ─────────────────────────────────────────────── */
-
-/**
- * Returns true if the employment status qualifies for deferred income assessment.
- */
 function isDeferredIncome(employmentStatus?: string): boolean {
     return employmentStatus === 'student' || employmentStatus === 'nsf';
 }
 
-/**
- * Calculate total household income from session.
- */
 function getTotalIncome(session: IUserSession): number {
     return (session.monthlyIncome || 0) + (session.partnerMonthlyIncome || 0);
 }
