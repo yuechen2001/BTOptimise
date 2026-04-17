@@ -3,9 +3,11 @@ import ApplicationRate from './applicationRate.model';
 
 const router = express.Router();
 
-// GET /api/application-rates
-// Optional query parameters: launchCode, estate, flatType, projectCode
-// Example: /api/application-rates?estate=Estate%20A&flatType=3%20Room
+/**
+ * GET /api/application-rates
+ * Optional query parameters: launchCode, estate, flatType, projectCode
+ * Example: /api/application-rates?estate=Bukit%20Merah&flatType=3-room
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { launchCode, estate, flatType, projectCode } = req.query;

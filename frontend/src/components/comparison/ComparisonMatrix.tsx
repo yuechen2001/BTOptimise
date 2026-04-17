@@ -400,7 +400,10 @@ export default function ComparisonMatrix() {
                             <tr key={`milestone-${mi}`}>
                                 <td>
                                     <span className="metric-with-help">
-                                        {items[0].selectedFlat.financials.cashFlow.milestones[mi].stage}
+                                        {
+                                            items[0].selectedFlat.financials.cashFlow.milestones[mi]
+                                                .stage
+                                        }
                                         {getCashFlowStageTooltip(
                                             items[0].selectedFlat.financials.cashFlow.milestones[mi]
                                                 .stage

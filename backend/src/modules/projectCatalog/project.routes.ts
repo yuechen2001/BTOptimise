@@ -5,6 +5,8 @@ const router = express.Router();
 
 /**
  * GET /api/projects
+ * Optional query parameters: estate, classification, flatType
+ * Example: /api/projects?estate=Bukit%20Merah&flatType=3-room
  */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -38,6 +40,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * GET /api/projects/:projectCode
+ * Example: /api/projects/OCT2025-BERLAYAR-RESIDENCES
  */
 router.get('/:projectCode', async (req: Request, res: Response, next: NextFunction) => {
     try {
