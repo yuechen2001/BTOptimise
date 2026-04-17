@@ -5,7 +5,6 @@ import applicationRateRoutes from './modules/applicationRates/applicationRate.ro
 import userSessionRoutes from './modules/userSession/userSession.routes';
 import financialRulesRoutes from './modules/financialRules/financialRules.routes';
 import matchingRecommendationRules from './modules/matchingRecommendation/matchingRecommendation.routes';
-import { match } from 'node:assert';
 
 const app = express();
 
