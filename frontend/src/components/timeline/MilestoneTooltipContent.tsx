@@ -1,15 +1,3 @@
-/**
- * Milestone Tooltip Content Component
- *
- * Compact tooltip view showing key milestone information:
- * - Icon and title
- * - Date
- * - Payment amount (if applicable)
- * - Affordability badge
- *
- * Designed for hover interactions with max-width constraint.
- */
-
 import type { TimelineMilestone } from '../../types';
 
 interface MilestoneTooltipContentProps {

@@ -1,13 +1,3 @@
-/**
- * Project Selector Component
- *
- * Manages project selection for timeline comparison:
- * - Shows currently selected projects (max 3)
- * - Remove button for each project
- * - Add Project button to select from Dashboard projects
- * - Integrates with AppContext for state management
- */
-
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
 import type { ProjectTimelineRequest } from '../../types';
@@ -123,10 +113,6 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
     );
 }
 
-/**
- * Project Card Component
- * Displays a single selected project with remove button
- */
 interface ProjectCardProps {
     project: ProjectTimelineRequest;
     onRemove: () => void;
@@ -233,18 +219,15 @@ function ProjectCard({ project, onRemove }: ProjectCardProps) {
     );
 }
 
-/**
- * Helper: Get color for project classification badge
- */
 function getClassificationColor(classification?: string): string {
     switch (classification) {
         case 'Prime':
-            return '#8B5CF6'; // Purple
+            return '#8B5CF6';
         case 'Plus':
-            return '#3B82F6'; // Blue
+            return '#3B82F6';
         case 'Standard':
-            return '#10B981'; // Green
+            return '#10B981';
         default:
-            return '#6B7280'; // Gray
+            return '#6B7280';
     }
 }

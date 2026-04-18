@@ -53,7 +53,6 @@ export default function TimelineVisualizer() {
         refetch();
     };
 
-    // Handle sidebar toggle
     const handleSidebarToggle = () => {
         setSidebarOpen((prev) => !prev);
     };

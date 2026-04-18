@@ -1,14 +1,3 @@
-/**
- * Milestone Details Panel Component
- *
- * Displays detailed information about a selected milestone:
- * - Milestone type, date, and description
- * - Payment amount (if applicable)
- * - Cash and CPF breakdown (if applicable)
- * - Affordability status
- * - Context-specific warnings and recommendations
- */
-
 import type { TimelineMilestone } from '../../types';
 
 interface MilestoneDetailsPanelProps {

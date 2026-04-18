@@ -1,12 +1,3 @@
-/**
- * Collapsible Sidebar Component
- *
- * Responsive sidebar for timeline configuration:
- * - Desktop: 280px width sidebar on left (collapsible to 60px)
- * - Mobile: Full-width panel at top (collapsible accordion)
- * - Smooth transitions for open/close
- */
-
 import type { ReactNode } from 'react';
 
 interface CollapsibleSidebarProps {
@@ -140,7 +131,6 @@ export default function CollapsibleSidebar({
                 }}
             />
 
-            {/* Responsive Styles */}
             <style>{`
                 @media (max-width: 768px) {
                     .timeline-sidebar {
