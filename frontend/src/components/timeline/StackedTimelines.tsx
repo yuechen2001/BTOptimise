@@ -1,13 +1,3 @@
-/**
- * Stacked Timelines Component
- *
- * Container for multiple project timeline rows:
- * - Stacks ProjectTimelineRow components vertically
- * - Manages expanded state for milestone details
- * - Handles milestone click events
- * - Shows empty state when no projects selected
- */
-
 import ProjectTimelineRow from './ProjectTimelineRow';
 import type { ProjectTimeline, TimelineMilestone } from '../../types';
 

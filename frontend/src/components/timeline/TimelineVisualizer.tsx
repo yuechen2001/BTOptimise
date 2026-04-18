@@ -1,9 +1,3 @@
-/**
- * Timeline Visualizer Main Component
- *
- * Redesigned with collapsible sidebar and project-based timeline comparison.
- */
-
 import { useState, useEffect } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { useAppState } from '../../context/AppContext';
@@ -19,16 +13,13 @@ export default function TimelineVisualizer() {
     const { state } = useAppState();
     const { sessionId, onboarding, timeline } = state;
 
-    // Sidebar state
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    // Selected milestone state for details panel
     const [selectedMilestone, setSelectedMilestone] = useState<{
         milestone: TimelineMilestone;
         projectName: string;
     } | null>(null);
 
-    // Timeline configuration state
     const [config, setConfig] = useState<TimelineConfig>(() => {
         const currentYear = new Date().getFullYear();
         return {
@@ -39,7 +30,6 @@ export default function TimelineVisualizer() {
         };
     });
 
-    // Fetch timeline projection (now includes selected projects)
     const {
         data: timelineData,
         isLoading,
@@ -47,7 +37,6 @@ export default function TimelineVisualizer() {
         refetch,
     } = useTimelineProjection(sessionId, config, timeline.length > 0 ? timeline : undefined);
 
-    // Handle config save (triggers refetch)
     const handleConfigSave = (newConfig: TimelineConfig) => {
         setConfig(newConfig);
         refetch();
@@ -57,12 +46,10 @@ export default function TimelineVisualizer() {
         setSidebarOpen((prev) => !prev);
     };
 
-    // Handle project selection changes (triggers refetch)
     const handleProjectsChange = () => {
         refetch();
     };
 
-    // Handle milestone click (shows details panel)
     const handleMilestoneClick = (milestone: TimelineMilestone, projectId: string) => {
         const project = timelineData?.projectTimelines.find(
             (pt) => pt.project.projectId === projectId
@@ -75,12 +62,10 @@ export default function TimelineVisualizer() {
         }
     };
 
-    // Close milestone details panel
     const handleCloseMilestoneDetails = () => {
         setSelectedMilestone(null);
     };
 
-    // Handle escape key to close dialog
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && selectedMilestone) {
@@ -100,7 +85,6 @@ export default function TimelineVisualizer() {
         };
     }, [selectedMilestone]);
 
-    // Early returns for loading/error/incomplete states
     if (!sessionId || !onboarding.completed) {
         return (
             <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>

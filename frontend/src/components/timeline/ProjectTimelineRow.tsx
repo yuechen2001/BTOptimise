@@ -1,13 +1,3 @@
-/**
- * Project Timeline Row Component
- *
- * Displays a single project's timeline with:
- * - Horizontal timeline bar spanning from today to key collection
- * - Milestone markers (BTO launch, option fee, signing, key collection, savings milestones)
- * - Color-coded milestones by type (critical, payment, savings)
- * - Click to expand milestone details
- */
-
 import { useMemo } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import * as Accordion from '@radix-ui/react-accordion';
@@ -42,21 +32,19 @@ export default function ProjectTimelineRow({
         });
 
         const end = new Date(lastMilestone.date);
-        end.setMonth(end.getMonth() + 6); // 6 months buffer
+        end.setMonth(end.getMonth() + 6);
 
         return { start, end };
     }, [milestones]);
 
-    // Calculate position (0-100%) for a milestone date
     const getMilestonePosition = (date: string): number => {
         const milestoneDate = new Date(date).getTime();
         const startTime = timelineRange.start.getTime();
         const endTime = timelineRange.end.getTime();
         const position = ((milestoneDate - startTime) / (endTime - startTime)) * 100;
-        return Math.max(0, Math.min(100, position)); // Clamp between 0-100%
+        return Math.max(0, Math.min(100, position));
     };
 
-    // Get color for milestone type
     const getMilestoneColor = (type: string): string => {
         if (
             type === 'dia_expires' ||
@@ -83,21 +71,18 @@ export default function ProjectTimelineRow({
         return '#6B7280'; // Gray for informational
     };
 
-    // Calculate year markers for timeline
     const yearMarkers = useMemo(() => {
         const markers: Array<{ year: number; position: number }> = [];
         const startYear = timelineRange.start.getFullYear();
         const endYear = timelineRange.end.getFullYear();
 
-        // Add marker for each year from start to end
         for (let year = startYear; year <= endYear; year++) {
-            const yearDate = new Date(year, 0, 1); // January 1st of each year
+            const yearDate = new Date(year, 0, 1);
             const yearTime = yearDate.getTime();
             const startTime = timelineRange.start.getTime();
             const endTime = timelineRange.end.getTime();
             const position = ((yearTime - startTime) / (endTime - startTime)) * 100;
 
-            // Only add markers that fall within the timeline range
             if (position >= 0 && position <= 100) {
                 markers.push({ year, position });
             }
@@ -106,7 +91,6 @@ export default function ProjectTimelineRow({
         return markers;
     }, [timelineRange]);
 
-    // Check if project is affordable (all milestones)
     const isAffordable =
         affordability.canAffordOptionFee &&
         affordability.canAffordSigning &&

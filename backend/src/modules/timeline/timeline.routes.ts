@@ -1,10 +1,3 @@
-/**
- * Timeline Visualizer Routes
- *
- * API endpoints for timeline projections:
- * - POST /api/timeline/project - Generate timeline projection
- */
-
 import express, { Request, Response, NextFunction } from 'express';
 import UserSession from '../userSession/userSession.model';
 import {
@@ -101,8 +94,6 @@ function validateTimelineConfig(config: any): string | null {
     return null;
 }
 
-/* ─── Routes ───────────────────────────────────────────────────────── */
-
 /**
  * POST /api/timeline/project
  * Generate complete timeline projection
@@ -111,7 +102,6 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
     try {
         const { sessionId, config, projects } = req.body;
 
-        // Validate sessionId
         if (!sessionId || typeof sessionId !== 'string') {
             return res.status(400).json({
                 success: false,
@@ -119,7 +109,6 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             });
         }
 
-        // Validate config
         const configError = validateTimelineConfig(config);
         if (configError) {
             return res.status(400).json({
@@ -129,7 +118,6 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             });
         }
 
-        // Validate projects array (optional, 1-3 projects)
         if (projects !== undefined) {
             if (!Array.isArray(projects)) {
                 return res.status(400).json({
@@ -143,7 +131,7 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
                     message: 'Maximum 3 projects allowed',
                 });
             }
-            // Validate each project
+
             for (const project of projects) {
                 if (
                     !project.projectId ||
@@ -160,7 +148,6 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             }
         }
 
-        // Fetch user session
         const session = await UserSession.findOne({ sessionId });
         if (!session) {
             return res.status(404).json({
@@ -169,7 +156,6 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             });
         }
 
-        // Check if profile is complete enough for projections
         if (!session.age || !session.employmentStatus || session.monthlyIncome === undefined) {
             return res.status(400).json({
                 success: false,
@@ -191,7 +177,6 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             cashSavingsRate: config.cashSavingsRate,
         };
 
-        // Generate snapshots
         const snapshots: TimelineSnapshot[] = [];
         const startDate = new Date(timelineConfig.startYear, 0, 1);
         const endDate = new Date(timelineConfig.endYear, 11, 31);

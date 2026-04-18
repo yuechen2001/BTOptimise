@@ -1,15 +1,3 @@
-/**
- * Timeline Visualizer Service
- *
- * Core calculation functions for timeline projections:
- * - Financial snapshot projections over time
- * - Milestone detection (DIA expiry, grant tier changes)
- * - Affordability band calculations
- * - Scenario comparisons with opportunity cost analysis
- *
- * Reuses existing financial calculation functions from financialRules.service.ts
- */
-
 import {
     CPF_OA_INTEREST_RATE,
     CPF_CONTRIBUTION_RATES,
@@ -83,7 +71,6 @@ function projectCPFOA(
     const monthlyInterestRate = CPF_OA_INTEREST_RATE / 12;
 
     for (let month = 1; month <= monthsFromNow; month++) {
-        // Add interest
         balance = balance * (1 + monthlyInterestRate);
 
         const ageAtMonth = currentAge + month / 12;
@@ -100,7 +87,6 @@ function projectCPFOA(
         const cpfContribution = projectedIncome * cpfRate;
         const partnerCpfContribution = projectedPartnerIncome * partnerCpfRate;
 
-        // Add contributions (assuming ~20% goes to OA)
         balance += (cpfContribution + partnerCpfContribution) * 0.23; // Approximate OA allocation
     }
 
@@ -150,15 +136,6 @@ function getEmploymentStatusAtDate(
 }
 
 /* ─── Core Projection Functions ───────────────────────────────────── */
-
-/**
- * Project financial snapshot at a specific future date
- *
- * @param session - Current user session
- * @param targetDate - Date to project to
- * @param config - Timeline configuration
- * @returns Financial snapshot at target date
- */
 export function projectFinancialSnapshot(
     session: IUserSession,
     targetDate: Date,
@@ -169,11 +146,9 @@ export function projectFinancialSnapshot(
         (targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
     );
 
-    // Get growth rate
     const annualGrowthRate = INCOME_GROWTH_RATES[config.incomeGrowthScenario];
     const savingsRate = config.cashSavingsRate || DEFAULT_CASH_SAVINGS_RATE;
 
-    // Current values
     const currentIncome = session.monthlyIncome || 0;
     const currentPartnerIncome = session.partnerMonthlyIncome;
     const currentCPFOA = session.cpfOA || 0;
@@ -205,7 +180,7 @@ export function projectFinancialSnapshot(
                 annualGrowthRate
             );
         } else {
-            projectedIncome = 0; // Still in DIA period
+            projectedIncome = 0;
         }
     } else if (!isDeferredIncome(session.employmentStatus)) {
         projectedIncome = projectIncome(currentIncome, monthsFromNow, annualGrowthRate);
@@ -213,7 +188,6 @@ export function projectFinancialSnapshot(
             ? projectIncome(currentPartnerIncome, monthsFromNow, annualGrowthRate)
             : undefined;
     } else {
-        // Still in DIA period
         projectedIncome = 0;
         projectedPartnerIncome = currentPartnerIncome || 0;
     }
@@ -293,9 +267,6 @@ export function projectFinancialSnapshot(
     };
 }
 
-/**
- * Calculate affordability bands for different flat types at a snapshot
- */
 function calculateAffordabilityBands(
     projectedSession: IUserSession,
     config: TimelineProjectionConfig
@@ -367,7 +338,6 @@ function calculateOpportunityCostAtPoint(
 ): OpportunityCostSnapshot {
     const cumulativeRentPaid = monthsFromNow * monthlyRent;
 
-    // CPF interest gained is the difference between projected and just the initial balance with interest
     const cpfWithoutContributions =
         initialCPFOA * Math.pow(1 + CPF_OA_INTEREST_RATE / 12, monthsFromNow);
     const cpfInterestGained = projectedCPFOA - cpfWithoutContributions;
@@ -388,7 +358,6 @@ export function detectMilestones(
 ): TimelineMilestone[] {
     const milestones: TimelineMilestone[] = [];
 
-    // Story 1: DIA expiry milestone
     if (config.assumeEmploymentDate && isDeferredIncome(session.employmentStatus)) {
         const employmentDate = new Date(config.assumeEmploymentDate);
         const now = new Date();
@@ -407,7 +376,6 @@ export function detectMilestones(
         });
     }
 
-    // Story 2: Grant tier changes
     let previousGrantAmount = snapshots[0]?.grants.totalGrant || 0;
     for (const snapshot of snapshots) {
         const currentGrantAmount = snapshot.grants.totalGrant;
@@ -439,10 +407,8 @@ export function detectMilestones(
         previousGrantAmount = currentGrantAmount;
     }
 
-    // BTO launch cycle milestones
     addBTOLaunchMilestones(milestones, config);
 
-    // Sort by date
     milestones.sort((a, b) => a.monthsFromNow - b.monthsFromNow);
 
     return milestones;
@@ -481,7 +447,7 @@ export function generateAssumptions(config: TimelineProjectionConfig): Projectio
     return {
         incomeGrowthRate: INCOME_GROWTH_RATES[config.incomeGrowthScenario],
         cpfOAInterestRate: CPF_OA_INTEREST_RATE,
-        cpfContributionRate: config.cpfContributionRate || getCPFContributionRate(30), 
+        cpfContributionRate: config.cpfContributionRate || getCPFContributionRate(30),
         cashSavingsRate: config.cashSavingsRate || DEFAULT_CASH_SAVINGS_RATE,
         rentInflationRate: 0.02,
     };
@@ -490,7 +456,6 @@ export function generateAssumptions(config: TimelineProjectionConfig): Projectio
 /* ─── Project Timeline Generation ──────────────────────────────────── */
 function parseEstimatedLaunchDate(estimatedDate?: string): Date {
     if (!estimatedDate) {
-        // Default to 3 months from now
         const defaultDate = new Date();
         defaultDate.setMonth(defaultDate.getMonth() + 3);
         return defaultDate;
@@ -669,7 +634,6 @@ export function generateProjectTimeline(
         };
     }
 
-    // Fallback if no snapshot found
     return {
         project,
         milestones,
@@ -703,9 +667,6 @@ function findSnapshotByDate(
     });
 }
 
-/**
- * Detect when user has saved enough for each milestone
- */
 function detectSavingsMilestones(
     project: import('./timeline.types').ProjectTimelineRequest,
     snapshots: TimelineSnapshot[],
@@ -746,7 +707,6 @@ function detectSavingsMilestones(
         });
     }
 
-    // Find when income supports monthly payment (MSR 30%)
     const affordableSnapshot = snapshots.find(
         (s) => s.totalHouseholdIncome * 0.3 >= monthlyLoanPayment
     );

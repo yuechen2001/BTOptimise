@@ -1,14 +1,3 @@
-/**
- * Timeline Configuration Component
- *
- * Sidebar-optimized configuration panel with:
- * - Income growth scenario
- * - Timeline range
- * - Opportunity cost tracking (rent input)
- * - Deferred Income Assessment (Story 1) for students/NSF
- * - Save button to apply changes
- */
-
 import { useState } from 'react';
 import type { TimelineConfig, UserProfile } from '../../types';
 
