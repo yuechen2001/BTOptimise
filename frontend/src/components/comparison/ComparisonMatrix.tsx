@@ -201,7 +201,10 @@ export default function ComparisonMatrix() {
                     <p className="section-subtitle" style={{ marginBottom: 0 }}>
                         Side-by-side view of your shortlisted projects, grouped into overview,
                         financing, cash flow, and timeline. <br />
-                        <em>Note that all calculations are based on the minimum price.</em>
+                        <em>
+                            Note that all calculations are based on the minimum price and the loan
+                            quantum is 25 years.
+                        </em>
                     </p>
                 </div>
                 <div className="flex-gap">
