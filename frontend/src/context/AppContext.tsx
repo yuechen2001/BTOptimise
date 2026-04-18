@@ -98,9 +98,8 @@ function reducer(state: AppState, action: Action): AppState {
                     ),
                 };
             }
-            if (state.comparison.length >= 3) return state; // max 3
+            if (state.comparison.length >= 3) return state;
 
-            // Add to both comparison and timeline
             const { project, selectedFlat } = action.result;
             const timelineProject: ProjectTimelineRequest = {
                 projectId: project.projectCode,
@@ -129,7 +128,6 @@ function reducer(state: AppState, action: Action): AppState {
             return { ...state, error: action.error };
 
         case 'RESET':
-            // Clear session from storage on reset
             localStorage.removeItem(SESSION_STORAGE_KEY);
             return initialState;
 
@@ -148,7 +146,6 @@ const AppContext = createContext<{
 export function AppProvider({ children }: { children: ReactNode }) {
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    // Restore session ID from localStorage on mount
     useEffect(() => {
         const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
         if (storedSessionId) {
@@ -156,7 +153,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    // Persist session ID to localStorage when it changes
     useEffect(() => {
         if (state.sessionId) {
             localStorage.setItem(SESSION_STORAGE_KEY, state.sessionId);
@@ -168,7 +164,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useAppState() {
     const ctx = useContext(AppContext);
     if (!ctx) throw new Error('useAppState must be used within AppProvider');
