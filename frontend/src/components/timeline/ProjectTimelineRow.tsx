@@ -143,7 +143,7 @@ export default function ProjectTimelineRow({
                 </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>
                     {project.flatType} • ${project.price.toLocaleString()}
-                    {project.estimatedLaunchDate && <> • Launch: {project.estimatedLaunchDate}</>}
+                    {project.estimatedLaunchDate && <> • Launch: {new Date(project.estimatedLaunchDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</>}
                 </div>
             </div>
 
@@ -246,29 +246,12 @@ export default function ProjectTimelineRow({
                                         zIndex: isCritical ? 20 : 10,
                                     }}
                                 >
-                                    {/* Label on top */}
-                                    <span 
-                                        style={{ 
-                                            fontSize: '0.65rem', 
-                                            color: color,
-                                            fontWeight: 600,
-                                            textAlign: 'center',
-                                            marginBottom: '0.25rem',
-                                            maxWidth: '80px',
-                                            lineHeight: 1.2,
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                        }}
-                                    >
-                                        {milestone.title.replace(/Payment|Due|Assessment|Optimizer/g, '').trim()}
-                                    </span>
                                     {/* Connecting line from label to dot */}
                                     {isCritical && (
                                         <div
                                             style={{
                                                 width: '1px',
-                                                height: '8px',
+                                                height: '28px',
                                                 background: color,
                                                 opacity: 0.3,
                                                 marginBottom: '2px',
@@ -286,6 +269,16 @@ export default function ProjectTimelineRow({
                                             borderRadius: '50%',
                                             boxShadow: `0 0 0 2px ${color}, 0 2px 8px rgba(0,0,0,0.2)`,
                                             animation: isCritical ? 'pulse 2s infinite' : 'none',
+                                        }}
+                                    />
+                                    {/* Pin line connecting dot to timeline */}
+                                    <div
+                                        style={{
+                                            width: '2px',
+                                            height: isCritical ? '0px' : `${50 - 20 - dotSize}px`,
+                                            background: color,
+                                            opacity: 0.4,
+                                            marginTop: '2px',
                                         }}
                                     />
                                 </div>
@@ -343,7 +336,7 @@ export default function ProjectTimelineRow({
                                 e.currentTarget.style.background = 'var(--clr-bg-tertiary)';
                             }}
                         >
-                            <span>View Details</span>
+                            <span style={{paddingLeft: '1rem'}}>View Details</span>
                             <span
                                 style={{
                                     fontSize: '1rem',
