@@ -41,6 +41,10 @@ export interface TimelineProjectionConfig {
     assumeEmploymentDate?: string; // ISO date when NSF/student becomes employed
     assumedStartingSalary?: number; // Expected monthly income after employment
 
+    /* Wait-and-see opportunity cost inputs */
+    currentMonthlyRent?: number; // Current monthly rent paid while waiting
+    includeOpportunityCost?: boolean; // Whether to calculate rent vs CPF growth
+
     /* Optional overrides */
     cpfContributionRate?: number; // Override default CPF contribution rate
     cashSavingsRate?: number; // % of income saved monthly
