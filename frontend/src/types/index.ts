@@ -217,8 +217,6 @@ export interface TimelineConfig {
     incomeGrowthScenario: IncomeGrowthScenario;
     assumeEmploymentDate?: string;
     assumedStartingSalary?: number;
-    currentMonthlyRent?: number;
-    includeOpportunityCost?: boolean;
     cpfContributionRate?: number;
     cashSavingsRate?: number;
 }
@@ -277,31 +275,11 @@ export interface TimelineMilestone {
     significance: 'critical' | 'important' | 'informational';
     impactOnGrants?: number;
     impactOnEligibility?: string;
-}
-
-export interface OptimalWindow {
-    startDate: string;
-    endDate: string;
-    reason: string;
-    grantAmount: number;
-    priority: 'high' | 'medium' | 'low';
-    expiryWarning?: string;
-}
-
-export interface ScenarioComparison {
-    scenarioName: string;
-    strategy: ComparisonStrategy;
-    applicationDate: string;
-    totalGrantsReceived: number;
-    totalCashRequired: number;
-    monthlyInstalment: number;
-    totalInterestPaid: number;
-    rentPaidBeforePurchase: number;
-    cpfInterestGainedFromWaiting: number;
-    netOpportunityCost: number;
-    keyCollectionDate: string;
-    affordabilityLevel: AffordabilityLevel;
-    cashShortfall: number;
+    projectId?: string;
+    paymentAmount?: number;
+    cashAmount?: number;
+    cpfAmount?: number;
+    canAfford?: boolean;
 }
 
 export interface ProjectionAssumptions {
@@ -312,13 +290,35 @@ export interface ProjectionAssumptions {
     rentInflationRate?: number;
 }
 
+export interface ProjectTimelineRequest {
+    projectId: string;
+    projectName: string;
+    flatType: FlatTypePreference;
+    price: number;
+    classification: 'Standard' | 'Plus' | 'Prime';
+    estimatedLaunchDate?: string;
+}
+
+export interface ProjectTimeline {
+    project: ProjectTimelineRequest;
+    milestones: TimelineMilestone[];
+    affordability: {
+        canAffordOptionFee: boolean;
+        canAffordSigning: boolean;
+        canAffordKeyCollection: boolean;
+        cashShortfall: number;
+        optionFeeShortfall: number;
+        signingShortfall: number;
+        keyCollectionShortfall: number;
+    };
+}
+
 export interface TimelineProjectionResult {
     sessionId: string;
     config: TimelineConfig;
     generatedAt: string;
     snapshots: TimelineSnapshot[];
     milestones: TimelineMilestone[];
-    optimalApplicationWindows: OptimalWindow[];
-    scenarioComparisons: ScenarioComparison[];
+    projectTimelines: ProjectTimeline[];
     assumptions: ProjectionAssumptions;
 }

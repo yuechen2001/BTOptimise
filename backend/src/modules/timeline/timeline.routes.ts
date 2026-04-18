@@ -3,8 +3,6 @@
  *
  * API endpoints for timeline projections:
  * - POST /api/timeline/project - Generate timeline projection
- * - GET /api/timeline/optimal-windows - Get grant optimization windows
- * - POST /api/timeline/compare-scenarios - Compare application timing scenarios
  */
 
 import express, { Request, Response, NextFunction } from 'express';
@@ -12,10 +10,8 @@ import UserSession from '../userSession/userSession.model';
 import {
     projectFinancialSnapshot,
     detectMilestones,
-    identifyOptimalWindows,
     generateAssumptions,
-    compareScenarios,
-    recommendOptimalScenario,
+    generateProjectTimeline,
 } from './timeline.service';
 import type {
     TimelineProjectionConfig,
@@ -110,7 +106,7 @@ function validateTimelineConfig(config: any): string | null {
  */
 router.post('/project', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { sessionId, config } = req.body;
+        const { sessionId, config, projects } = req.body;
 
         // Validate sessionId
         if (!sessionId || typeof sessionId !== 'string') {
@@ -128,6 +124,31 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
                 message: 'Invalid configuration',
                 errors: [configError],
             });
+        }
+
+        // Validate projects array (optional, 1-3 projects)
+        if (projects !== undefined) {
+            if (!Array.isArray(projects)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'projects must be an array',
+                });
+            }
+            if (projects.length > 3) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Maximum 3 projects allowed',
+                });
+            }
+            // Validate each project
+            for (const project of projects) {
+                if (!project.projectId || !project.projectName || !project.flatType || !project.price) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Each project must have projectId, projectName, flatType, and price',
+                    });
+                }
+            }
         }
 
         // Fetch user session
@@ -177,14 +198,17 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
         // Detect milestones
         const milestones = detectMilestones(session, snapshots, timelineConfig);
 
-        // Identify optimal application windows
-        const optimalApplicationWindows = identifyOptimalWindows(snapshots, timelineConfig);
-
-        // Compare scenarios (now, 6m, 12m, 24m)
-        const scenarioComparisons = compareScenarios(session, timelineConfig, snapshots);
-
         // Generate assumptions
         const assumptions = generateAssumptions(timelineConfig);
+
+        // Generate project-specific timelines
+        const projectTimelines: import('./timeline.types').ProjectTimeline[] = [];
+        if (projects && Array.isArray(projects)) {
+            for (const project of projects) {
+                const projectTimeline = generateProjectTimeline(session, project, timelineConfig, snapshots);
+                projectTimelines.push(projectTimeline);
+            }
+        }
 
         // Build result
         const result: TimelineProjectionResult = {
@@ -193,162 +217,13 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             generatedAt: new Date().toISOString(),
             snapshots,
             milestones,
-            optimalApplicationWindows,
-            scenarioComparisons,
+            projectTimelines,
             assumptions,
         };
 
         return res.status(200).json({
             success: true,
             data: result,
-        });
-    } catch (err) {
-        next(err);
-    }
-});
-
-/**
- * GET /api/timeline/optimal-windows
- * Get optimal application windows for grant maximization (Story 2)
- */
-router.get('/optimal-windows', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { sessionId, scenario } = req.query;
-
-        if (!sessionId || typeof sessionId !== 'string') {
-            return res.status(400).json({
-                success: false,
-                message: 'sessionId query parameter is required',
-            });
-        }
-
-        // Fetch user session
-        const session = await UserSession.findOne({ sessionId });
-        if (!session) {
-            return res.status(404).json({
-                success: false,
-                message: 'Session not found',
-            });
-        }
-
-        // Use default config for quick analysis
-        const incomeGrowthScenario: IncomeGrowthScenario =
-            (scenario as IncomeGrowthScenario) || 'moderate';
-        const config: TimelineProjectionConfig = {
-            startYear: new Date().getFullYear(),
-            endYear: new Date().getFullYear() + 3,
-            intervalMonths: 6,
-            incomeGrowthScenario,
-            includeOpportunityCost: false,
-        };
-
-        // Generate snapshots
-        const snapshots: TimelineSnapshot[] = [];
-        const now = new Date();
-        const endDate = new Date(config.endYear, 11, 31);
-
-        let currentDate = new Date(now);
-        while (currentDate <= endDate) {
-            const snapshot = projectFinancialSnapshot(session, currentDate, config);
-            snapshots.push(snapshot);
-            currentDate.setMonth(currentDate.getMonth() + config.intervalMonths);
-        }
-
-        // Identify optimal windows
-        const windows = identifyOptimalWindows(snapshots, config);
-
-        // Get current and projected grant amounts
-        const currentGrantAmount = snapshots[0]?.grants.totalGrant || 0;
-        const projectedIn6Months = snapshots[1]?.grants.totalGrant || 0;
-        const projectedIn12Months = snapshots[2]?.grants.totalGrant || 0;
-
-        // Generate recommendation
-        let recommendation = {
-            strategy: 'apply_now',
-            reason: 'Current grant amount is optimal',
-            potentialGrantLoss: 0,
-        };
-
-        if (currentGrantAmount > projectedIn6Months) {
-            const loss = currentGrantAmount - projectedIn6Months;
-            recommendation = {
-                strategy: 'apply_within_6m',
-                reason: `Income will cross grant tier threshold. Apply soon to secure $${currentGrantAmount.toLocaleString()} grant.`,
-                potentialGrantLoss: loss,
-            };
-        }
-
-        return res.status(200).json({
-            success: true,
-            data: {
-                windows,
-                currentGrantAmount,
-                projectedGrantIn6Months: projectedIn6Months,
-                projectedGrantIn12Months: projectedIn12Months,
-                recommendation,
-            },
-        });
-    } catch (err) {
-        next(err);
-    }
-});
-
-/**
- * POST /api/timeline/compare-scenarios
- * Compare different application timing scenarios (Story 6)
- */
-router.post('/compare-scenarios', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { sessionId, includeOpportunityCost } = req.body;
-
-        if (!sessionId || typeof sessionId !== 'string') {
-            return res.status(400).json({
-                success: false,
-                message: 'sessionId is required',
-            });
-        }
-
-        // Fetch user session
-        const session = await UserSession.findOne({ sessionId });
-        if (!session) {
-            return res.status(404).json({
-                success: false,
-                message: 'Session not found',
-            });
-        }
-
-        // Default config for scenario comparison
-        const config: TimelineProjectionConfig = {
-            startYear: new Date().getFullYear(),
-            endYear: new Date().getFullYear() + 3,
-            intervalMonths: 6,
-            incomeGrowthScenario: 'moderate',
-            currentMonthlyRent: req.body.currentMonthlyRent,
-            includeOpportunityCost: includeOpportunityCost || false,
-        };
-
-        // Generate snapshots
-        const snapshots: TimelineSnapshot[] = [];
-        const now = new Date();
-        const endDate = new Date(config.endYear, 11, 31);
-
-        let currentDate = new Date(now);
-        while (currentDate <= endDate) {
-            const snapshot = projectFinancialSnapshot(session, currentDate, config);
-            snapshots.push(snapshot);
-            currentDate.setMonth(currentDate.getMonth() + config.intervalMonths);
-        }
-
-        // Compare scenarios
-        const comparisons = compareScenarios(session, config, snapshots);
-        const recommendation = recommendOptimalScenario(comparisons);
-
-        return res.status(200).json({
-            success: true,
-            data: {
-                comparisons,
-                recommendation,
-            },
         });
     } catch (err) {
         next(err);

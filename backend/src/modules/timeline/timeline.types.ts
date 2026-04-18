@@ -37,17 +37,40 @@ export interface TimelineProjectionConfig {
     intervalMonths: number; // 3, 6, or 12
     incomeGrowthScenario: IncomeGrowthScenario;
 
-    /* Story 1: Deferred Income Assessment handling */
+    /* Deferred Income Assessment handling */
     assumeEmploymentDate?: string; // ISO date when NSF/student becomes employed
     assumedStartingSalary?: number; // Expected monthly income after employment
-
-    /* Story 6: Opportunity cost tracking */
-    currentMonthlyRent?: number; // Current rent being paid
-    includeOpportunityCost?: boolean;
 
     /* Optional overrides */
     cpfContributionRate?: number; // Override default CPF contribution rate
     cashSavingsRate?: number; // % of income saved monthly
+}
+
+/* ─── Project Timeline Types ───────────────────────────────────────── */
+
+/** Project information for timeline generation */
+export interface ProjectTimelineRequest {
+    projectId: string;
+    projectName: string;
+    flatType: FlatTypePreference;
+    price: number;
+    classification: ProjectClassification;
+    estimatedLaunchDate?: string; // ISO date or 'Q1 2027', 'Q2 2027', etc.
+}
+
+/** Project-specific timeline with milestones and affordability */
+export interface ProjectTimeline {
+    project: ProjectTimelineRequest;
+    milestones: TimelineMilestone[];
+    affordability: {
+        canAffordOptionFee: boolean;
+        canAffordSigning: boolean;
+        canAffordKeyCollection: boolean;
+        cashShortfall: number;
+        optionFeeShortfall: number;
+        signingShortfall: number;
+        keyCollectionShortfall: number;
+    };
 }
 
 /* ─── Snapshot Types ───────────────────────────────────────────────── */
@@ -112,12 +135,21 @@ export interface OpportunityCostSnapshot {
 /* ─── Milestone Types ──────────────────────────────────────────────── */
 
 export type MilestoneType =
-    | 'dia_expires' // Story 1: Deferred assessment ends
-    | 'grant_tier_drop' // Story 2: Income crosses grant threshold
-    | 'grant_disqualified' // Story 2: Income exceeds ceiling
-    | 'optimal_application_window' // Story 2: Best time to apply
+    | 'dia_expires' // Deferred assessment ends
+    | 'grant_tier_drop' // Income crosses grant threshold
+    | 'grant_disqualified' // Income exceeds ceiling
+    | 'optimal_application_window' // Best time to apply
     | 'bto_launch_cycle' // Estimated BTO launch date
-    | 'income_milestone'; // General income increase
+    | 'income_milestone' // General income increase
+    // Project-specific payment milestones
+    | 'bto_launch' // Project launches for application
+    | 'option_fee_due' // Option fee payment required
+    | 'signing_payment_due' // Downpayment at signing
+    | 'key_collection_payment_due' // Final payment at key collection
+    // Savings milestones
+    | 'cash_ready_option_fee' // Saved enough cash for option fee
+    | 'downpayment_saved' // Saved enough for full downpayment
+    | 'monthly_payment_affordable'; // Income sufficient for loan
 
 /** Critical timeline events */
 export interface TimelineMilestone {
@@ -131,43 +163,13 @@ export interface TimelineMilestone {
     /* Financial impact */
     impactOnGrants?: number; // Amount of grant change
     impactOnEligibility?: string; // Eligibility status change
-}
-
-/** Optimal application window (Story 2) */
-export interface OptimalWindow {
-    startDate: string;
-    endDate: string;
-    reason: string;
-    grantAmount: number;
-    priority: 'high' | 'medium' | 'low';
-    expiryWarning?: string; // e.g., "Income exceeds ceiling in 3 months"
-}
-
-/* ─── Scenario Comparison (Story 6) ────────────────────────────────── */
-
-/** Comparison of different application timing strategies */
-export interface ScenarioComparison {
-    scenarioName: string;
-    strategy: ComparisonStrategy;
-    applicationDate: string; // When to apply
-
-    /* Financial outcomes */
-    totalGrantsReceived: number;
-    totalCashRequired: number;
-    monthlyInstalment: number;
-    totalInterestPaid: number; // Over 25-year loan tenure
-
-    /* Opportunity costs (Story 6) */
-    rentPaidBeforePurchase: number;
-    cpfInterestGainedFromWaiting: number;
-    netOpportunityCost: number; // rent - CPF interest
-
-    /* Key dates */
-    keyCollectionDate: string; // Estimated completion (~4 years)
-
-    /* Affordability at application time */
-    affordabilityLevel: 'comfortable' | 'stretch' | 'unaffordable';
-    cashShortfall: number;
+    
+    /* Project-specific data */
+    projectId?: string; // Links milestone to specific project
+    paymentAmount?: number; // Payment required (for payment milestones)
+    cashAmount?: number; // Cash portion of payment
+    cpfAmount?: number; // CPF portion of payment
+    canAfford?: boolean; // Whether user can afford at this time
 }
 
 /* ─── Main Timeline Result ─────────────────────────────────────────── */
@@ -191,11 +193,8 @@ export interface TimelineProjectionResult {
     snapshots: TimelineSnapshot[];
     milestones: TimelineMilestone[];
 
-    /* Story 2: Optimal windows */
-    optimalApplicationWindows: OptimalWindow[];
-
-    /* Story 6: Scenario comparisons */
-    scenarioComparisons: ScenarioComparison[];
+    /* Project-specific timelines */
+    projectTimelines: ProjectTimeline[];
 
     /* Assumptions used in calculations */
     assumptions: ProjectionAssumptions;

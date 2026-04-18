@@ -19,8 +19,6 @@ import {
     checkEligibility,
     calculateMatching,
     generateTimelineProjection,
-    getOptimalWindows,
-    compareScenarios,
     type ProjectFilters,
     type ApplicationRateFilters,
     type SessionCreateInput,
@@ -36,8 +34,6 @@ import {
     type EligibilityCheckResult,
     type MatchingResponse,
     type TimelineProjectionResult,
-    type OptimalWindowsResponse,
-    type ScenarioComparisonResponse,
 } from '../services/api';
 
 /* ─── Query Keys ───────────────────────────────────────────────────── */
@@ -68,9 +64,6 @@ export const queryKeys = {
         all: ['timeline'] as const,
         projection: (sessionId: string, config: string) =>
             [...queryKeys.timeline.all, 'projection', sessionId, config] as const,
-        windows: (sessionId: string) => [...queryKeys.timeline.all, 'windows', sessionId] as const,
-        scenarios: (sessionId: string) =>
-            [...queryKeys.timeline.all, 'scenarios', sessionId] as const,
     },
 };
 
@@ -188,55 +181,24 @@ import type { TimelineConfig } from '../types';
 /**
  * Generate timeline projection with financial snapshots
  */
-export function useTimelineProjection(sessionId: string | null, config: TimelineConfig | null) {
+export function useTimelineProjection(
+    sessionId: string | null, 
+    config: TimelineConfig | null,
+    projects?: import('../types').ProjectTimelineRequest[]
+) {
     const configKey = config ? JSON.stringify(config) : 'null';
+    const projectsKey = projects ? JSON.stringify(projects) : 'null';
     
     return useQuery({
-        queryKey: queryKeys.timeline.projection(sessionId || '', configKey),
+        queryKey: queryKeys.timeline.projection(sessionId || '', `${configKey}-${projectsKey}`),
         queryFn: () => {
             if (!sessionId || !config) {
                 throw new Error('Session ID and config are required');
             }
-            return generateTimelineProjection({ sessionId, config });
+            return generateTimelineProjection({ sessionId, config, projects });
         },
         enabled: !!sessionId && !!config,
         staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    });
-}
-
-/**
- * Get optimal application windows for grant maximization (Story 2)
- */
-export function useOptimalWindows(sessionId: string | null, scenario?: string) {
-    return useQuery({
-        queryKey: queryKeys.timeline.windows(sessionId || ''),
-        queryFn: () => {
-            if (!sessionId) {
-                throw new Error('Session ID is required');
-            }
-            return getOptimalWindows(sessionId, scenario);
-        },
-        enabled: !!sessionId,
-    });
-}
-
-/**
- * Compare application timing scenarios (Story 6)
- */
-export function useCompareScenarios(
-    sessionId: string | null,
-    includeOpportunityCost?: boolean,
-    currentMonthlyRent?: number
-) {
-    return useQuery({
-        queryKey: queryKeys.timeline.scenarios(sessionId || ''),
-        queryFn: () => {
-            if (!sessionId) {
-                throw new Error('Session ID is required');
-            }
-            return compareScenarios(sessionId, includeOpportunityCost, currentMonthlyRent);
-        },
-        enabled: !!sessionId,
     });
 }
 
@@ -251,8 +213,6 @@ export type {
     EligibilityCheckResult,
     MatchingResponse,
     TimelineProjectionResult,
-    OptimalWindowsResponse,
-    ScenarioComparisonResponse,
     ProjectFilters,
     ApplicationRateFilters,
     SessionCreateInput,

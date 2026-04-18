@@ -384,8 +384,6 @@ export async function calculateMatching(input: MatchingInput): Promise<MatchingR
 import type {
     TimelineConfig,
     TimelineProjectionResult,
-    ScenarioComparison,
-    OptimalWindow,
 } from '../types';
 
 // Re-export timeline types for useApi.ts
@@ -394,27 +392,7 @@ export type { TimelineProjectionResult };
 export interface TimelineProjectionInput {
     sessionId: string;
     config: TimelineConfig;
-}
-
-export interface OptimalWindowsResponse {
-    windows: OptimalWindow[];
-    currentGrantAmount: number;
-    projectedGrantIn6Months: number;
-    projectedGrantIn12Months: number;
-    recommendation: {
-        strategy: string;
-        reason: string;
-        potentialGrantLoss: number;
-    };
-}
-
-export interface ScenarioComparisonResponse {
-    comparisons: ScenarioComparison[];
-    recommendation: {
-        bestScenario: string;
-        reason: string;
-        netAdvantage: number;
-    };
+    projects?: import('../types').ProjectTimelineRequest[];
 }
 
 /**
@@ -437,73 +415,6 @@ export async function generateTimelineProjection(
     if (!response.ok || !data.success || !data.data) {
         throw new ApiError(
             data.message || 'Failed to generate timeline projection',
-            response.status,
-            data.errors
-        );
-    }
-
-    return data.data;
-}
-
-/**
- * Get optimal application windows for grant maximization (Story 2)
- */
-export async function getOptimalWindows(
-    sessionId: string,
-    scenario?: string
-): Promise<OptimalWindowsResponse> {
-    const params = new URLSearchParams({ sessionId });
-    if (scenario) {
-        params.append('scenario', scenario);
-    }
-
-    const url = `${API_BASE_URL}/timeline/optimal-windows?${params.toString()}`;
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-
-    const data: ApiResponse<OptimalWindowsResponse> = await response.json();
-
-    if (!response.ok || !data.success || !data.data) {
-        throw new ApiError(
-            data.message || 'Failed to get optimal windows',
-            response.status,
-            data.errors
-        );
-    }
-
-    return data.data;
-}
-
-/**
- * Compare different application timing scenarios (Story 6)
- */
-export async function compareScenarios(
-    sessionId: string,
-    includeOpportunityCost?: boolean,
-    currentMonthlyRent?: number
-): Promise<ScenarioComparisonResponse> {
-    const url = `${API_BASE_URL}/timeline/compare-scenarios`;
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            sessionId,
-            includeOpportunityCost,
-            currentMonthlyRent,
-        }),
-    });
-
-    const data: ApiResponse<ScenarioComparisonResponse> = await response.json();
-
-    if (!response.ok || !data.success || !data.data) {
-        throw new ApiError(
-            data.message || 'Failed to compare scenarios',
             response.status,
             data.errors
         );

@@ -34,7 +34,6 @@ import type {
     TimelineProjectionConfig,
     TimelineSnapshot,
     TimelineMilestone,
-    OptimalWindow,
     AffordabilityBand,
     OpportunityCostSnapshot,
     ProjectedUserSession,
@@ -517,54 +516,6 @@ function addBTOLaunchMilestones(milestones: TimelineMilestone[], config: Timelin
 }
 
 /**
- * Identify optimal application windows (Story 2)
- */
-export function identifyOptimalWindows(
-    snapshots: TimelineSnapshot[],
-    config: TimelineProjectionConfig
-): OptimalWindow[] {
-    const windows: OptimalWindow[] = [];
-
-    // Find windows where grant is maximized
-    const maxGrant = Math.max(...snapshots.map((s) => s.grants.totalGrant));
-
-    for (let i = 0; i < snapshots.length; i++) {
-        const snapshot = snapshots[i];
-        const nextSnapshot = snapshots[i + 1];
-
-        // High priority: Current grant is max, but will drop soon
-        if (
-            snapshot.grants.totalGrant === maxGrant &&
-            nextSnapshot &&
-            nextSnapshot.grants.totalGrant < maxGrant
-        ) {
-            windows.push({
-                startDate: snapshot.date,
-                endDate: nextSnapshot.date,
-                reason: `Maximum grant of $${maxGrant.toLocaleString()} available. Will decrease after this period.`,
-                grantAmount: maxGrant,
-                priority: 'high',
-                expiryWarning: `Grant will drop to $${nextSnapshot.grants.totalGrant.toLocaleString()} in ${nextSnapshot.monthsFromNow - snapshot.monthsFromNow} months`,
-            });
-        }
-
-        // Critical: About to lose all grants
-        if (snapshot.grants.totalGrant > 0 && nextSnapshot && nextSnapshot.grants.totalGrant === 0) {
-            windows.push({
-                startDate: snapshot.date,
-                endDate: nextSnapshot.date,
-                reason: `Last chance to receive grants before income exceeds ceiling`,
-                grantAmount: snapshot.grants.totalGrant,
-                priority: 'high',
-                expiryWarning: `You will exceed the income ceiling and lose all grants after ${nextSnapshot.monthsFromNow} months`,
-            });
-        }
-    }
-
-    return windows;
-}
-
-/**
  * Generate projection assumptions used in calculations
  */
 export function generateAssumptions(config: TimelineProjectionConfig): ProjectionAssumptions {
@@ -577,163 +528,296 @@ export function generateAssumptions(config: TimelineProjectionConfig): Projectio
     };
 }
 
-/* ─── Scenario Comparison (Story 6) ───────────────────────────────── */
+/* ─── Project Timeline Generation ──────────────────────────────────── */
 
 /**
- * Compare different application timing strategies
- * 
- * @param session - Current user session
- * @param config - Timeline configuration
- * @param snapshots - Pre-calculated snapshots
- * @returns Array of scenario comparisons for now, 6m, 12m, 24m
+ * Parse estimated launch date from 'Q1 2027' format or ISO date
  */
-export function compareScenarios(
-    session: IUserSession,
-    config: TimelineProjectionConfig,
-    snapshots: TimelineSnapshot[]
-): import('./timeline.types').ScenarioComparison[] {
-    const scenarios: import('./timeline.types').ScenarioComparison[] = [];
-    const waitPeriods = [0, 6, 12, 24]; // now, 6m, 12m, 24m
-    const strategyNames: Record<number, string> = {
-        0: 'Apply Now',
-        6: 'Wait 6 Months',
-        12: 'Wait 12 Months',
-        24: 'Wait 24 Months',
-    };
-    const strategyKeys: Record<number, import('./timeline.types').ComparisonStrategy> = {
-        0: 'apply_now',
-        6: 'wait_6m',
-        12: 'wait_12m',
-        24: 'wait_24m',
-    };
-
-    // Use representative 4-room flat price for comparison
-    const representativePrice = 400000;
-    const representativeFlatType = '4-Room';
-
-    for (const waitMonths of waitPeriods) {
-        // Find the snapshot closest to this wait period
-        const snapshot = snapshots.find((s) => s.monthsFromNow >= waitMonths) || snapshots[0];
-        if (!snapshot) continue;
-
-        const applicationDate = new Date(snapshot.date);
-
-        // Calculate key collection date (BTO waiting period)
-        const keyCollectionDate = new Date(applicationDate);
-        keyCollectionDate.setMonth(keyCollectionDate.getMonth() + BTO_WAITING_PERIOD_MONTHS);
-
-        // Get grants at application time
-        const totalGrantsReceived = snapshot.grants.totalGrant;
-
-        // Calculate financials at application time
-        const projectedSession: IUserSession = {
-            ...session,
-            monthlyIncome: snapshot.projectedMonthlyIncome,
-            partnerMonthlyIncome: snapshot.projectedPartnerMonthlyIncome,
-            cpfOA: snapshot.projectedCPFOA,
-            cashSavings: snapshot.projectedCashSavings,
-            age: snapshot.age,
-            partnerAge: snapshot.partnerAge,
-        } as IUserSession;
-
-        const financials = calculateFinancials(projectedSession, representativePrice, representativeFlatType);
-
-        const totalCashRequired = financials.cashFlow.totalCashRequired;
-        const monthlyInstalment = financials.loan.monthlyInstalment;
-
-        // Calculate total interest over 25 years
-        const totalInterestPaid = monthlyInstalment * 25 * 12 - financials.loan.maxLoanAmount;
-
-        // Opportunity cost calculations (Story 6)
-        const rentPaidBeforePurchase = config.currentMonthlyRent
-            ? Math.round(waitMonths * config.currentMonthlyRent)
-            : 0;
-
-        const cpfInterestGainedFromWaiting = snapshot.opportunityCost?.cpfInterestGained || 0;
-        const netOpportunityCost = rentPaidBeforePurchase - cpfInterestGainedFromWaiting;
-
-        // Affordability level
-        const affordabilityBand = snapshot.affordabilityBands.find(
-            (b) => b.flatType === representativeFlatType && b.classification === 'Standard'
-        );
-        const affordabilityLevel = affordabilityBand?.affordabilityLevel || 'unaffordable';
-        const cashShortfall = financials.affordability.cashShortfall;
-
-        scenarios.push({
-            scenarioName: strategyNames[waitMonths],
-            strategy: strategyKeys[waitMonths],
-            applicationDate: applicationDate.toISOString(),
-            totalGrantsReceived,
-            totalCashRequired,
-            monthlyInstalment,
-            totalInterestPaid: Math.round(totalInterestPaid),
-            rentPaidBeforePurchase,
-            cpfInterestGainedFromWaiting,
-            netOpportunityCost,
-            keyCollectionDate: keyCollectionDate.toISOString(),
-            affordabilityLevel,
-            cashShortfall,
-        });
+function parseEstimatedLaunchDate(estimatedDate?: string): Date {
+    if (!estimatedDate) {
+        // Default to 3 months from now
+        const defaultDate = new Date();
+        defaultDate.setMonth(defaultDate.getMonth() + 3);
+        return defaultDate;
     }
 
-    return scenarios;
+    // Try ISO date first
+    const isoDate = new Date(estimatedDate);
+    if (!isNaN(isoDate.getTime())) {
+        return isoDate;
+    }
+
+    // Parse quarter format: Q1 2027, Q2 2027, etc.
+    const quarterMatch = estimatedDate.match(/Q([1-4])\s+(\d{4})/i);
+    if (quarterMatch) {
+        const quarter = parseInt(quarterMatch[1]);
+        const year = parseInt(quarterMatch[2]);
+        const month = (quarter - 1) * 3; // Q1=0, Q2=3, Q3=6, Q4=9
+        return new Date(year, month, 15); // Middle of first month of quarter
+    }
+
+    // Fallback: 3 months from now
+    const fallbackDate = new Date();
+    fallbackDate.setMonth(fallbackDate.getMonth() + 3);
+    return fallbackDate;
 }
 
 /**
- * Determine the optimal scenario based on grants and affordability
+ * Generate project-specific timeline with milestones and affordability
  */
-export function recommendOptimalScenario(
-    scenarios: import('./timeline.types').ScenarioComparison[]
-): { bestScenario: string; reason: string; netAdvantage: number } {
-    // Filter to only affordable scenarios
-    const affordableScenarios = scenarios.filter((s) => s.affordabilityLevel !== 'unaffordable');
+export function generateProjectTimeline(
+    session: IUserSession,
+    project: import('./timeline.types').ProjectTimelineRequest,
+    config: TimelineProjectionConfig,
+    snapshots: TimelineSnapshot[]
+): import('./timeline.types').ProjectTimeline {
+    const milestones: TimelineMilestone[] = [];
+    const now = new Date();
 
-    if (affordableScenarios.length === 0) {
+    // Parse launch date
+    const launchDate = parseEstimatedLaunchDate(project.estimatedLaunchDate);
+    const launchMonthsFromNow = Math.round(
+        (launchDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+    );
+
+    // BTO Launch milestone
+    milestones.push({
+        date: launchDate.toISOString(),
+        monthsFromNow: launchMonthsFromNow,
+        type: 'bto_launch',
+        title: `${project.projectName} Launch`,
+        description: `Application window opens for ${project.flatType} units`,
+        significance: 'important',
+        projectId: project.projectId,
+    });
+
+    // Find snapshot closest to launch date
+    const launchSnapshot = findSnapshotByDate(snapshots, launchDate);
+
+    // Calculate payments using existing financial service
+    if (launchSnapshot) {
+        const financials = calculateFinancials(
+            {
+                ...session,
+                monthlyIncome: launchSnapshot.projectedMonthlyIncome,
+                partnerMonthlyIncome: launchSnapshot.projectedPartnerMonthlyIncome,
+                cpfOA: launchSnapshot.projectedCPFOA,
+                cashSavings: launchSnapshot.projectedCashSavings,
+                age: launchSnapshot.age,
+                partnerAge: launchSnapshot.partnerAge,
+            } as IUserSession,
+            project.price,
+            project.flatType
+        );
+
+        // Option Fee (1 week after launch)
+        const optionFeeDate = new Date(launchDate);
+        optionFeeDate.setDate(optionFeeDate.getDate() + 7);
+        const optionFeeAmount = financials.cashFlow.milestones[0]?.amountCash || 2000;
+        const optionFeeMonthsFromNow = Math.round(
+            (optionFeeDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+        );
+        const optionFeeSnapshot = findSnapshotByDate(snapshots, optionFeeDate);
+        const canAffordOption = optionFeeSnapshot
+            ? optionFeeSnapshot.projectedCashSavings >= optionFeeAmount
+            : false;
+
+        milestones.push({
+            date: optionFeeDate.toISOString(),
+            monthsFromNow: optionFeeMonthsFromNow,
+            type: 'option_fee_due',
+            title: 'Option Fee Due',
+            description: 'Cash payment required after successful ballot',
+            significance: 'important',
+            projectId: project.projectId,
+            paymentAmount: optionFeeAmount,
+            cashAmount: optionFeeAmount,
+            cpfAmount: 0,
+            canAfford: canAffordOption,
+        });
+
+        // Signing Payment (4 months after launch)
+        const signingDate = new Date(launchDate);
+        signingDate.setMonth(signingDate.getMonth() + 4);
+        const signingMonthsFromNow = Math.round(
+            (signingDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+        );
+        const signingSnapshot = findSnapshotByDate(snapshots, signingDate);
+        const signingMilestone = financials.cashFlow.milestones[1]; // Signing milestone
+        const canAffordSigning = signingSnapshot
+            ? signingSnapshot.projectedCashSavings >= signingMilestone.amountCash &&
+              signingSnapshot.projectedCPFOA >= signingMilestone.amountCPF
+            : false;
+
+        milestones.push({
+            date: signingDate.toISOString(),
+            monthsFromNow: signingMonthsFromNow,
+            type: 'signing_payment_due',
+            title: 'Signing Payment Due',
+            description: `${signingMilestone.cumulativeCPF + signingMilestone.cumulativeCash > 0 ? '5-10%' : ''} downpayment at signing`,
+            significance: 'important',
+            projectId: project.projectId,
+            paymentAmount: signingMilestone.amountCash + signingMilestone.amountCPF,
+            cashAmount: signingMilestone.amountCash,
+            cpfAmount: signingMilestone.amountCPF,
+            canAfford: canAffordSigning,
+        });
+
+        // Key Collection (4 years after launch)
+        const keyDate = new Date(launchDate);
+        keyDate.setFullYear(keyDate.getFullYear() + 4);
+        const keyMonthsFromNow = Math.round(
+            (keyDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+        );
+        const keySnapshot = findSnapshotByDate(snapshots, keyDate);
+        const keyMilestone = financials.cashFlow.milestones[2]; // Key collection milestone
+        const canAffordKey = keySnapshot
+            ? keySnapshot.projectedCashSavings >= keyMilestone.cumulativeCash &&
+              keySnapshot.projectedCPFOA >= keyMilestone.cumulativeCPF
+            : false;
+
+        milestones.push({
+            date: keyDate.toISOString(),
+            monthsFromNow: keyMonthsFromNow,
+            type: 'key_collection_payment_due',
+            title: 'Key Collection Payment',
+            description: 'Final downpayment + stamp duty + legal fees',
+            significance: 'important',
+            projectId: project.projectId,
+            paymentAmount: keyMilestone.amountCash + keyMilestone.amountCPF,
+            cashAmount: keyMilestone.amountCash,
+            cpfAmount: keyMilestone.amountCPF,
+            canAfford: canAffordKey,
+        });
+
+        // Detect savings milestones
+        const savingsMilestones = detectSavingsMilestones(
+            project,
+            snapshots,
+            financials.cashFlow.totalCashRequired,
+            financials.cashFlow.totalCashRequired + financials.cashFlow.totalCPFRequired,
+            financials.loan.monthlyInstalment
+        );
+        milestones.push(...savingsMilestones);
+
+        // Calculate affordability
         return {
-            bestScenario: 'None - Save more before applying',
-            reason: 'Currently cannot afford any scenario. Continue saving.',
-            netAdvantage: 0,
+            project,
+            milestones,
+            affordability: {
+                canAffordOptionFee: canAffordOption,
+                canAffordSigning: canAffordSigning,
+                canAffordKeyCollection: canAffordKey,
+                cashShortfall: Math.max(
+                    0,
+                    financials.cashFlow.totalCashRequired - (launchSnapshot.projectedCashSavings || 0)
+                ),
+                optionFeeShortfall: Math.max(0, optionFeeAmount - (optionFeeSnapshot?.projectedCashSavings || 0)),
+                signingShortfall: Math.max(
+                    0,
+                    signingMilestone.cumulativeCash - (signingSnapshot?.projectedCashSavings || 0)
+                ),
+                keyCollectionShortfall: Math.max(
+                    0,
+                    keyMilestone.cumulativeCash - (keySnapshot?.projectedCashSavings || 0)
+                ),
+            },
         };
     }
 
-    // Find scenario with maximum grants that's still affordable
-    const bestByGrants = affordableScenarios.reduce((best, current) => {
-        return current.totalGrantsReceived > best.totalGrantsReceived ? current : best;
+    // Fallback if no snapshot found
+    return {
+        project,
+        milestones,
+        affordability: {
+            canAffordOptionFee: false,
+            canAffordSigning: false,
+            canAffordKeyCollection: false,
+            cashShortfall: 0,
+            optionFeeShortfall: 0,
+            signingShortfall: 0,
+            keyCollectionShortfall: 0,
+        },
+    };
+}
+
+/**
+ * Find snapshot closest to given date
+ */
+function findSnapshotByDate(snapshots: TimelineSnapshot[], targetDate: Date): TimelineSnapshot | null {
+    if (snapshots.length === 0) return null;
+
+    return snapshots.reduce((closest, snapshot) => {
+        const snapshotDate = new Date(snapshot.date);
+        const closestDate = new Date(closest.date);
+        const targetTime = targetDate.getTime();
+
+        const snapshotDiff = Math.abs(snapshotDate.getTime() - targetTime);
+        const closestDiff = Math.abs(closestDate.getTime() - targetTime);
+
+        return snapshotDiff < closestDiff ? snapshot : closest;
     });
+}
 
-    // Calculate net advantage (grants - opportunity cost)
-    const netAdvantages = affordableScenarios.map((s) => ({
-        scenario: s,
-        netValue: s.totalGrantsReceived - s.netOpportunityCost,
-    }));
+/**
+ * Detect when user has saved enough for each milestone
+ */
+function detectSavingsMilestones(
+    project: import('./timeline.types').ProjectTimelineRequest,
+    snapshots: TimelineSnapshot[],
+    optionFeeAmount: number,
+    totalDownpayment: number,
+    monthlyLoanPayment: number
+): TimelineMilestone[] {
+    const milestones: TimelineMilestone[] = [];
+    const now = new Date();
 
-    const bestNetValue = netAdvantages.reduce((best, current) => {
-        return current.netValue > best.netValue ? current : best;
-    });
-
-    const reasons: string[] = [];
-    if (bestByGrants.scenarioName === bestNetValue.scenario.scenarioName) {
-        reasons.push(`Maximizes grants at $${bestByGrants.totalGrantsReceived.toLocaleString()}`);
-        if (bestByGrants.netOpportunityCost > 0) {
-            reasons.push(
-                `Net opportunity cost of $${bestByGrants.netOpportunityCost.toLocaleString()} (rent exceeds CPF interest gained)`
-            );
-        }
-    } else {
-        reasons.push(
-            `Best balance between grants ($${bestNetValue.scenario.totalGrantsReceived.toLocaleString()}) and opportunity cost`
-        );
+    // Find when cash savings >= option fee
+    const optionFeeReadySnapshot = snapshots.find((s) => s.projectedCashSavings >= optionFeeAmount);
+    if (optionFeeReadySnapshot) {
+        milestones.push({
+            date: optionFeeReadySnapshot.date,
+            monthsFromNow: optionFeeReadySnapshot.monthsFromNow,
+            type: 'cash_ready_option_fee',
+            title: 'Cash Ready for Option Fee',
+            description: `Saved enough cash ($${optionFeeAmount.toLocaleString()}) for option fee`,
+            significance: 'informational',
+            projectId: project.projectId,
+            canAfford: true,
+        });
     }
 
-    // Compare to worst scenario
-    const worstNetValue = netAdvantages.reduce((worst, current) => {
-        return current.netValue < worst.netValue ? current : worst;
-    });
-    const netAdvantage = bestNetValue.netValue - worstNetValue.netValue;
+    // Find when CPF + cash >= total downpayment
+    const downpaymentReadySnapshot = snapshots.find(
+        (s) => s.projectedCPFOA + s.projectedCashSavings >= totalDownpayment
+    );
+    if (downpaymentReadySnapshot) {
+        milestones.push({
+            date: downpaymentReadySnapshot.date,
+            monthsFromNow: downpaymentReadySnapshot.monthsFromNow,
+            type: 'downpayment_saved',
+            title: 'Downpayment Fully Saved',
+            description: `Total savings (CPF + cash) cover full downpayment`,
+            significance: 'informational',
+            projectId: project.projectId,
+            canAfford: true,
+        });
+    }
 
-    return {
-        bestScenario: bestNetValue.scenario.scenarioName,
-        reason: reasons.join('. '),
-        netAdvantage: Math.round(netAdvantage),
-    };
+    // Find when income supports monthly payment (MSR 30%)
+    const affordableSnapshot = snapshots.find((s) => s.totalHouseholdIncome * 0.3 >= monthlyLoanPayment);
+    if (affordableSnapshot) {
+        milestones.push({
+            date: affordableSnapshot.date,
+            monthsFromNow: affordableSnapshot.monthsFromNow,
+            type: 'monthly_payment_affordable',
+            title: 'Monthly Payments Affordable',
+            description: `Income sufficient for loan repayment ($${monthlyLoanPayment.toLocaleString()}/month)`,
+            significance: 'informational',
+            projectId: project.projectId,
+            canAfford: true,
+        });
+    }
+
+    return milestones;
 }

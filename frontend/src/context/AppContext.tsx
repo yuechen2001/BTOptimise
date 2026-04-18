@@ -8,7 +8,7 @@ import type {
     UserProfile,
     ProjectAffordabilityResult,
     OnboardingState,
-    TimelineConfig,
+    ProjectTimelineRequest,
 } from '../types';
 import { getResultIdentity } from '../utils/resultIdentity';
 
@@ -23,10 +23,7 @@ interface AppState {
     onboarding: OnboardingState;
     results: ProjectAffordabilityResult[];
     comparison: ProjectAffordabilityResult[]; // up to 3
-    timeline: {
-        config: TimelineConfig | null;
-        selectedScenario: 'apply_now' | 'wait_6m' | 'wait_12m' | 'wait_24m';
-    };
+    timeline: ProjectTimelineRequest[]; // up to 3 projects, synced with comparison
     isLoading: boolean;
     error: string | null;
 }
@@ -40,10 +37,7 @@ const initialState: AppState = {
     },
     results: [],
     comparison: [],
-    timeline: {
-        config: null,
-        selectedScenario: 'apply_now',
-    },
+    timeline: [],
     isLoading: false,
     error: null,
 };
@@ -58,8 +52,6 @@ type Action =
     | { type: 'SET_RESULTS'; results: ProjectAffordabilityResult[] }
     | { type: 'TOGGLE_COMPARISON'; result: ProjectAffordabilityResult }
     | { type: 'CLEAR_COMPARISON' }
-    | { type: 'SET_TIMELINE_CONFIG'; config: TimelineConfig }
-    | { type: 'SELECT_SCENARIO'; scenario: 'apply_now' | 'wait_6m' | 'wait_12m' | 'wait_24m' }
     | { type: 'SET_LOADING'; isLoading: boolean }
     | { type: 'SET_ERROR'; error: string | null }
     | { type: 'RESET' };
@@ -98,31 +90,41 @@ function reducer(state: AppState, action: Action): AppState {
                 (c) => getResultIdentity(c) === getResultIdentity(action.result)
             );
             if (exists) {
+                // Remove from both comparison and timeline
+                const projectId = action.result.project.projectCode;
+                const flatType = action.result.selectedFlat.type;
                 return {
                     ...state,
                     comparison: state.comparison.filter(
                         (c) => getResultIdentity(c) !== getResultIdentity(action.result)
                     ),
+                    timeline: state.timeline.filter(
+                        (p) => !(p.projectId === projectId && p.flatType === flatType)
+                    ),
                 };
             }
             if (state.comparison.length >= 3) return state; // max 3
-            return { ...state, comparison: [...state.comparison, action.result] };
+            
+            // Add to both comparison and timeline
+            const { project, selectedFlat } = action.result;
+            const timelineProject: ProjectTimelineRequest = {
+                projectId: project.projectCode,
+                projectName: project.name,
+                flatType: selectedFlat.type as import('../types').FlatTypePreference,
+                price: selectedFlat.maxIndicativePrice || selectedFlat.minIndicativePrice || 0,
+                classification: project.classification,
+                estimatedLaunchDate: project.launchdate || undefined,
+            };
+            
+            return { 
+                ...state, 
+                comparison: [...state.comparison, action.result],
+                timeline: [...state.timeline, timelineProject],
+            };
         }
 
         case 'CLEAR_COMPARISON':
-            return { ...state, comparison: [] };
-
-        case 'SET_TIMELINE_CONFIG':
-            return {
-                ...state,
-                timeline: { ...state.timeline, config: action.config },
-            };
-
-        case 'SELECT_SCENARIO':
-            return {
-                ...state,
-                timeline: { ...state.timeline, selectedScenario: action.scenario },
-            };
+            return { ...state, comparison: [], timeline: [] };
 
         case 'SET_LOADING':
             return { ...state, isLoading: action.isLoading };
