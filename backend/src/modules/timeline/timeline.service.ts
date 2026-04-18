@@ -43,10 +43,6 @@ import type {
 } from './timeline.types';
 
 /* ─── Helper Functions ─────────────────────────────────────────────── */
-
-/**
- * Returns true if employment status qualifies for deferred income assessment
- */
 function isDeferredIncome(employmentStatus?: string): boolean {
     return employmentStatus === 'student' || employmentStatus === 'nsf';
 }
@@ -55,9 +51,6 @@ function getTotalIncome(monthlyIncome: number, partnerMonthlyIncome?: number): n
     return monthlyIncome + (partnerMonthlyIncome || 0);
 }
 
-/**
- * Get CPF contribution rate based on age
- */
 function getCPFContributionRate(age: number): number {
     if (age < 35) return CPF_CONTRIBUTION_RATES.under35;
     if (age < 45) return CPF_CONTRIBUTION_RATES.age35to45;
@@ -68,9 +61,6 @@ function getCPFContributionRate(age: number): number {
     return CPF_CONTRIBUTION_RATES.over65;
 }
 
-/**
- * Calculate income at a future date with growth
- */
 function projectIncome(
     currentIncome: number,
     monthsFromNow: number,
@@ -80,9 +70,6 @@ function projectIncome(
     return currentIncome * Math.pow(1 + annualGrowthRate, years);
 }
 
-/**
- * Calculate CPF OA balance at a future date
- */
 function projectCPFOA(
     currentCPFOA: number,
     monthlyIncome: number,
@@ -99,17 +86,14 @@ function projectCPFOA(
         // Add interest
         balance = balance * (1 + monthlyInterestRate);
 
-        // Calculate age at this month
         const ageAtMonth = currentAge + month / 12;
         const partnerAgeAtMonth = partnerAge ? partnerAge + month / 12 : undefined;
 
-        // Project income for this month
         const projectedIncome = projectIncome(monthlyIncome, month, annualGrowthRate);
         const projectedPartnerIncome = partnerMonthlyIncome
             ? projectIncome(partnerMonthlyIncome, month, annualGrowthRate)
             : 0;
 
-        // Calculate CPF contributions
         const cpfRate = getCPFContributionRate(ageAtMonth);
         const partnerCpfRate = partnerAgeAtMonth ? getCPFContributionRate(partnerAgeAtMonth) : 0;
 
@@ -123,9 +107,6 @@ function projectCPFOA(
     return Math.round(balance);
 }
 
-/**
- * Calculate cash savings at a future date
- */
 function projectCashSavings(
     currentCashSavings: number,
     monthlyIncome: number,
@@ -149,9 +130,6 @@ function projectCashSavings(
     return Math.round(balance);
 }
 
-/**
- * Get employment status at a future date (Story 1: DIA handling)
- */
 function getEmploymentStatusAtDate(
     currentStatus: string | undefined,
     targetDate: Date,
@@ -203,7 +181,6 @@ export function projectFinancialSnapshot(
     const currentAge = session.age || 25;
     const currentPartnerAge = session.partnerAge;
 
-    // Handle DIA transition (Story 1)
     const employmentStatusAtDate = getEmploymentStatusAtDate(
         session.employmentStatus,
         targetDate,
@@ -212,7 +189,6 @@ export function projectFinancialSnapshot(
     const wasDeferredNowEmployed =
         isDeferredIncome(session.employmentStatus) && employmentStatusAtDate === 'employed';
 
-    // Project income (handle DIA transition)
     let projectedIncome = currentIncome;
     let projectedPartnerIncome = currentPartnerIncome;
 
@@ -242,7 +218,6 @@ export function projectFinancialSnapshot(
         projectedPartnerIncome = currentPartnerIncome || 0;
     }
 
-    // Project CPF and cash
     const projectedCPFOA = projectCPFOA(
         currentCPFOA,
         currentIncome,
@@ -262,13 +237,11 @@ export function projectFinancialSnapshot(
         savingsRate
     );
 
-    // Project ages
     const projectedAge = currentAge + monthsFromNow / 12;
     const projectedPartnerAge = currentPartnerAge
         ? currentPartnerAge + monthsFromNow / 12
         : undefined;
 
-    // Create projected session for financial calculations
     const projectedSession: IUserSession = {
         ...session,
         monthlyIncome: projectedIncome,
@@ -281,12 +254,10 @@ export function projectFinancialSnapshot(
         deferredIncomeAssessment: isDeferredIncome(employmentStatusAtDate),
     } as IUserSession;
 
-    // Calculate eligibility, grants, and max loan using existing functions
     const eligibility = checkEligibility(projectedSession);
     const grants = calculateEHG(projectedSession);
     const maxLoan = calculateMaxLoan(projectedSession);
 
-    // Calculate affordability bands for different flat types
     const affordabilityBands = calculateAffordabilityBands(projectedSession, config);
 
     // Calculate opportunity cost if applicable (Story 6)
@@ -335,7 +306,6 @@ function calculateAffordabilityBands(
         projectedSession.partnerMonthlyIncome
     );
 
-    // Representative flat prices by type and classification
     const flatPrices: Record<string, { Standard: number; Plus: number; Prime: number }> = {
         '2-Room Flexi': { Standard: 150000, Plus: 180000, Prime: 200000 },
         '3-Room': { Standard: 250000, Plus: 300000, Prime: 350000 },
@@ -348,7 +318,6 @@ function calculateAffordabilityBands(
         for (const classification of ['Standard', 'Plus', 'Prime'] as const) {
             const estimatedPrice = flatPrices[flatType][classification];
 
-            // Calculate financials for this flat type/price
             const financials = calculateFinancials(projectedSession, estimatedPrice, flatType);
 
             const cashRequired = financials.cashFlow.totalCashRequired;
@@ -361,7 +330,6 @@ function calculateAffordabilityBands(
             const remainingIncome = totalIncome - msrPayment;
             const bufferPercentage = totalIncome > 0 ? remainingIncome / totalIncome : 0;
 
-            // Determine affordability level
             let affordabilityLevel: 'comfortable' | 'stretch' | 'unaffordable';
             if (cashShortfall > 0 || bufferPercentage < AFFORDABILITY_THRESHOLDS.stretch) {
                 affordabilityLevel = 'unaffordable';
@@ -391,9 +359,6 @@ function calculateAffordabilityBands(
     return bands;
 }
 
-/**
- * Calculate opportunity cost at a specific point (Story 6)
- */
 function calculateOpportunityCostAtPoint(
     monthsFromNow: number,
     monthlyRent: number,
@@ -416,9 +381,6 @@ function calculateOpportunityCostAtPoint(
     };
 }
 
-/**
- * Detect important milestones in the timeline (Story 2)
- */
 export function detectMilestones(
     session: IUserSession,
     snapshots: TimelineSnapshot[],
@@ -486,9 +448,6 @@ export function detectMilestones(
     return milestones;
 }
 
-/**
- * Add estimated BTO launch dates as milestones
- */
 function addBTOLaunchMilestones(
     milestones: TimelineMilestone[],
     config: TimelineProjectionConfig
@@ -518,24 +477,17 @@ function addBTOLaunchMilestones(
     }
 }
 
-/**
- * Generate projection assumptions used in calculations
- */
 export function generateAssumptions(config: TimelineProjectionConfig): ProjectionAssumptions {
     return {
         incomeGrowthRate: INCOME_GROWTH_RATES[config.incomeGrowthScenario],
         cpfOAInterestRate: CPF_OA_INTEREST_RATE,
-        cpfContributionRate: config.cpfContributionRate || getCPFContributionRate(30), // Default to under-35 rate
+        cpfContributionRate: config.cpfContributionRate || getCPFContributionRate(30), 
         cashSavingsRate: config.cashSavingsRate || DEFAULT_CASH_SAVINGS_RATE,
-        rentInflationRate: 0.02, // 2% p.a. rent inflation
+        rentInflationRate: 0.02,
     };
 }
 
 /* ─── Project Timeline Generation ──────────────────────────────────── */
-
-/**
- * Parse estimated launch date from 'Q1 2027' format or ISO date
- */
 function parseEstimatedLaunchDate(estimatedDate?: string): Date {
     if (!estimatedDate) {
         // Default to 3 months from now
@@ -549,7 +501,6 @@ function parseEstimatedLaunchDate(estimatedDate?: string): Date {
         return isoDate;
     }
 
-    // Parse quarter format: Q1 2027, Q2 2027, etc.
     const quarterMatch = estimatedDate.match(/Q([1-4])\s+(\d{4})/i);
     if (quarterMatch) {
         const quarter = parseInt(quarterMatch[1]);
@@ -563,9 +514,6 @@ function parseEstimatedLaunchDate(estimatedDate?: string): Date {
     return fallbackDate;
 }
 
-/**
- * Generate project-specific timeline with milestones and affordability
- */
 export function generateProjectTimeline(
     session: IUserSession,
     project: import('./timeline.types').ProjectTimelineRequest,
@@ -580,7 +528,6 @@ export function generateProjectTimeline(
         (launchDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
     );
 
-    // BTO Launch milestone
     milestones.push({
         date: launchDate.toISOString(),
         monthsFromNow: launchMonthsFromNow,
@@ -591,10 +538,8 @@ export function generateProjectTimeline(
         projectId: project.projectId,
     });
 
-    // Find snapshot closest to launch date
     const launchSnapshot = findSnapshotByDate(snapshots, launchDate);
 
-    // Calculate payments using existing financial service
     if (launchSnapshot) {
         const financials = calculateFinancials(
             {
@@ -610,7 +555,6 @@ export function generateProjectTimeline(
             project.flatType
         );
 
-        // Option Fee (1 week after launch)
         const optionFeeDate = new Date(launchDate);
         optionFeeDate.setDate(optionFeeDate.getDate() + 7);
         const optionFeeAmount = financials.cashFlow.milestones[0]?.amountCash || 2000;
@@ -636,14 +580,13 @@ export function generateProjectTimeline(
             canAfford: canAffordOption,
         });
 
-        // Signing Payment (4 months after launch)
         const signingDate = new Date(launchDate);
         signingDate.setMonth(signingDate.getMonth() + 4);
         const signingMonthsFromNow = Math.round(
             (signingDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
         );
         const signingSnapshot = findSnapshotByDate(snapshots, signingDate);
-        const signingMilestone = financials.cashFlow.milestones[1]; // Signing milestone
+        const signingMilestone = financials.cashFlow.milestones[1];
         const canAffordSigning = signingSnapshot
             ? signingSnapshot.projectedCashSavings >= signingMilestone.amountCash &&
               signingSnapshot.projectedCPFOA >= signingMilestone.amountCPF
@@ -663,14 +606,13 @@ export function generateProjectTimeline(
             canAfford: canAffordSigning,
         });
 
-        // Key Collection (4 years after launch)
         const keyDate = new Date(launchDate);
         keyDate.setFullYear(keyDate.getFullYear() + 4);
         const keyMonthsFromNow = Math.round(
             (keyDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
         );
         const keySnapshot = findSnapshotByDate(snapshots, keyDate);
-        const keyMilestone = financials.cashFlow.milestones[2]; // Key collection milestone
+        const keyMilestone = financials.cashFlow.milestones[2];
         const canAffordKey = keySnapshot
             ? keySnapshot.projectedCashSavings >= keyMilestone.cumulativeCash &&
               keySnapshot.projectedCPFOA >= keyMilestone.cumulativeCPF
@@ -690,7 +632,6 @@ export function generateProjectTimeline(
             canAfford: canAffordKey,
         });
 
-        // Detect savings milestones
         const savingsMilestones = detectSavingsMilestones(
             project,
             snapshots,
@@ -700,7 +641,6 @@ export function generateProjectTimeline(
         );
         milestones.push(...savingsMilestones);
 
-        // Calculate affordability
         return {
             project,
             milestones,
@@ -745,9 +685,6 @@ export function generateProjectTimeline(
     };
 }
 
-/**
- * Find snapshot closest to given date
- */
 function findSnapshotByDate(
     snapshots: TimelineSnapshot[],
     targetDate: Date
@@ -779,7 +716,6 @@ function detectSavingsMilestones(
     const milestones: TimelineMilestone[] = [];
     const now = new Date();
 
-    // Find when cash savings >= option fee
     const optionFeeReadySnapshot = snapshots.find((s) => s.projectedCashSavings >= optionFeeAmount);
     if (optionFeeReadySnapshot) {
         milestones.push({
@@ -794,7 +730,6 @@ function detectSavingsMilestones(
         });
     }
 
-    // Find when CPF + cash >= total downpayment
     const downpaymentReadySnapshot = snapshots.find(
         (s) => s.projectedCPFOA + s.projectedCashSavings >= totalDownpayment
     );

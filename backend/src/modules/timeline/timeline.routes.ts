@@ -204,13 +204,10 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             currentDate.setMonth(currentDate.getMonth() + timelineConfig.intervalMonths);
         }
 
-        // Detect milestones
         const milestones = detectMilestones(session, snapshots, timelineConfig);
 
-        // Generate assumptions
         const assumptions = generateAssumptions(timelineConfig);
 
-        // Generate project-specific timelines
         const projectTimelines: import('./timeline.types').ProjectTimeline[] = [];
         if (projects && Array.isArray(projects)) {
             for (const project of projects) {
@@ -224,7 +221,6 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             }
         }
 
-        // Build result
         const result: TimelineProjectionResult = {
             sessionId,
             config: timelineConfig,

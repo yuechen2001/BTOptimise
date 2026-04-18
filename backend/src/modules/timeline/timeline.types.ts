@@ -18,19 +18,14 @@ import type { FlatTypePreference, CitizenshipStatus, EmploymentStatus } from '..
 
 /* ─── Configuration Types ──────────────────────────────────────────── */
 
-/** Income growth rate scenarios */
 export type IncomeGrowthScenario = 'conservative' | 'moderate' | 'aggressive';
 
-/** Property type for future extension (Story 7) */
 export type PropertyType = 'BTO' | 'Resale' | 'EC';
 
-/** Comparison strategy for scenarios */
 export type ComparisonStrategy = 'apply_now' | 'wait_6m' | 'wait_12m' | 'wait_24m' | 'custom';
 
-/** Project classification */
 export type ProjectClassification = 'Standard' | 'Plus' | 'Prime';
 
-/** Timeline projection configuration */
 export interface TimelineProjectionConfig {
     startYear: number;
     endYear: number;
@@ -38,21 +33,20 @@ export interface TimelineProjectionConfig {
     incomeGrowthScenario: IncomeGrowthScenario;
 
     /* Deferred Income Assessment handling */
-    assumeEmploymentDate?: string; // ISO date when NSF/student becomes employed
-    assumedStartingSalary?: number; // Expected monthly income after employment
+    assumeEmploymentDate?: string; 
+    assumedStartingSalary?: number;
 
     /* Wait-and-see opportunity cost inputs */
-    currentMonthlyRent?: number; // Current monthly rent paid while waiting
+    currentMonthlyRent?: number; 
     includeOpportunityCost?: boolean; // Whether to calculate rent vs CPF growth
 
     /* Optional overrides */
-    cpfContributionRate?: number; // Override default CPF contribution rate
-    cashSavingsRate?: number; // % of income saved monthly
+    cpfContributionRate?: number;
+    cashSavingsRate?: number; 
 }
 
 /* ─── Project Timeline Types ───────────────────────────────────────── */
 
-/** Project information for timeline generation */
 export interface ProjectTimelineRequest {
     projectId: string;
     projectName: string;
@@ -62,7 +56,6 @@ export interface ProjectTimelineRequest {
     estimatedLaunchDate?: string; // ISO date or 'Q1 2027', 'Q2 2027', etc.
 }
 
-/** Project-specific timeline with milestones and affordability */
 export interface ProjectTimeline {
     project: ProjectTimelineRequest;
     milestones: TimelineMilestone[];
@@ -79,7 +72,6 @@ export interface ProjectTimeline {
 
 /* ─── Snapshot Types ───────────────────────────────────────────────── */
 
-/** Financial state at a specific point in time */
 export interface TimelineSnapshot {
     date: string; // ISO date string
     monthsFromNow: number;
@@ -122,8 +114,8 @@ export interface AffordabilityBand {
 
     /* Affordability classification */
     affordabilityLevel: 'comfortable' | 'stretch' | 'unaffordable';
-    cashRequired: number; // Total cash at key collection
-    cpfRequired: number; // Total CPF used
+    cashRequired: number;
+    cpfRequired: number;
     monthlyInstalment: number;
     cashShortfall: number; // 0 if affordable
     bufferPercentage: number; // % income remaining after MSR
@@ -132,7 +124,7 @@ export interface AffordabilityBand {
 /** Opportunity cost tracking (Story 6) */
 export interface OpportunityCostSnapshot {
     cumulativeRentPaid: number;
-    cpfInterestGained: number; // CPF OA interest earned during wait
+    cpfInterestGained: number;
     netOpportunityCost: number; // Rent - CPF interest
 }
 
@@ -165,26 +157,25 @@ export interface TimelineMilestone {
     significance: 'critical' | 'important' | 'informational';
 
     /* Financial impact */
-    impactOnGrants?: number; // Amount of grant change
-    impactOnEligibility?: string; // Eligibility status change
+    impactOnGrants?: number;
+    impactOnEligibility?: string;
 
     /* Project-specific data */
-    projectId?: string; // Links milestone to specific project
-    paymentAmount?: number; // Payment required (for payment milestones)
-    cashAmount?: number; // Cash portion of payment
-    cpfAmount?: number; // CPF portion of payment
-    canAfford?: boolean; // Whether user can afford at this time
+    projectId?: string;
+    paymentAmount?: number;
+    cashAmount?: number;
+    cpfAmount?: number;
+    canAfford?: boolean;
 }
 
 /* ─── Main Timeline Result ─────────────────────────────────────────── */
 
-/** Projection assumptions used in calculations */
 export interface ProjectionAssumptions {
-    incomeGrowthRate: number; // Annual % increase
-    cpfOAInterestRate: number; // CPF OA interest rate
-    cpfContributionRate: number; // Monthly CPF contribution %
-    cashSavingsRate: number; // % of income saved monthly
-    rentInflationRate?: number; // If tracking rent
+    incomeGrowthRate: number;
+    cpfOAInterestRate: number;
+    cpfContributionRate: number;
+    cashSavingsRate: number;
+    rentInflationRate?: number;
 }
 
 /** Complete timeline projection result */

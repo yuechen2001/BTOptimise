@@ -89,7 +89,6 @@ export function checkEligibility(session: IUserSession, flatType?: string): Elig
     let incomeCeilingCheck = false;
     const deferredIncomeAssessment = session.deferredIncomeAssessment;
 
-    // Citizenship check
     if (!session.citizenship) {
         reasons.push('Citizenship status not provided');
         canPurchase = false;
@@ -101,7 +100,6 @@ export function checkEligibility(session: IUserSession, flatType?: string): Elig
         canPurchase = false;
     }
 
-    // Income ceiling check (skip if deferred assessment)
     if (!deferredIncomeAssessment) {
         const totalIncome = getTotalIncome(session);
         const isCouple = session.applicantType === 'couple';
@@ -143,7 +141,6 @@ export function calculateEHG(session: IUserSession): GrantResult {
     const breakdown: string[] = [];
     const totalIncome = getTotalIncome(session);
 
-    // Check first-timer eligibility
     if (!session.firstTimer) {
         breakdown.push('Not a first-timer — EHG not applicable');
         return { ehgAmount: 0, proximityGrant: 0, totalGrant: 0, breakdown };
@@ -226,7 +223,6 @@ export function calculateActualLoan(
 
     const actualLoanAmount = Math.min(amountToFinance, ltvLimit, maxLoanByMSR);
 
-    // Calculate monthly instalment for actual loan
     const r = HDB_LOAN_INTEREST_RATE / 12;
     const n = MAX_LOAN_TENURE_YEARS * 12;
     const monthlyInstalment =
@@ -267,7 +263,6 @@ export function calculateCashFlow(
     let cumulativeCPF = 0;
     let remainingCPF = cpfOA;
 
-    // Stage 1: Option Fee (cash only)
     const optionFee = OPTION_FEE_BY_FLAT_TYPE[flatType] || 2000;
     cumulativeCash += optionFee;
     milestones.push({
@@ -278,14 +273,13 @@ export function calculateCashFlow(
         cumulativeCPF,
     });
 
-    // Stage 2: Signing of Agreement for Lease
-    let signingPercentage = 0.05; // Standard 5%
+    let signingPercentage = 0.05;
     if (eligibleForSDS && isDeferredIncome(employmentStatus)) {
-        signingPercentage = 0.025; // 2.5% for student/NSF with SDS
+        signingPercentage = 0.025;
     } else if (eligibleForSDS) {
-        signingPercentage = 0.05; // 5% for standard SDS
+        signingPercentage = 0.05;
     } else {
-        signingPercentage = 0.1; // 10% for non-SDS
+        signingPercentage = 0.1;
     }
 
     const signingAmount = Math.round(priceAfterGrant * signingPercentage) - optionFee;
@@ -305,7 +299,7 @@ export function calculateCashFlow(
     });
 
     // Stage 3: Key Collection (remaining 15-17.5% + stamp duty + legal fees)
-    const downpaymentTotal = 0.25; // Total 25% downpayment
+    const downpaymentTotal = 0.25;
     const alreadyPaid = optionFee + signingAmount;
     const remainingDownpayment = Math.round(priceAfterGrant * downpaymentTotal) - alreadyPaid;
 

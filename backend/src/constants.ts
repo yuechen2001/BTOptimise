@@ -116,14 +116,12 @@ export enum AffordabilityStatus {
     OUT_OF_REACH = 'outOfReach',
 }
 
-/** Annual income growth rates by scenario */
 export const INCOME_GROWTH_RATES = {
     conservative: 0.02,
     moderate: 0.04,
     aggressive: 0.06,
 } as const;
 
-/** CPF Ordinary Account interest rate */
 export const CPF_OA_INTEREST_RATE = 0.025;
 
 /** CPF contribution rates by age group (employee + employer combined) */
@@ -137,14 +135,12 @@ export const CPF_CONTRIBUTION_RATES = {
     over65: 0.125,
 } as const;
 
-/** Default cash savings rate (% of monthly income saved) */
 export const DEFAULT_CASH_SAVINGS_RATE = 0.1;
 
 /** Affordability thresholds (% income buffer after MSR payment) */
 export const AFFORDABILITY_THRESHOLDS = {
-    comfortable: 0.2, // >20% income buffer after MSR
-    stretch: 0.1, // 10-20% buffer
-    // <10% is unaffordable
+    comfortable: 0.2,
+    stretch: 0.1,
 } as const;
 
 /** Default timeline projection settings */
