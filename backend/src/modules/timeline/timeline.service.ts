@@ -234,7 +234,6 @@ export function projectFinancialSnapshot(
 
     const affordabilityBands = calculateAffordabilityBands(projectedSession, config);
 
-    // Calculate opportunity cost if applicable (Story 6)
     let opportunityCost: OpportunityCostSnapshot | undefined;
     if (config.includeOpportunityCost && config.currentMonthlyRent) {
         opportunityCost = calculateOpportunityCostAtPoint(
@@ -296,7 +295,6 @@ function calculateAffordabilityBands(
             const monthlyInstalment = financials.loan.monthlyInstalment;
             const cashShortfall = financials.affordability.cashShortfall;
 
-            // Calculate buffer percentage (income remaining after MSR)
             const msrPayment = monthlyInstalment;
             const remainingIncome = totalIncome - msrPayment;
             const bufferPercentage = totalIncome > 0 ? remainingIncome / totalIncome : 0;
@@ -471,7 +469,7 @@ function parseEstimatedLaunchDate(estimatedDate?: string): Date {
         const quarter = parseInt(quarterMatch[1]);
         const year = parseInt(quarterMatch[2]);
         const month = (quarter - 1) * 3; // Q1=0, Q2=3, Q3=6, Q4=9
-        return new Date(year, month, 15); // Middle of first month of quarter
+        return new Date(year, month, 15);
     }
 
     const fallbackDate = new Date();
