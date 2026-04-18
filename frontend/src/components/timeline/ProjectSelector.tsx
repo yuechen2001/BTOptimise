@@ -185,6 +185,7 @@ function ProjectCard({ project, onRemove }: ProjectCardProps) {
                     style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', lineHeight: 1.4 }}
                 >
                     {project.flatType}
+                    {project.estimatedFloorArea && ` (${project.estimatedFloorArea} sqm)`}
                 </div>
             </div>
 

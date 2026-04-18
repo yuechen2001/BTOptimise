@@ -94,7 +94,12 @@ function reducer(state: AppState, action: Action): AppState {
                         (c) => getResultIdentity(c) !== getResultIdentity(action.result)
                     ),
                     timeline: state.timeline.filter(
-                        (p) => !(p.projectId === projectId && p.flatType === flatType && p.estimatedFloorArea === estimatedFloorArea)
+                        (p) =>
+                            !(
+                                p.projectId === projectId &&
+                                p.flatType === flatType &&
+                                p.estimatedFloorArea === estimatedFloorArea
+                            )
                     ),
                 };
             }
