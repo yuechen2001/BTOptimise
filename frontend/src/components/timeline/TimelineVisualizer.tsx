@@ -89,9 +89,9 @@ export default function TimelineVisualizer() {
     if (!sessionId || !onboarding.completed) {
         return (
             <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
-                <h1>Timeline Visualizer</h1>
-                <p style={{ color: 'var(--clr-text-muted)', marginTop: '1rem' }}>
-                    Please complete the onboarding process to view your personalized timeline.
+                <h2 className="section-title">Timeline Visualizer</h2>
+                <p className="section-subtitle">
+                    Select up to 3 projects from the dashboard to visualize project-specific timeline.
                 </p>
                 <a href="/onboarding" className="btn btn--primary" style={{ marginTop: '1.5rem' }}>
                     Complete Onboarding
@@ -103,7 +103,7 @@ export default function TimelineVisualizer() {
     if (isLoading) {
         return (
             <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
-                <h1>Timeline Visualizer</h1>
+                <h2 className="section-title">Timeline Visualizer</h2>
                 <div style={{ marginTop: '2rem' }}>
                     <div className="spinner" />
                     <p style={{ marginTop: '1rem', color: 'var(--clr-text-muted)' }}>
