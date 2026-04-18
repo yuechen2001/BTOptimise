@@ -2,10 +2,10 @@
  * Timeline Visualizer Main Component
  *
  * Redesigned with collapsible sidebar and project-based timeline comparison.
- * Supports Stories 1 (DIA), 2 (Grant Optimizer), and 3 (Affordability Timeline).
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import * as Tooltip from '@radix-ui/react-tooltip';
 import { useAppState } from '../../context/AppContext';
 import { useTimelineProjection } from '../../hooks/useApi';
 import type { TimelineConfig, IncomeGrowthScenario, TimelineMilestone } from '../../types';
@@ -85,6 +85,26 @@ export default function TimelineVisualizer() {
         setSelectedMilestone(null);
     };
 
+    // Handle escape key to close dialog
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && selectedMilestone) {
+                handleCloseMilestoneDetails();
+            }
+        };
+
+        if (selectedMilestone) {
+            document.addEventListener('keydown', handleEscape);
+            // Lock body scroll when dialog is open
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = '';
+        };
+    }, [selectedMilestone]);
+
     // Early returns for loading/error/incomplete states
     if (!sessionId || !onboarding.completed) {
         return (
@@ -135,9 +155,10 @@ export default function TimelineVisualizer() {
     }
 
     return (
-        <div style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}>
-            {/* Collapsible Sidebar */}
-            <CollapsibleSidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle}>
+        <Tooltip.Provider delayDuration={200}>
+            <div style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}>
+                {/* Collapsible Sidebar */}
+                <CollapsibleSidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle}>
                 {/* Project Selector - At the top */}
                 <ProjectSelector onProjectsChange={handleProjectsChange} />
                 
@@ -152,7 +173,7 @@ export default function TimelineVisualizer() {
             </CollapsibleSidebar>
 
             {/* Main Content Area */}
-            <div style={{ flex: 1, padding: '2rem 1rem', overflow: 'auto' }}>
+            <div style={{ flex: 1, padding: '1rem 1rem', overflow: 'auto' }}>
                 <div style={{ marginBottom: '2rem' }}>
                     <h1 style={{ marginBottom: '0.5rem' }}>Timeline Visualizer</h1>
                     <p style={{ color: 'var(--clr-text-muted)' }}>
@@ -167,18 +188,57 @@ export default function TimelineVisualizer() {
                             projectTimelines={timelineData.projectTimelines}
                             onMilestoneClick={handleMilestoneClick}
                         />
-                        
-                        {/* Milestone Details Panel (shown when milestone clicked) */}
-                        {selectedMilestone && (
-                            <MilestoneDetailsPanel
-                                milestone={selectedMilestone.milestone}
-                                projectName={selectedMilestone.projectName}
-                                onClose={handleCloseMilestoneDetails}
-                            />
-                        )}
                     </>
                 )}
             </div>
         </div>
+
+        {/* Milestone Details Modal (shown when milestone clicked) */}
+        {selectedMilestone && (
+            <>
+                {/* Overlay */}
+                <div
+                    onClick={handleCloseMilestoneDetails}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        animation: 'dialog-overlay-fade-in 150ms ease-out',
+                        zIndex: 1000,
+                    }}
+                    aria-hidden="true"
+                />
+                
+                {/* Modal Content */}
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="milestone-dialog-title"
+                    style={{
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '90vw',
+                        maxWidth: '600px',
+                        maxHeight: '85vh',
+                        overflow: 'auto',
+                        background: 'var(--clr-bg-primary)',
+                        borderRadius: 'var(--radius-lg)',
+                        boxShadow: 'var(--shadow-lg)',
+                        animation: 'dialog-content-fade-in 200ms ease-out',
+                        zIndex: 1001,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <MilestoneDetailsPanel
+                        milestone={selectedMilestone.milestone}
+                        projectName={selectedMilestone.projectName}
+                        onClose={handleCloseMilestoneDetails}
+                    />
+                </div>
+            </>
+        )}
+    </Tooltip.Provider>
     );
 }

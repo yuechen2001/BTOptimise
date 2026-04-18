@@ -26,7 +26,7 @@ export default function CollapsibleSidebar({ isOpen, onToggle, children }: Colla
                     top: '80px', // Below header
                     left: 0,
                     height: 'calc(100vh - 80px)',
-                    width: isOpen ? '280px' : '60px',
+                    width: isOpen ? '320px' : '60px',
                     background: 'var(--clr-bg-secondary)',
                     borderRight: '1px solid var(--clr-border)',
                     transition: 'width 300ms ease',

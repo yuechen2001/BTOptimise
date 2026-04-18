@@ -57,7 +57,7 @@ export default function LandingPage() {
                                 <li key={feature}>{feature}</li>
                             ))}
                         </ul>
-                        <Link to="/onboarding" className="btn landing__tier-button landing__premium-action">
+                        <Link to="/onboarding" className="btn btn--primary landing__tier-button">
                             Use Free Now
                         </Link>
                     </article>

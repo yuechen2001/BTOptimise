@@ -8,7 +8,6 @@
  * - Shows empty state when no projects selected
  */
 
-import { useState } from 'react';
 import ProjectTimelineRow from './ProjectTimelineRow';
 import type { ProjectTimeline, TimelineMilestone } from '../../types';
 
@@ -18,20 +17,7 @@ interface StackedTimelinesProps {
 }
 
 export default function StackedTimelines({ projectTimelines, onMilestoneClick }: StackedTimelinesProps) {
-    const [expandedProjectIds, setExpandedProjectIds] = useState<Set<string>>(new Set());
-
     const handleMilestoneClick = (milestone: TimelineMilestone, projectId: string) => {
-        // Toggle expanded state for this project
-        setExpandedProjectIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(projectId)) {
-                next.delete(projectId);
-            } else {
-                next.add(projectId);
-            }
-            return next;
-        });
-
         // Call parent handler if provided
         onMilestoneClick?.(milestone, projectId);
     };
@@ -79,7 +65,6 @@ export default function StackedTimelines({ projectTimelines, onMilestoneClick }:
                     <ProjectTimelineRow
                         key={projectTimeline.project.projectId}
                         projectTimeline={projectTimeline}
-                        isExpanded={expandedProjectIds.has(projectTimeline.project.projectId)}
                         onMilestoneClick={(milestone) => 
                             handleMilestoneClick(milestone, projectTimeline.project.projectId)
                         }

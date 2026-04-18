@@ -72,12 +72,8 @@ export default function MilestoneDetailsPanel({ milestone, projectName, onClose 
     return (
         <div
             style={{
-                marginTop: '1.5rem',
                 padding: '1.5rem',
                 background: 'var(--clr-bg-primary)',
-                border: `2px solid ${color}`,
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             }}
         >
             {/* Header */}
