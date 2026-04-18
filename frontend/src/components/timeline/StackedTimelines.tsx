@@ -52,17 +52,6 @@ export default function StackedTimelines({
 
     return (
         <div style={{ marginTop: '2rem' }}>
-            {/* Header */}
-            <div style={{ marginBottom: '1.5rem' }}>
-                <h2 style={{ fontSize: '1.3rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                    Project Timeline Comparison
-                </h2>
-                <p style={{ fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>
-                    Compare payment schedules, savings milestones, and affordability across{' '}
-                    {projectTimelines.length} project{projectTimelines.length > 1 ? 's' : ''}
-                </p>
-            </div>
-
             {/* Stacked Timeline Rows */}
             <div>
                 {projectTimelines.map((projectTimeline) => (
