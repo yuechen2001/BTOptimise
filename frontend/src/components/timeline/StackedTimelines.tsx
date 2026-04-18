@@ -16,7 +16,10 @@ interface StackedTimelinesProps {
     onMilestoneClick?: (milestone: TimelineMilestone, projectId: string) => void;
 }
 
-export default function StackedTimelines({ projectTimelines, onMilestoneClick }: StackedTimelinesProps) {
+export default function StackedTimelines({
+    projectTimelines,
+    onMilestoneClick,
+}: StackedTimelinesProps) {
     const handleMilestoneClick = (milestone: TimelineMilestone, projectId: string) => {
         // Call parent handler if provided
         onMilestoneClick?.(milestone, projectId);
@@ -40,8 +43,8 @@ export default function StackedTimelines({ projectTimelines, onMilestoneClick }:
                     No Project Timelines Yet
                 </h3>
                 <p style={{ color: 'var(--clr-text-muted)', maxWidth: '500px', margin: '0 auto' }}>
-                    Select 1-3 projects from the Project Selector above to visualize their timelines, 
-                    payment schedules, and affordability milestones side-by-side.
+                    Select 1-3 projects from the Project Selector above to visualize their
+                    timelines, payment schedules, and affordability milestones side-by-side.
                 </p>
             </div>
         );
@@ -55,7 +58,8 @@ export default function StackedTimelines({ projectTimelines, onMilestoneClick }:
                     Project Timeline Comparison
                 </h2>
                 <p style={{ fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>
-                    Compare payment schedules, savings milestones, and affordability across {projectTimelines.length} project{projectTimelines.length > 1 ? 's' : ''}
+                    Compare payment schedules, savings milestones, and affordability across{' '}
+                    {projectTimelines.length} project{projectTimelines.length > 1 ? 's' : ''}
                 </p>
             </div>
 
@@ -65,7 +69,7 @@ export default function StackedTimelines({ projectTimelines, onMilestoneClick }:
                     <ProjectTimelineRow
                         key={projectTimeline.project.projectId}
                         projectTimeline={projectTimeline}
-                        onMilestoneClick={(milestone) => 
+                        onMilestoneClick={(milestone) =>
                             handleMilestoneClick(milestone, projectTimeline.project.projectId)
                         }
                     />
@@ -96,7 +100,9 @@ export default function StackedTimelines({ projectTimelines, onMilestoneClick }:
                             boxShadow: '0 0 0 2px #EF4444',
                         }}
                     />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)' }}>Critical Events</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)' }}>
+                        Critical Events
+                    </span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -110,7 +116,9 @@ export default function StackedTimelines({ projectTimelines, onMilestoneClick }:
                             boxShadow: '0 0 0 2px #3B82F6',
                         }}
                     />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)' }}>Payment Milestones</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)' }}>
+                        Payment Milestones
+                    </span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -124,10 +132,19 @@ export default function StackedTimelines({ projectTimelines, onMilestoneClick }:
                             boxShadow: '0 0 0 2px #10B981',
                         }}
                     />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)' }}>Savings Milestones</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)' }}>
+                        Savings Milestones
+                    </span>
                 </div>
 
-                <div style={{ marginLeft: 'auto', fontSize: '0.8rem', color: 'var(--clr-text-muted)', fontStyle: 'italic' }}>
+                <div
+                    style={{
+                        marginLeft: 'auto',
+                        fontSize: '0.8rem',
+                        color: 'var(--clr-text-muted)',
+                        fontStyle: 'italic',
+                    }}
+                >
                     Hover over dots for details • Click to expand
                 </div>
             </div>

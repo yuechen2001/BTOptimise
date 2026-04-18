@@ -98,7 +98,9 @@ export default function StepFinancials() {
                     inputMode="numeric"
                     placeholder={isDeferred ? '0 (deferred)' : 'e.g. 4,500'}
                     value={formatNumberWithCommas(p.monthlyIncome)}
-                    onChange={(e) => update({ monthlyIncome: parseFormattedNumber(e.target.value) })}
+                    onChange={(e) =>
+                        update({ monthlyIncome: parseFormattedNumber(e.target.value) })
+                    }
                 />
             </div>
 
@@ -112,7 +114,9 @@ export default function StepFinancials() {
                         inputMode="numeric"
                         placeholder="e.g. 3,500"
                         value={formatNumberWithCommas(p.partnerMonthlyIncome)}
-                        onChange={(e) => update({ partnerMonthlyIncome: parseFormattedNumber(e.target.value) })}
+                        onChange={(e) =>
+                            update({ partnerMonthlyIncome: parseFormattedNumber(e.target.value) })
+                        }
                     />
                 </div>
             )}

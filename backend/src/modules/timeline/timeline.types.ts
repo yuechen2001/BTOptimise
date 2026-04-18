@@ -1,6 +1,6 @@
 /**
  * Timeline Visualizer Type Definitions
- * 
+ *
  * Supports user stories:
  * - Story 1: Deferred Income Assessment (DIA) strategy
  * - Story 2: Grant Ceiling optimizer
@@ -163,7 +163,7 @@ export interface TimelineMilestone {
     /* Financial impact */
     impactOnGrants?: number; // Amount of grant change
     impactOnEligibility?: string; // Eligibility status change
-    
+
     /* Project-specific data */
     projectId?: string; // Links milestone to specific project
     paymentAmount?: number; // Payment required (for payment milestones)
@@ -203,7 +203,10 @@ export interface TimelineProjectionResult {
 /* ─── Helper Types ─────────────────────────────────────────────────── */
 
 /** Internal session snapshot for projections */
-export interface ProjectedUserSession extends Omit<IUserSession, '_id' | 'sessionId' | 'expiresAt'> {
+export interface ProjectedUserSession extends Omit<
+    IUserSession,
+    '_id' | 'sessionId' | 'expiresAt'
+> {
     projectedIncome: number;
     projectedPartnerIncome?: number;
     projectedCPFOA: number;

@@ -15,7 +15,11 @@ interface CollapsibleSidebarProps {
     children: ReactNode;
 }
 
-export default function CollapsibleSidebar({ isOpen, onToggle, children }: CollapsibleSidebarProps) {
+export default function CollapsibleSidebar({
+    isOpen,
+    onToggle,
+    children,
+}: CollapsibleSidebarProps) {
     return (
         <>
             {/* Desktop Sidebar (>768px) */}

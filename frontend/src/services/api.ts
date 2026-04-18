@@ -381,10 +381,7 @@ export async function calculateMatching(input: MatchingInput): Promise<MatchingR
 
 /* ─── Timeline Visualizer API ──────────────────────────────────────── */
 
-import type {
-    TimelineConfig,
-    TimelineProjectionResult,
-} from '../types';
+import type { TimelineConfig, TimelineProjectionResult } from '../types';
 
 // Re-export timeline types for useApi.ts
 export type { TimelineProjectionResult };

@@ -116,36 +116,34 @@ export enum AffordabilityStatus {
     OUT_OF_REACH = 'outOfReach',
 }
 
-/* ─── Timeline Projection Constants ────────────────────────────────── */
-
 /** Annual income growth rates by scenario */
 export const INCOME_GROWTH_RATES = {
-    conservative: 0.02, // 2% p.a.
-    moderate: 0.04, // 4% p.a.
-    aggressive: 0.06, // 6% p.a.
+    conservative: 0.02,
+    moderate: 0.04,
+    aggressive: 0.06,
 } as const;
 
 /** CPF Ordinary Account interest rate */
-export const CPF_OA_INTEREST_RATE = 0.025; // 2.5% p.a.
+export const CPF_OA_INTEREST_RATE = 0.025;
 
 /** CPF contribution rates by age group (employee + employer combined) */
 export const CPF_CONTRIBUTION_RATES = {
-    under35: 0.37, // 37% of gross wage
-    age35to45: 0.37, // 37%
-    age45to50: 0.36, // 36%
-    age50to55: 0.32, // 32%
-    age55to60: 0.265, // 26.5%
-    age60to65: 0.175, // 17.5%
-    over65: 0.125, // 12.5%
+    under35: 0.37,
+    age35to45: 0.37,
+    age45to50: 0.36,
+    age50to55: 0.32,
+    age55to60: 0.265,
+    age60to65: 0.175,
+    over65: 0.125,
 } as const;
 
 /** Default cash savings rate (% of monthly income saved) */
-export const DEFAULT_CASH_SAVINGS_RATE = 0.10; // 10% of income
+export const DEFAULT_CASH_SAVINGS_RATE = 0.1;
 
 /** Affordability thresholds (% income buffer after MSR payment) */
 export const AFFORDABILITY_THRESHOLDS = {
-    comfortable: 0.20, // >20% income buffer after MSR
-    stretch: 0.10, // 10-20% buffer
+    comfortable: 0.2, // >20% income buffer after MSR
+    stretch: 0.1, // 10-20% buffer
     // <10% is unaffordable
 } as const;
 
@@ -164,10 +162,10 @@ export const MOP_YEARS = {
 } as const;
 
 /** BTO quarterly launch cycle (estimated month numbers) */
-export const BTO_LAUNCH_MONTHS = [2, 5, 8, 11] as const; // Feb, May, Aug, Nov
+export const BTO_LAUNCH_MONTHS = [2, 5, 8, 11] as const;
 
 /** BTO construction + waiting period (months from launch to key collection) */
-export const BTO_WAITING_PERIOD_MONTHS = 48; // ~4 years
+export const BTO_WAITING_PERIOD_MONTHS = 48;
 
 /** Average monthly loan repayment per $100k borrowed (at 2.6% over 25 years) */
 export const MONTHLY_PAYMENT_PER_100K = 455; // Approximate for quick calculations

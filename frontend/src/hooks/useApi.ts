@@ -124,7 +124,7 @@ export function useUpdateSession() {
             queryClient.setQueryData(queryKeys.sessions.detail(data.sessionId), data);
             // Invalidate timeline cache when profile is updated
             queryClient.invalidateQueries({ queryKey: queryKeys.timeline.all });
-            
+
             // Also invalidate localStorage timeline cache
             import('../utils/timelineCache').then(({ invalidateTimelineCache }) => {
                 invalidateTimelineCache(data.sessionId);
@@ -182,13 +182,13 @@ import type { TimelineConfig } from '../types';
  * Generate timeline projection with financial snapshots
  */
 export function useTimelineProjection(
-    sessionId: string | null, 
+    sessionId: string | null,
     config: TimelineConfig | null,
     projects?: import('../types').ProjectTimelineRequest[]
 ) {
     const configKey = config ? JSON.stringify(config) : 'null';
     const projectsKey = projects ? JSON.stringify(projects) : 'null';
-    
+
     return useQuery({
         queryKey: queryKeys.timeline.projection(sessionId || '', `${configKey}-${projectsKey}`),
         queryFn: () => {

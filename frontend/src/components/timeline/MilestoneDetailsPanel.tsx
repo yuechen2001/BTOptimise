@@ -17,49 +17,90 @@ interface MilestoneDetailsPanelProps {
     onClose: () => void;
 }
 
-export default function MilestoneDetailsPanel({ milestone, projectName, onClose }: MilestoneDetailsPanelProps) {
+export default function MilestoneDetailsPanel({
+    milestone,
+    projectName,
+    onClose,
+}: MilestoneDetailsPanelProps) {
     const getMilestoneIcon = (type: string): string => {
         switch (type) {
-            case 'bto_launch': return '🏗️';
-            case 'option_fee_due': return '💰';
-            case 'signing_payment_due': return '📝';
-            case 'key_collection_payment_due': return '🔑';
-            case 'cash_ready_option_fee': return '💵';
-            case 'downpayment_saved': return '🏦';
-            case 'monthly_payment_affordable': return '📊';
-            case 'dia_expires': return '⚠️';
-            case 'ehg_disqualification': return '⛔';
-            case 'grant_tier_drop': return '📉';
-            default: return '📍';
+            case 'bto_launch':
+                return '🏗️';
+            case 'option_fee_due':
+                return '💰';
+            case 'signing_payment_due':
+                return '📝';
+            case 'key_collection_payment_due':
+                return '🔑';
+            case 'cash_ready_option_fee':
+                return '💵';
+            case 'downpayment_saved':
+                return '🏦';
+            case 'monthly_payment_affordable':
+                return '📊';
+            case 'dia_expires':
+                return '⚠️';
+            case 'ehg_disqualification':
+                return '⛔';
+            case 'grant_tier_drop':
+                return '📉';
+            default:
+                return '📍';
         }
     };
 
     const getMilestoneTitle = (type: string): string => {
         switch (type) {
-            case 'bto_launch': return 'BTO Launch';
-            case 'option_fee_due': return 'Option Fee Payment Due';
-            case 'signing_payment_due': return 'Signing Appointment Payment Due';
-            case 'key_collection_payment_due': return 'Key Collection Payment Due';
-            case 'cash_ready_option_fee': return 'Cash Ready for Option Fee';
-            case 'downpayment_saved': return 'Full Downpayment Saved';
-            case 'monthly_payment_affordable': return 'Monthly Payments Affordable';
-            case 'dia_expires': return 'Deferred Income Assessment Expires';
-            case 'ehg_disqualification': return 'Enhanced Housing Grant Disqualification Risk';
-            case 'grant_tier_drop': return 'Grant Tier Drop Risk';
-            case 'income_checkpoint': return 'Income Checkpoint';
-            case 'cpf_checkpoint': return 'CPF Balance Checkpoint';
-            default: return 'Milestone';
+            case 'bto_launch':
+                return 'BTO Launch';
+            case 'option_fee_due':
+                return 'Option Fee Payment Due';
+            case 'signing_payment_due':
+                return 'Signing Appointment Payment Due';
+            case 'key_collection_payment_due':
+                return 'Key Collection Payment Due';
+            case 'cash_ready_option_fee':
+                return 'Cash Ready for Option Fee';
+            case 'downpayment_saved':
+                return 'Full Downpayment Saved';
+            case 'monthly_payment_affordable':
+                return 'Monthly Payments Affordable';
+            case 'dia_expires':
+                return 'Deferred Income Assessment Expires';
+            case 'ehg_disqualification':
+                return 'Enhanced Housing Grant Disqualification Risk';
+            case 'grant_tier_drop':
+                return 'Grant Tier Drop Risk';
+            case 'income_checkpoint':
+                return 'Income Checkpoint';
+            case 'cpf_checkpoint':
+                return 'CPF Balance Checkpoint';
+            default:
+                return 'Milestone';
         }
     };
 
     const getMilestoneColor = (type: string): string => {
-        if (type === 'dia_expires' || type === 'ehg_disqualification' || type === 'grant_tier_drop') {
+        if (
+            type === 'dia_expires' ||
+            type === 'ehg_disqualification' ||
+            type === 'grant_tier_drop'
+        ) {
             return '#EF4444'; // Red for critical
         }
-        if (type === 'bto_launch' || type === 'option_fee_due' || type === 'signing_payment_due' || type === 'key_collection_payment_due') {
+        if (
+            type === 'bto_launch' ||
+            type === 'option_fee_due' ||
+            type === 'signing_payment_due' ||
+            type === 'key_collection_payment_due'
+        ) {
             return '#3B82F6'; // Blue for payment milestones
         }
-        if (type === 'cash_ready_option_fee' || type === 'downpayment_saved' || type === 'monthly_payment_affordable') {
+        if (
+            type === 'cash_ready_option_fee' ||
+            type === 'downpayment_saved' ||
+            type === 'monthly_payment_affordable'
+        ) {
             return '#10B981'; // Green for savings milestones
         }
         return '#6B7280'; // Gray for informational
@@ -77,16 +118,29 @@ export default function MilestoneDetailsPanel({ milestone, projectName, onClose 
             }}
         >
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    marginBottom: '1rem',
+                }}
+            >
                 <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            marginBottom: '0.5rem',
+                        }}
+                    >
                         <span style={{ fontSize: '1.5rem' }}>{icon}</span>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: 0 }}>
-                            {title}
-                        </h3>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: 0 }}>{title}</h3>
                     </div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>
-                        {projectName} • {new Date(milestone.date).toLocaleDateString('en-SG', {
+                        {projectName} •{' '}
+                        {new Date(milestone.date).toLocaleDateString('en-SG', {
                             weekday: 'long',
                             year: 'numeric',
                             month: 'long',
@@ -137,9 +191,21 @@ export default function MilestoneDetailsPanel({ milestone, projectName, onClose 
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem' }}>
                         💰 Payment Breakdown
                     </h4>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                            gap: '1rem',
+                        }}
+                    >
                         <div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--clr-text-muted)', marginBottom: '0.25rem' }}>
+                            <div
+                                style={{
+                                    fontSize: '0.8rem',
+                                    color: 'var(--clr-text-muted)',
+                                    marginBottom: '0.25rem',
+                                }}
+                            >
                                 Total Payment
                             </div>
                             <div style={{ fontSize: '1.3rem', fontWeight: 600, color }}>
@@ -148,7 +214,13 @@ export default function MilestoneDetailsPanel({ milestone, projectName, onClose 
                         </div>
                         {milestone.cashAmount !== undefined && (
                             <div>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--clr-text-muted)', marginBottom: '0.25rem' }}>
+                                <div
+                                    style={{
+                                        fontSize: '0.8rem',
+                                        color: 'var(--clr-text-muted)',
+                                        marginBottom: '0.25rem',
+                                    }}
+                                >
                                     Cash Required
                                 </div>
                                 <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>
@@ -158,7 +230,13 @@ export default function MilestoneDetailsPanel({ milestone, projectName, onClose 
                         )}
                         {milestone.cpfAmount !== undefined && (
                             <div>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--clr-text-muted)', marginBottom: '0.25rem' }}>
+                                <div
+                                    style={{
+                                        fontSize: '0.8rem',
+                                        color: 'var(--clr-text-muted)',
+                                        marginBottom: '0.25rem',
+                                    }}
+                                >
                                     CPF OA Used
                                 </div>
                                 <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>
@@ -176,8 +254,8 @@ export default function MilestoneDetailsPanel({ milestone, projectName, onClose 
                     style={{
                         marginBottom: '1.5rem',
                         padding: '1rem',
-                        background: milestone.canAfford 
-                            ? 'rgba(16, 185, 129, 0.1)' 
+                        background: milestone.canAfford
+                            ? 'rgba(16, 185, 129, 0.1)'
                             : 'rgba(239, 68, 68, 0.1)',
                         borderRadius: '6px',
                     }}
@@ -187,19 +265,30 @@ export default function MilestoneDetailsPanel({ milestone, projectName, onClose 
                             {milestone.canAfford ? '✓' : '✗'}
                         </span>
                         <div>
-                            <h4 style={{ 
-                                fontSize: '0.95rem', 
-                                fontWeight: 600, 
-                                color: milestone.canAfford ? 'var(--clr-green)' : 'var(--clr-red)',
-                                marginBottom: '0.25rem',
-                            }}>
-                                {milestone.canAfford ? 'You Can Afford This!' : 'Not Yet Affordable'}
+                            <h4
+                                style={{
+                                    fontSize: '0.95rem',
+                                    fontWeight: 600,
+                                    color: milestone.canAfford
+                                        ? 'var(--clr-green)'
+                                        : 'var(--clr-red)',
+                                    marginBottom: '0.25rem',
+                                }}
+                            >
+                                {milestone.canAfford
+                                    ? 'You Can Afford This!'
+                                    : 'Not Yet Affordable'}
                             </h4>
-                            <p style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)', margin: 0 }}>
-                                {milestone.canAfford 
+                            <p
+                                style={{
+                                    fontSize: '0.85rem',
+                                    color: 'var(--clr-text-muted)',
+                                    margin: 0,
+                                }}
+                            >
+                                {milestone.canAfford
                                     ? 'Based on your projected savings and income at this date, you should be able to meet this payment.'
-                                    : 'Based on your projected savings and income, you may not be able to meet this payment by this date. Consider adjusting your timeline or savings strategy.'
-                                }
+                                    : 'Based on your projected savings and income, you may not be able to meet this payment by this date. Consider adjusting your timeline or savings strategy.'}
                             </p>
                         </div>
                     </div>
@@ -224,8 +313,9 @@ export default function MilestoneDetailsPanel({ milestone, projectName, onClose 
                                 Critical Event
                             </strong>
                             <p style={{ fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
-                                This is a time-sensitive event that may impact your eligibility or grant amount. 
-                                Plan your BTO application timing carefully to avoid adverse outcomes.
+                                This is a time-sensitive event that may impact your eligibility or
+                                grant amount. Plan your BTO application timing carefully to avoid
+                                adverse outcomes.
                             </p>
                         </div>
                     </div>

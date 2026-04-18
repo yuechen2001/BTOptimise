@@ -45,11 +45,7 @@ export default function TimelineVisualizer() {
         isLoading,
         error,
         refetch,
-    } = useTimelineProjection(
-        sessionId, 
-        config,
-        timeline.length > 0 ? timeline : undefined
-    );
+    } = useTimelineProjection(sessionId, config, timeline.length > 0 ? timeline : undefined);
 
     // Handle config save (triggers refetch)
     const handleConfigSave = (newConfig: TimelineConfig) => {
@@ -111,7 +107,8 @@ export default function TimelineVisualizer() {
             <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
                 <h2 className="section-title">Timeline Visualizer</h2>
                 <p className="section-subtitle">
-                    Select up to 3 projects from the dashboard to visualize project-specific timeline.
+                    Select up to 3 projects from the dashboard to visualize project-specific
+                    timeline.
                 </p>
                 <a href="/onboarding" className="btn btn--primary" style={{ marginTop: '1.5rem' }}>
                     Complete Onboarding
@@ -159,86 +156,87 @@ export default function TimelineVisualizer() {
             <div style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}>
                 {/* Collapsible Sidebar */}
                 <CollapsibleSidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle}>
-                {/* Project Selector - At the top */}
-                <ProjectSelector onProjectsChange={handleProjectsChange} />
-                
-                {/* Timeline Configuration */}
-                <div style={{ marginTop: '1.5rem' }}>
-                    <TimelineConfigComponent 
-                        config={config} 
-                        onSave={handleConfigSave} 
-                        profile={onboarding.profile} 
-                    />
-                </div>
-            </CollapsibleSidebar>
+                    {/* Project Selector - At the top */}
+                    <ProjectSelector onProjectsChange={handleProjectsChange} />
 
-            {/* Main Content Area */}
-            <div style={{ flex: 1, padding: '1rem 1rem', overflow: 'auto' }}>
-                <div style={{ marginBottom: '2rem' }}>
-                    <h1 style={{ marginBottom: '0.5rem' }}>Timeline Visualizer</h1>
-                    <p style={{ color: 'var(--clr-text-muted)' }}>
-                        Compare project timelines, payment schedules, and affordability milestones
-                    </p>
-                </div>
-
-                {/* Stacked Project Timelines */}
-                {timelineData?.projectTimelines && timelineData.projectTimelines.length > 0 && (
-                    <>
-                        <StackedTimelines 
-                            projectTimelines={timelineData.projectTimelines}
-                            onMilestoneClick={handleMilestoneClick}
+                    {/* Timeline Configuration */}
+                    <div style={{ marginTop: '1.5rem' }}>
+                        <TimelineConfigComponent
+                            config={config}
+                            onSave={handleConfigSave}
+                            profile={onboarding.profile}
                         />
-                    </>
-                )}
-            </div>
-        </div>
+                    </div>
+                </CollapsibleSidebar>
 
-        {/* Milestone Details Modal (shown when milestone clicked) */}
-        {selectedMilestone && (
-            <>
-                {/* Overlay */}
-                <div
-                    onClick={handleCloseMilestoneDetails}
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        background: 'rgba(0, 0, 0, 0.5)',
-                        animation: 'dialog-overlay-fade-in 150ms ease-out',
-                        zIndex: 1000,
-                    }}
-                    aria-hidden="true"
-                />
-                
-                {/* Modal Content */}
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="milestone-dialog-title"
-                    style={{
-                        position: 'fixed',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '90vw',
-                        maxWidth: '600px',
-                        maxHeight: '85vh',
-                        overflow: 'auto',
-                        background: 'var(--clr-bg-primary)',
-                        borderRadius: 'var(--radius-lg)',
-                        boxShadow: 'var(--shadow-lg)',
-                        animation: 'dialog-content-fade-in 200ms ease-out',
-                        zIndex: 1001,
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <MilestoneDetailsPanel
-                        milestone={selectedMilestone.milestone}
-                        projectName={selectedMilestone.projectName}
-                        onClose={handleCloseMilestoneDetails}
-                    />
+                {/* Main Content Area */}
+                <div style={{ flex: 1, padding: '1rem 1rem', overflow: 'auto' }}>
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h1 style={{ marginBottom: '0.5rem' }}>Timeline Visualizer</h1>
+                        <p style={{ color: 'var(--clr-text-muted)' }}>
+                            Compare project timelines, payment schedules, and affordability
+                            milestones
+                        </p>
+                    </div>
+
+                    {/* Stacked Project Timelines */}
+                    {timelineData?.projectTimelines && timelineData.projectTimelines.length > 0 && (
+                        <>
+                            <StackedTimelines
+                                projectTimelines={timelineData.projectTimelines}
+                                onMilestoneClick={handleMilestoneClick}
+                            />
+                        </>
+                    )}
                 </div>
-            </>
-        )}
-    </Tooltip.Provider>
+            </div>
+
+            {/* Milestone Details Modal (shown when milestone clicked) */}
+            {selectedMilestone && (
+                <>
+                    {/* Overlay */}
+                    <div
+                        onClick={handleCloseMilestoneDetails}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(0, 0, 0, 0.5)',
+                            animation: 'dialog-overlay-fade-in 150ms ease-out',
+                            zIndex: 1000,
+                        }}
+                        aria-hidden="true"
+                    />
+
+                    {/* Modal Content */}
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="milestone-dialog-title"
+                        style={{
+                            position: 'fixed',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '90vw',
+                            maxWidth: '600px',
+                            maxHeight: '85vh',
+                            overflow: 'auto',
+                            background: 'var(--clr-bg-primary)',
+                            borderRadius: 'var(--radius-lg)',
+                            boxShadow: 'var(--shadow-lg)',
+                            animation: 'dialog-content-fade-in 200ms ease-out',
+                            zIndex: 1001,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <MilestoneDetailsPanel
+                            milestone={selectedMilestone.milestone}
+                            projectName={selectedMilestone.projectName}
+                            onClose={handleCloseMilestoneDetails}
+                        />
+                    </div>
+                </>
+            )}
+        </Tooltip.Provider>
     );
 }

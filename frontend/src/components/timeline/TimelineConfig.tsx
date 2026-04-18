@@ -20,7 +20,8 @@ interface TimelineConfigProps {
 
 export default function TimelineConfigComponent({ config, onSave, profile }: TimelineConfigProps) {
     const [localConfig, setLocalConfig] = useState<TimelineConfig>(config);
-    const isDeferredIncome = profile.employmentStatus === 'student' || profile.employmentStatus === 'nsf';
+    const isDeferredIncome =
+        profile.employmentStatus === 'student' || profile.employmentStatus === 'nsf';
     const hasChanges = JSON.stringify(localConfig) !== JSON.stringify(config);
 
     const updateConfig = (updates: Partial<TimelineConfig>) => {
@@ -33,18 +34,46 @@ export default function TimelineConfigComponent({ config, onSave, profile }: Tim
 
     return (
         <div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '1rem' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                    paddingBottom: '1rem',
+                }}
+            >
                 {/* Deferred Income Assessment */}
                 {isDeferredIncome && (
                     <>
-                        <div style={{ borderTop: '1px solid var(--clr-border)', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                            <h4 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--clr-accent)' }}>
+                        <div
+                            style={{
+                                borderTop: '1px solid var(--clr-border)',
+                                paddingTop: '1rem',
+                                marginTop: '0.5rem',
+                            }}
+                        >
+                            <h4
+                                style={{
+                                    fontSize: '0.9rem',
+                                    fontWeight: 600,
+                                    marginBottom: '0.75rem',
+                                    color: 'var(--clr-accent)',
+                                }}
+                            >
                                 📊 Deferred Income Assessment
                             </h4>
                         </div>
-                        
+
                         <div className="form-group">
-                            <label htmlFor="employment-date" style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
+                            <label
+                                htmlFor="employment-date"
+                                style={{
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    marginBottom: '0.5rem',
+                                    display: 'block',
+                                }}
+                            >
                                 Expected Employment Date
                             </label>
                             <input
@@ -59,11 +88,24 @@ export default function TimelineConfigComponent({ config, onSave, profile }: Tim
                                 }}
                                 style={{ width: '100%' }}
                             />
-                            <span className="hint" style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)' }}>NSF ORD / Graduation</span>
+                            <span
+                                className="hint"
+                                style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)' }}
+                            >
+                                NSF ORD / Graduation
+                            </span>
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="starting-salary" style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
+                            <label
+                                htmlFor="starting-salary"
+                                style={{
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    marginBottom: '0.5rem',
+                                    display: 'block',
+                                }}
+                            >
                                 Expected Starting Salary
                             </label>
                             <input
@@ -73,19 +115,26 @@ export default function TimelineConfigComponent({ config, onSave, profile }: Tim
                                 placeholder="Monthly income ($)"
                                 value={localConfig.assumedStartingSalary || ''}
                                 onChange={(e) => {
-                                    const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                                    const value = e.target.value
+                                        ? parseFloat(e.target.value)
+                                        : undefined;
                                     updateConfig({
                                         assumedStartingSalary: value,
                                     });
                                 }}
                                 style={{ width: '100%' }}
                             />
-                            <span className="hint" style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)' }}>First month income after employment</span>
+                            <span
+                                className="hint"
+                                style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)' }}
+                            >
+                                First month income after employment
+                            </span>
                         </div>
                     </>
                 )}
             </div>
-            
+
             {/* Save Button - Sticky at bottom, only show when there are changes */}
             {hasChanges && (
                 <div

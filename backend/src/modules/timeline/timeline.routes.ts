@@ -84,7 +84,10 @@ function validateTimelineConfig(config: any): string | null {
     }
 
     if (config.assumedStartingSalary !== undefined) {
-        const salaryError = validatePositiveNumber(config.assumedStartingSalary, 'assumedStartingSalary');
+        const salaryError = validatePositiveNumber(
+            config.assumedStartingSalary,
+            'assumedStartingSalary'
+        );
         if (salaryError) return salaryError;
     }
 
@@ -142,10 +145,16 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
             }
             // Validate each project
             for (const project of projects) {
-                if (!project.projectId || !project.projectName || !project.flatType || !project.price) {
+                if (
+                    !project.projectId ||
+                    !project.projectName ||
+                    !project.flatType ||
+                    !project.price
+                ) {
                     return res.status(400).json({
                         success: false,
-                        message: 'Each project must have projectId, projectName, flatType, and price',
+                        message:
+                            'Each project must have projectId, projectName, flatType, and price',
                     });
                 }
             }
@@ -205,7 +214,12 @@ router.post('/project', async (req: Request, res: Response, next: NextFunction) 
         const projectTimelines: import('./timeline.types').ProjectTimeline[] = [];
         if (projects && Array.isArray(projects)) {
             for (const project of projects) {
-                const projectTimeline = generateProjectTimeline(session, project, timelineConfig, snapshots);
+                const projectTimeline = generateProjectTimeline(
+                    session,
+                    project,
+                    timelineConfig,
+                    snapshots
+                );
                 projectTimelines.push(projectTimeline);
             }
         }

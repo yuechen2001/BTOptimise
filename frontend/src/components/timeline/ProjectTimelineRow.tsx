@@ -19,9 +19,9 @@ interface ProjectTimelineRowProps {
     onMilestoneClick?: (milestone: TimelineMilestone) => void;
 }
 
-export default function ProjectTimelineRow({ 
-    projectTimeline, 
-    onMilestoneClick
+export default function ProjectTimelineRow({
+    projectTimeline,
+    onMilestoneClick,
 }: ProjectTimelineRowProps) {
     const { project, milestones, affordability } = projectTimeline;
 
@@ -30,7 +30,7 @@ export default function ProjectTimelineRow({
         const now = new Date();
         const start = new Date(now);
         start.setMonth(start.getMonth() - 1); // Start 1 month before today to prevent left clustering
-        
+
         if (milestones.length === 0) {
             return { start, end: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000) }; // 1 year default
         }
@@ -58,13 +58,26 @@ export default function ProjectTimelineRow({
 
     // Get color for milestone type
     const getMilestoneColor = (type: string): string => {
-        if (type === 'dia_expires' || type === 'ehg_disqualification' || type === 'grant_tier_drop') {
+        if (
+            type === 'dia_expires' ||
+            type === 'ehg_disqualification' ||
+            type === 'grant_tier_drop'
+        ) {
             return '#EF4444'; // Red for critical
         }
-        if (type === 'bto_launch' || type === 'option_fee_due' || type === 'signing_payment_due' || type === 'key_collection_payment_due') {
+        if (
+            type === 'bto_launch' ||
+            type === 'option_fee_due' ||
+            type === 'signing_payment_due' ||
+            type === 'key_collection_payment_due'
+        ) {
             return '#3B82F6'; // Blue for payment milestones
         }
-        if (type === 'cash_ready_option_fee' || type === 'downpayment_saved' || type === 'monthly_payment_affordable') {
+        if (
+            type === 'cash_ready_option_fee' ||
+            type === 'downpayment_saved' ||
+            type === 'monthly_payment_affordable'
+        ) {
             return '#10B981'; // Green for savings milestones
         }
         return '#6B7280'; // Gray for informational
@@ -75,7 +88,7 @@ export default function ProjectTimelineRow({
         const markers: Array<{ year: number; position: number }> = [];
         const startYear = timelineRange.start.getFullYear();
         const endYear = timelineRange.end.getFullYear();
-        
+
         // Add marker for each year from start to end
         for (let year = startYear; year <= endYear; year++) {
             const yearDate = new Date(year, 0, 1); // January 1st of each year
@@ -83,20 +96,21 @@ export default function ProjectTimelineRow({
             const startTime = timelineRange.start.getTime();
             const endTime = timelineRange.end.getTime();
             const position = ((yearTime - startTime) / (endTime - startTime)) * 100;
-            
+
             // Only add markers that fall within the timeline range
             if (position >= 0 && position <= 100) {
                 markers.push({ year, position });
             }
         }
-        
+
         return markers;
     }, [timelineRange]);
 
     // Check if project is affordable (all milestones)
-    const isAffordable = affordability.canAffordOptionFee && 
-                          affordability.canAffordSigning && 
-                          affordability.canAffordKeyCollection;
+    const isAffordable =
+        affordability.canAffordOptionFee &&
+        affordability.canAffordSigning &&
+        affordability.canAffordKeyCollection;
 
     return (
         <div
@@ -111,7 +125,14 @@ export default function ProjectTimelineRow({
         >
             {/* Project Header */}
             <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '0.5rem',
+                    }}
+                >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>
                             {project.projectName}
@@ -130,20 +151,33 @@ export default function ProjectTimelineRow({
                             {project.classification}
                         </span>
                     </div>
-                    <div style={{ 
-                        padding: '0.5rem 1rem',
-                        background: isAffordable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                        color: isAffordable ? 'var(--clr-green)' : 'var(--clr-red)',
-                        borderRadius: '6px',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                    }}>
+                    <div
+                        style={{
+                            padding: '0.5rem 1rem',
+                            background: isAffordable
+                                ? 'rgba(16, 185, 129, 0.1)'
+                                : 'rgba(239, 68, 68, 0.1)',
+                            color: isAffordable ? 'var(--clr-green)' : 'var(--clr-red)',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                        }}
+                    >
                         {isAffordable ? '✓ Affordable' : '✗ Not Yet Affordable'}
                     </div>
                 </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>
                     {project.flatType} • ${project.price.toLocaleString()}
-                    {project.estimatedLaunchDate && <> • Launch: {new Date(project.estimatedLaunchDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</>}
+                    {project.estimatedLaunchDate && (
+                        <>
+                            {' '}
+                            • Launch:{' '}
+                            {new Date(project.estimatedLaunchDate).toLocaleDateString('en-US', {
+                                month: 'short',
+                                year: 'numeric',
+                            })}
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -217,7 +251,14 @@ export default function ProjectTimelineRow({
                             background: 'var(--clr-primary)',
                         }}
                     />
-                    <span style={{ fontSize: '0.7rem', color: 'var(--clr-primary)', marginTop: '0.25rem', fontWeight: 600 }}>
+                    <span
+                        style={{
+                            fontSize: '0.7rem',
+                            color: 'var(--clr-primary)',
+                            marginTop: '0.25rem',
+                            fontWeight: 600,
+                        }}
+                    >
                         Today
                     </span>
                 </div>
@@ -336,7 +377,7 @@ export default function ProjectTimelineRow({
                                 e.currentTarget.style.background = 'var(--clr-bg-tertiary)';
                             }}
                         >
-                            <span style={{paddingLeft: '1rem'}}>View Details</span>
+                            <span style={{ paddingLeft: '1rem' }}>View Details</span>
                             <span
                                 style={{
                                     fontSize: '1rem',
@@ -363,17 +404,33 @@ export default function ProjectTimelineRow({
                                 overflowX: 'auto',
                             }}
                         >
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', minWidth: '0' }}>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                    gap: '1rem',
+                                    minWidth: '0',
+                                }}
+                            >
                                 <div>
                                     <strong>Affordability Status:</strong>
                                     <div>
-                                        Option Fee: {affordability.canAffordOptionFee ? '✓ Can Afford' : '✗ Cannot Afford'}
+                                        Option Fee:{' '}
+                                        {affordability.canAffordOptionFee
+                                            ? '✓ Can Afford'
+                                            : '✗ Cannot Afford'}
                                     </div>
                                     <div>
-                                        Signing: {affordability.canAffordSigning ? '✓ Can Afford' : '✗ Cannot Afford'}
+                                        Signing:{' '}
+                                        {affordability.canAffordSigning
+                                            ? '✓ Can Afford'
+                                            : '✗ Cannot Afford'}
                                     </div>
                                     <div>
-                                        Key Collection: {affordability.canAffordKeyCollection ? '✓ Can Afford' : '✗ Cannot Afford'}
+                                        Key Collection:{' '}
+                                        {affordability.canAffordKeyCollection
+                                            ? '✓ Can Afford'
+                                            : '✗ Cannot Afford'}
                                     </div>
                                 </div>
                                 <div>
@@ -385,12 +442,22 @@ export default function ProjectTimelineRow({
                                         Signing: ${affordability.signingShortfall.toLocaleString()}
                                     </div>
                                     <div style={{ fontSize: '0.85rem' }}>
-                                        Key Collection: ${affordability.keyCollectionShortfall.toLocaleString()}
+                                        Key Collection: $
+                                        {affordability.keyCollectionShortfall.toLocaleString()}
                                     </div>
                                 </div>
                                 <div>
                                     <strong>Total Cash Shortfall:</strong>
-                                    <div style={{ fontSize: '1.1rem', fontWeight: 600, color: affordability.cashShortfall > 0 ? 'var(--clr-red)' : 'var(--clr-green)' }}>
+                                    <div
+                                        style={{
+                                            fontSize: '1.1rem',
+                                            fontWeight: 600,
+                                            color:
+                                                affordability.cashShortfall > 0
+                                                    ? 'var(--clr-red)'
+                                                    : 'var(--clr-green)',
+                                        }}
+                                    >
                                         ${affordability.cashShortfall.toLocaleString()}
                                     </div>
                                 </div>

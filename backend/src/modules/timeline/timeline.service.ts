@@ -51,9 +51,6 @@ function isDeferredIncome(employmentStatus?: string): boolean {
     return employmentStatus === 'student' || employmentStatus === 'nsf';
 }
 
-/**
- * Calculate total household income
- */
 function getTotalIncome(monthlyIncome: number, partnerMonthlyIncome?: number): number {
     return monthlyIncome + (partnerMonthlyIncome || 0);
 }
@@ -178,7 +175,7 @@ function getEmploymentStatusAtDate(
 
 /**
  * Project financial snapshot at a specific future date
- * 
+ *
  * @param session - Current user session
  * @param targetDate - Date to project to
  * @param config - Timeline configuration
@@ -267,7 +264,9 @@ export function projectFinancialSnapshot(
 
     // Project ages
     const projectedAge = currentAge + monthsFromNow / 12;
-    const projectedPartnerAge = currentPartnerAge ? currentPartnerAge + monthsFromNow / 12 : undefined;
+    const projectedPartnerAge = currentPartnerAge
+        ? currentPartnerAge + monthsFromNow / 12
+        : undefined;
 
     // Create projected session for financial calculations
     const projectedSession: IUserSession = {
@@ -404,7 +403,8 @@ function calculateOpportunityCostAtPoint(
     const cumulativeRentPaid = monthsFromNow * monthlyRent;
 
     // CPF interest gained is the difference between projected and just the initial balance with interest
-    const cpfWithoutContributions = initialCPFOA * Math.pow(1 + CPF_OA_INTEREST_RATE / 12, monthsFromNow);
+    const cpfWithoutContributions =
+        initialCPFOA * Math.pow(1 + CPF_OA_INTEREST_RATE / 12, monthsFromNow);
     const cpfInterestGained = projectedCPFOA - cpfWithoutContributions;
 
     const netOpportunityCost = cumulativeRentPaid - cpfInterestGained;
@@ -489,7 +489,10 @@ export function detectMilestones(
 /**
  * Add estimated BTO launch dates as milestones
  */
-function addBTOLaunchMilestones(milestones: TimelineMilestone[], config: TimelineProjectionConfig): void {
+function addBTOLaunchMilestones(
+    milestones: TimelineMilestone[],
+    config: TimelineProjectionConfig
+): void {
     const startDate = new Date(config.startYear, 0, 1);
     const endDate = new Date(config.endYear, 11, 31);
     const now = new Date();
@@ -541,7 +544,6 @@ function parseEstimatedLaunchDate(estimatedDate?: string): Date {
         return defaultDate;
     }
 
-    // Try ISO date first
     const isoDate = new Date(estimatedDate);
     if (!isNaN(isoDate.getTime())) {
         return isoDate;
@@ -556,7 +558,6 @@ function parseEstimatedLaunchDate(estimatedDate?: string): Date {
         return new Date(year, month, 15); // Middle of first month of quarter
     }
 
-    // Fallback: 3 months from now
     const fallbackDate = new Date();
     fallbackDate.setMonth(fallbackDate.getMonth() + 3);
     return fallbackDate;
@@ -574,7 +575,6 @@ export function generateProjectTimeline(
     const milestones: TimelineMilestone[] = [];
     const now = new Date();
 
-    // Parse launch date
     const launchDate = parseEstimatedLaunchDate(project.estimatedLaunchDate);
     const launchMonthsFromNow = Math.round(
         (launchDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
@@ -710,9 +710,13 @@ export function generateProjectTimeline(
                 canAffordKeyCollection: canAffordKey,
                 cashShortfall: Math.max(
                     0,
-                    financials.cashFlow.totalCashRequired - (launchSnapshot.projectedCashSavings || 0)
+                    financials.cashFlow.totalCashRequired -
+                        (launchSnapshot.projectedCashSavings || 0)
                 ),
-                optionFeeShortfall: Math.max(0, optionFeeAmount - (optionFeeSnapshot?.projectedCashSavings || 0)),
+                optionFeeShortfall: Math.max(
+                    0,
+                    optionFeeAmount - (optionFeeSnapshot?.projectedCashSavings || 0)
+                ),
                 signingShortfall: Math.max(
                     0,
                     signingMilestone.cumulativeCash - (signingSnapshot?.projectedCashSavings || 0)
@@ -744,7 +748,10 @@ export function generateProjectTimeline(
 /**
  * Find snapshot closest to given date
  */
-function findSnapshotByDate(snapshots: TimelineSnapshot[], targetDate: Date): TimelineSnapshot | null {
+function findSnapshotByDate(
+    snapshots: TimelineSnapshot[],
+    targetDate: Date
+): TimelineSnapshot | null {
     if (snapshots.length === 0) return null;
 
     return snapshots.reduce((closest, snapshot) => {
@@ -805,7 +812,9 @@ function detectSavingsMilestones(
     }
 
     // Find when income supports monthly payment (MSR 30%)
-    const affordableSnapshot = snapshots.find((s) => s.totalHouseholdIncome * 0.3 >= monthlyLoanPayment);
+    const affordableSnapshot = snapshots.find(
+        (s) => s.totalHouseholdIncome * 0.3 >= monthlyLoanPayment
+    );
     if (affordableSnapshot) {
         milestones.push({
             date: affordableSnapshot.date,

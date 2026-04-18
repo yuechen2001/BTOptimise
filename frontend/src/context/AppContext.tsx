@@ -104,7 +104,7 @@ function reducer(state: AppState, action: Action): AppState {
                 };
             }
             if (state.comparison.length >= 3) return state; // max 3
-            
+
             // Add to both comparison and timeline
             const { project, selectedFlat } = action.result;
             const timelineProject: ProjectTimelineRequest = {
@@ -115,9 +115,9 @@ function reducer(state: AppState, action: Action): AppState {
                 classification: project.classification,
                 estimatedLaunchDate: project.launchdate || undefined,
             };
-            
-            return { 
-                ...state, 
+
+            return {
+                ...state,
                 comparison: [...state.comparison, action.result],
                 timeline: [...state.timeline, timelineProject],
             };

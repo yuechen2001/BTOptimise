@@ -32,7 +32,9 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
 
     const handleAddProject = () => {
         // TODO: Open modal to select from Dashboard projects
-        alert('Project selection modal coming in Phase 6! For now, projects are selected from the Dashboard.');
+        alert(
+            'Project selection modal coming in Phase 6! For now, projects are selected from the Dashboard.'
+        );
     };
 
     return (
@@ -44,7 +46,14 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
                 border: '1px solid var(--clr-border)',
             }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.75rem',
+                }}
+            >
                 <h3 style={{ fontSize: '0.9rem', fontWeight: 600 }}>
                     📋 Selected Projects ({selectedProjects.length}/3)
                 </h3>
@@ -82,7 +91,9 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
                     }}
                 >
                     <p style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>🏠</p>
-                    <p style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.9rem' }}>No projects selected</p>
+                    <p style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                        No projects selected
+                    </p>
                     <p style={{ fontSize: '0.8rem', marginBottom: '1rem', lineHeight: 1.4 }}>
                         Select projects from the Dashboard to compare timelines
                     </p>
@@ -105,7 +116,8 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
                             project={project}
                             onRemove={() => handleRemoveProject(project.projectId)}
                         />
-                    ))}                </div>
+                    ))}{' '}
+                </div>
             )}
         </div>
     );
@@ -139,8 +151,25 @@ function ProjectCard({ project, onRemove }: ProjectCardProps) {
         >
             {/* Project Info */}
             <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                    <h4 style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        marginBottom: '0.25rem',
+                        flexWrap: 'wrap',
+                    }}
+                >
+                    <h4
+                        style={{
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            margin: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
                         {project.projectName}
                     </h4>
                     <span
@@ -158,7 +187,9 @@ function ProjectCard({ project, onRemove }: ProjectCardProps) {
                         {project.classification}
                     </span>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', lineHeight: 1.4 }}>
+                <div
+                    style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', lineHeight: 1.4 }}
+                >
                     {project.flatType}
                 </div>
             </div>
