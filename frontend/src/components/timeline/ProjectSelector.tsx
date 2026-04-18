@@ -159,14 +159,8 @@ function ProjectCard({ project, onRemove }: ProjectCardProps) {
                         {project.projectName}
                     </h4>
                     <span
+                        className={`badge badge--${project.classification.toLowerCase()}`}
                         style={{
-                            padding: '0.125rem 0.4rem',
-                            background: getClassificationColor(project.classification),
-                            color: 'white',
-                            borderRadius: '4px',
-                            fontSize: '0.65rem',
-                            fontWeight: 600,
-                            textTransform: 'uppercase',
                             flexShrink: 0,
                         }}
                     >
@@ -217,17 +211,4 @@ function ProjectCard({ project, onRemove }: ProjectCardProps) {
             </button>
         </div>
     );
-}
-
-function getClassificationColor(classification?: string): string {
-    switch (classification) {
-        case 'Prime':
-            return '#8B5CF6';
-        case 'Plus':
-            return '#3B82F6';
-        case 'Standard':
-            return '#10B981';
-        default:
-            return '#6B7280';
-    }
 }

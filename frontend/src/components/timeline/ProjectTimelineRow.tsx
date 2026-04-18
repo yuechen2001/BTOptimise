@@ -138,15 +138,8 @@ export default function ProjectTimelineRow({
                             {project.projectName}
                         </h3>
                         <span
-                            style={{
-                                padding: '0.25rem 0.75rem',
-                                background: getClassificationColor(project.classification),
-                                color: 'white',
-                                borderRadius: '4px',
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
-                                textTransform: 'uppercase',
-                            }}
+                            className={`badge badge--${project.classification.toLowerCase()}`}
+                            style={{ flexShrink: 0 }}
                         >
                             {project.classification}
                         </span>
@@ -491,20 +484,4 @@ export default function ProjectTimelineRow({
             `}</style>
         </div>
     );
-}
-
-/**
- * Helper: Get color for project classification
- */
-function getClassificationColor(classification?: string): string {
-    switch (classification) {
-        case 'Prime':
-            return '#8B5CF6'; // Purple
-        case 'Plus':
-            return '#3B82F6'; // Blue
-        case 'Standard':
-            return '#10B981'; // Green
-        default:
-            return '#6B7280'; // Gray
-    }
 }
