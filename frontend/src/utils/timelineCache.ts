@@ -12,8 +12,6 @@ import type { TimelineProjectionResult, UserProfile } from '../types';
 const CACHE_KEY_PREFIX = 'btoptimise_timeline_';
 const PROFILE_HASH_KEY_PREFIX = 'btoptimise_timeline_hash_';
 
-/* ─── Helper Functions ─────────────────────────────────────────────── */
-
 /**
  * Generate a simple hash from a profile object
  * Used to detect if profile has changed since last cache

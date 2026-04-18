@@ -92,7 +92,7 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
                         onClick={() => navigate({ to: '/dashboard' })}
                         style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
                     >
-                        📋 Go to Dashboard
+                        Go to Dashboard
                     </button>
                 </div>
             )}

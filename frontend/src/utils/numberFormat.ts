@@ -15,15 +15,9 @@ export function formatNumberWithCommas(value: number | string | undefined): stri
 
     if (cleaned === '') return '';
 
-    // Split into integer and decimal parts
-    const parts = cleaned.split('.');
-    const integerPart = parts[0];
-    const decimalPart = parts[1];
-
-    // Add commas to integer part
+    const [integerPart, decimalPart] = cleaned.split('.');
     const formatted = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    // Rejoin with decimal if it exists
     return decimalPart !== undefined ? `${formatted}.${decimalPart}` : formatted;
 }
 

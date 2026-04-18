@@ -58,7 +58,7 @@ export default function StackedTimelines({
             {/* Simplified Legend */}
             <div
                 style={{
-                    marginTop: '2rem',
+                    marginTop: '1.5rem',
                     padding: '1rem 1.5rem',
                     background: 'var(--clr-bg-secondary)',
                     borderRadius: '8px',
@@ -66,6 +66,7 @@ export default function StackedTimelines({
                     alignItems: 'center',
                     gap: '2rem',
                     flexWrap: 'wrap',
+                    justifyContent: 'center',
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -114,17 +115,6 @@ export default function StackedTimelines({
                     <span style={{ fontSize: '0.85rem', color: 'var(--clr-text-muted)' }}>
                         Savings Milestones
                     </span>
-                </div>
-
-                <div
-                    style={{
-                        marginLeft: 'auto',
-                        fontSize: '0.8rem',
-                        color: 'var(--clr-text-muted)',
-                        fontStyle: 'italic',
-                    }}
-                >
-                    Hover over dots for details • Click to expand
                 </div>
             </div>
         </div>
