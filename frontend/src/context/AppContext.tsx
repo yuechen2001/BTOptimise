@@ -1,8 +1,3 @@
-/**
- * Application-wide state management via React Context.
- * Holds the session ID, onboarding profile, matched results, comparison selections, and timeline config.
- */
-
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
 import type {
     UserProfile,

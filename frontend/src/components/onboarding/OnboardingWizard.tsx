@@ -1,10 +1,3 @@
-/**
- * OnboardingWizard
- *
- * Multi-step form for collecting user profile data.
- * Creates/updates a backend session and calculates affordability.
- */
-
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
@@ -103,12 +96,9 @@ export default function OnboardingWizard() {
 
             try {
                 const profile = state.onboarding.profile as UserProfile;
-                console.log('Starting onboarding completion with profile:', profile);
 
                 const createFreshSession = async (): Promise<string> => {
-                    console.log('Creating new session...');
                     const session = await createSessionMutation.mutateAsync(profile);
-                    console.log('Session created:', session.sessionId);
                     dispatch({ type: 'SET_SESSION_ID', sessionId: session.sessionId });
                     return session.sessionId;
                 };
@@ -119,7 +109,6 @@ export default function OnboardingWizard() {
                     }
 
                     try {
-                        console.log('Updating existing session:', state.sessionId);
                         await updateSessionMutation.mutateAsync({
                             sessionId: state.sessionId,
                             updates: profile,
@@ -130,7 +119,6 @@ export default function OnboardingWizard() {
                             throw error;
                         }
 
-                        console.warn('Stored session expired; creating a fresh session.');
                         dispatch({ type: 'SET_SESSION_ID', sessionId: null });
                         return createFreshSession();
                     }
@@ -139,7 +127,6 @@ export default function OnboardingWizard() {
                 let sessionId = await ensureActiveSession();
 
                 const fetchMatching = async (activeSessionId: string) => {
-                    console.log('Calculating matching results...');
                     return calculateMatchingMutation.mutateAsync({ sessionId: activeSessionId });
                 };
 
@@ -151,13 +138,10 @@ export default function OnboardingWizard() {
                         throw error;
                     }
 
-                    console.warn('Session expired before matching; recreating and retrying.');
                     dispatch({ type: 'SET_SESSION_ID', sessionId: null });
                     sessionId = await createFreshSession();
                     matching = await fetchMatching(sessionId);
                 }
-
-                console.log('Matching results:', matching.recommendations.length);
 
                 dispatch({ type: 'COMPLETE_ONBOARDING' });
                 dispatch({ type: 'SET_RESULTS', results: matching.recommendations });

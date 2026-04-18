@@ -1,14 +1,3 @@
-/**
- * Financial Rules Service
- *
- * Core calculation functions for HDB policy logic:
- * - Enhanced CPF Housing Grant (EHG)
- * - Maximum HDB loan via Mortgage Servicing Ratio (MSR)
- * - Milestone cash flow at each BTO payment stage
- * - Subsidy clawback projection for Plus and Prime flats
- * - Eligibility checks for BTO purchase
- */
-
 import {
     HDB_LOAN_INTEREST_RATE,
     MAX_MSR,
@@ -94,13 +83,6 @@ function getTotalIncome(session: IUserSession): number {
 
 /* ─── Eligibility Check ────────────────────────────────────────────── */
 
-/**
- * Checks BTO eligibility based on citizenship, income ceiling, and first-timer status.
- *
- * @param session - User session with profile data
- * @param flatType - Desired flat type (optional)
- * @returns Eligibility result with reasons
- */
 export function checkEligibility(session: IUserSession, flatType?: string): EligibilityResult {
     const reasons: string[] = [];
     let canPurchase = true;
@@ -157,13 +139,6 @@ export function checkEligibility(session: IUserSession, flatType?: string): Elig
 
 /* ─── EHG Calculation ──────────────────────────────────────────────── */
 
-/**
- * Calculates the Enhanced CPF Housing Grant (EHG) quantum based on household income.
- * For students/NSF, assumes $0 income per deferred assessment policy.
- *
- * @param session - User session with financials
- * @returns Grant calculation result with breakdown
- */
 export function calculateEHG(session: IUserSession): GrantResult {
     const breakdown: string[] = [];
     const totalIncome = getTotalIncome(session);
@@ -218,13 +193,6 @@ export function calculateEHG(session: IUserSession): GrantResult {
 
 /* ─── Loan Calculation ─────────────────────────────────────────────── */
 
-/**
- * Calculates maximum HDB loan based on Mortgage Servicing Ratio (MSR).
- * Uses present value of annuity formula.
- *
- * @param session - User session with income data
- * @returns Maximum loan calculation with monthly instalment
- */
 export function calculateMaxLoan(session: IUserSession): LoanResult {
     const totalIncome = getTotalIncome(session);
     const maxMonthlyInstalment = totalIncome * MAX_MSR;
@@ -245,15 +213,6 @@ export function calculateMaxLoan(session: IUserSession): LoanResult {
     };
 }
 
-/**
- * Calculates actual loan amount for a specific flat, considering LTV and MSR limits.
- *
- * @param session - User session with financials
- * @param flatPrice - Price of the flat
- * @param grantAmount - Total grants to deduct
- * @param downpayment - Downpayment amount (cash + CPF)
- * @returns Actual loan calculation
- */
 export function calculateActualLoan(
     session: IUserSession,
     flatPrice: number,
@@ -289,19 +248,6 @@ export function calculateActualLoan(
 
 /* ─── Cash Flow Calculation ────────────────────────────────────────── */
 
-/**
- * Calculates milestone payment requirements for BTO purchase.
- * Includes option fee, signing, and key collection stages.
- *
- * @param flatPrice - Price of the flat
- * @param grantAmount - Total grants to apply
- * @param cpfOA - Available CPF Ordinary Account savings
- * @param cashSavings - Available cash savings
- * @param flatType - Flat type for option fee calculation
- * @param age - Applicant age for SDS eligibility
- * @param employmentStatus - Employment status for deferred assessment check
- * @returns Cash flow breakdown by milestone
- */
 export function calculateCashFlow(
     flatPrice: number,
     grantAmount: number,
@@ -392,15 +338,6 @@ export function calculateCashFlow(
 
 /* ─── Affordability Check ──────────────────────────────────────────── */
 
-/**
- * Checks if the applicant can afford the flat based on cash and CPF savings.
- *
- * @param cashFlow - Cash flow calculation result
- * @param cashSavings - Available cash savings
- * @param monthlyIncome - Monthly household income
- * @param monthlyInstalment - Monthly loan instalment
- * @returns Affordability result
- */
 export function checkAffordability(
     cashFlow: CashFlowResult,
     cashSavings: number,
@@ -419,16 +356,6 @@ export function checkAffordability(
 
 /* ─── Subsidy Clawback ─────────────────────────────────────────────── */
 
-/**
- * Calculates subsidy clawback for Plus and Prime flats upon resale.
- * Clawback is proportional to the lock-in period remaining.
- *
- * @param projectType - "Plus" or "Prime"
- * @param purchasePrice - Original purchase price
- * @param marketValue - Estimated market value
- * @param yearsBeforeSale - Years held before selling
- * @returns Clawback calculation result
- */
 export function calculateClawback(
     projectType: 'Standard' | 'Plus' | 'Prime',
     purchasePrice: number,
@@ -466,14 +393,6 @@ export function calculateClawback(
 
 /* ─── Full Financial Calculation ───────────────────────────────────── */
 
-/**
- * Performs complete financial calculation for a BTO purchase.
- *
- * @param session - User session with profile data
- * @param flatPrice - Price of the flat
- * @param flatType - Type of flat
- * @returns Complete financial calculation result
- */
 export function calculateFinancials(
     session: IUserSession,
     flatPrice: number,

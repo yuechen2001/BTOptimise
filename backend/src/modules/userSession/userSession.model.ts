@@ -1,9 +1,3 @@
-/**
- * UserSession Model
- * Defines the structure of UserSession documents in MongoDB using Mongoose.
- * Sessions are identified by a UUID (sessionId) and expire after 24 hours via a TTL index.
- * No account creation is required — the client stores the sessionId locally.
- */
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export {

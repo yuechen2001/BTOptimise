@@ -1,10 +1,3 @@
-/**
- * UserSession Service — Integration Tests
- *
- * Uses mongodb-memory-server so no real DB connection is needed.
- * Tests cover: create, retrieve, update, delete, input validation,
- * and server-side derivation of deferredIncomeAssessment.
- */
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import request from 'supertest';

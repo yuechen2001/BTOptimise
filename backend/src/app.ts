@@ -6,7 +6,6 @@ import userSessionRoutes from './modules/userSession/userSession.routes';
 import financialRulesRoutes from './modules/financialRules/financialRules.routes';
 import matchingRecommendationRules from './modules/matchingRecommendation/matchingRecommendation.routes';
 import timelineRoutes from './modules/timeline/timeline.routes';
-import { match } from 'node:assert';
 
 const app = express();
 

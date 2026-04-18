@@ -1,10 +1,3 @@
-/**
- * API Client Service
- *
- * Centralised HTTP client for communicating with the BTOptimise backend.
- * All API calls should go through this module.
- */
-
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050/api';
 
 /* ─── Types ────────────────────────────────────────────────────────── */

@@ -1,15 +1,3 @@
-/**
- * UserSession Routes
- *
- * Endpoints:
- * - POST   /api/sessions            Create a new session; returns sessionId
- * - GET    /api/sessions/:sessionId Retrieve a session by sessionId
- * - PATCH  /api/sessions/:sessionId Update profile fields (partial, step-by-step)
- * - DELETE /api/sessions/:sessionId Delete a session
- *
- * Sessions expire automatically after 24 hours via MongoDB TTL index.
- * No authentication is required; the client stores the sessionId locally.
- */
 import express, { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 import UserSession from './userSession.model';

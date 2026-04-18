@@ -1,10 +1,3 @@
-/**
- * React Query Hooks for API Integration
- *
- * Custom hooks for fetching and mutating data using TanStack Query.
- * Handles caching, loading states, and error handling.
- */
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     getProjects,
