@@ -356,11 +356,12 @@ export default function ProjectTimelineRow({
                         <Accordion.Trigger
                             style={{
                                 all: 'unset',
+                                boxSizing: 'border-box',
                                 width: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                padding: '0.75rem 0',
+                                padding: '0.75rem 1rem',
                                 background: 'var(--clr-bg-tertiary)',
                                 border: '1px solid var(--clr-border)',
                                 borderRadius: 'var(--radius-md)',
