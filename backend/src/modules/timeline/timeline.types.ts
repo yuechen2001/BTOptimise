@@ -36,6 +36,7 @@ export interface ProjectTimelineRequest {
     projectId: string;
     projectName: string;
     flatType: FlatTypePreference;
+    estimatedFloorArea: number | null;
     price: number;
     classification: ProjectClassification;
     estimatedLaunchDate?: string; // ISO date or 'Q1 2027', 'Q2 2027', etc.

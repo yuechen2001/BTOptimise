@@ -153,13 +153,13 @@ export default function AffordabilityDashboard() {
                                 className="btn btn--secondary"
                                 onClick={() => navigate({ to: '/compare' })}
                             >
-                                📊 Compare ({state.comparison.length}/3)
+                                Compare ({state.comparison.length}/3)
                             </button>
                             <button
                                 className="btn btn--secondary"
                                 onClick={() => navigate({ to: '/timeline' })}
                             >
-                                📈 View Timeline ({state.timeline.length}/3)
+                                View Timeline ({state.timeline.length}/3)
                             </button>
                         </>
                     )}

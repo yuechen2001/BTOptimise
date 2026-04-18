@@ -54,7 +54,7 @@ export default function CollapsibleSidebar({
                 >
                     {isOpen ? (
                         <>
-                            <span>⚙️ Configuration</span>
+                            <span>Configuration</span>
                             <span style={{ fontSize: '1.2rem' }}>‹</span>
                         </>
                     ) : (
@@ -105,7 +105,7 @@ export default function CollapsibleSidebar({
                     }}
                     aria-label={isOpen ? 'Collapse configuration' : 'Expand configuration'}
                 >
-                    <span>⚙️ Configuration</span>
+                    <span>Configuration</span>
                     <span style={{ fontSize: '1.2rem' }}>{isOpen ? '▲' : '▼'}</span>
                 </button>
 

@@ -11,9 +11,17 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
     const navigate = useNavigate();
     const selectedProjects = state.timeline;
 
-    const handleRemoveProject = (projectId: string) => {
-        // Find the corresponding result in comparison array and toggle it
-        const result = state.comparison.find((r) => r.project.projectCode === projectId);
+    const handleRemoveProject = (
+        projectId: string,
+        flatType: string,
+        estimatedFloorArea: number | null
+    ) => {
+        const result = state.comparison.find(
+            (r) =>
+                r.project.projectCode === projectId &&
+                r.selectedFlat.type === flatType &&
+                r.selectedFlat.estimatedFloorArea === estimatedFloorArea
+        );
         if (result) {
             dispatch({ type: 'TOGGLE_COMPARISON', result });
             onProjectsChange?.();
@@ -45,7 +53,7 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
                 }}
             >
                 <h3 style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                    📋 Selected Projects ({selectedProjects.length}/3)
+                    Selected Projects ({selectedProjects.length}/3)
                 </h3>
                 {selectedProjects.length < 3 && (
                     <button
@@ -104,7 +112,13 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
                         <ProjectCard
                             key={project.projectId}
                             project={project}
-                            onRemove={() => handleRemoveProject(project.projectId)}
+                            onRemove={() =>
+                                handleRemoveProject(
+                                    project.projectId,
+                                    project.flatType,
+                                    project.estimatedFloorArea
+                                )
+                            }
                         />
                     ))}{' '}
                 </div>

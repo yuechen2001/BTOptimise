@@ -15,7 +15,6 @@ export default function ProjectTimelineRow({
 }: ProjectTimelineRowProps) {
     const { project, milestones, affordability } = projectTimeline;
 
-    // Calculate timeline range (from today to furthest milestone + 6 months buffer)
     const timelineRange = useMemo(() => {
         const now = new Date();
         const start = new Date(now);
@@ -144,7 +143,9 @@ export default function ProjectTimelineRow({
                     </div>
                 </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>
-                    {project.flatType} • ${project.price.toLocaleString()}
+                    {project.flatType}
+                    {project.estimatedFloorArea && ` (${project.estimatedFloorArea} sqm)`}
+                    {' • '}${project.price.toLocaleString()}
                     {project.estimatedLaunchDate && (
                         <>
                             {' '}

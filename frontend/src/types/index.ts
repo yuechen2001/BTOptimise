@@ -294,6 +294,7 @@ export interface ProjectTimelineRequest {
     projectId: string;
     projectName: string;
     flatType: FlatTypePreference;
+    estimatedFloorArea: number | null;
     price: number;
     classification: 'Standard' | 'Plus' | 'Prime';
     estimatedLaunchDate?: string;

@@ -1,5 +1,5 @@
-import { IncomeGrowthScenario } from "./timeline.types";
-import { MAX_TIMELINE_YEARS } from "../../constants";
+import { IncomeGrowthScenario } from './timeline.types';
+import { MAX_TIMELINE_YEARS } from '../../constants';
 
 export function validatePositiveNumber(value: unknown, fieldName: string): string | null {
     if (typeof value !== 'number' || isNaN(value) || value < 0) {
@@ -24,7 +24,6 @@ export function validateIncomeGrowthScenario(value: unknown): string | null {
 }
 
 export function validateTimelineConfig(config: any): string | null {
-    // Required fields
     if (!config) {
         return 'Configuration object is required';
     }

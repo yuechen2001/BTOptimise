@@ -85,16 +85,16 @@ function reducer(state: AppState, action: Action): AppState {
                 (c) => getResultIdentity(c) === getResultIdentity(action.result)
             );
             if (exists) {
-                // Remove from both comparison and timeline
                 const projectId = action.result.project.projectCode;
                 const flatType = action.result.selectedFlat.type;
+                const estimatedFloorArea = action.result.selectedFlat.estimatedFloorArea;
                 return {
                     ...state,
                     comparison: state.comparison.filter(
                         (c) => getResultIdentity(c) !== getResultIdentity(action.result)
                     ),
                     timeline: state.timeline.filter(
-                        (p) => !(p.projectId === projectId && p.flatType === flatType)
+                        (p) => !(p.projectId === projectId && p.flatType === flatType && p.estimatedFloorArea === estimatedFloorArea)
                     ),
                 };
             }
@@ -106,6 +106,7 @@ function reducer(state: AppState, action: Action): AppState {
                 projectId: project.projectCode,
                 projectName: project.name,
                 flatType: selectedFlat.type as import('../types').FlatTypePreference,
+                estimatedFloorArea: selectedFlat.estimatedFloorArea,
                 price: selectedFlat.maxIndicativePrice || selectedFlat.minIndicativePrice || 0,
                 classification: project.classification,
                 estimatedLaunchDate: project.launchdate || undefined,

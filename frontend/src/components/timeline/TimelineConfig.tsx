@@ -49,7 +49,7 @@ export default function TimelineConfigComponent({ config, onSave, profile }: Tim
                                     color: 'var(--clr-accent)',
                                 }}
                             >
-                                📊 Deferred Income Assessment
+                                Deferred Income Assessment
                             </h4>
                         </div>
 
