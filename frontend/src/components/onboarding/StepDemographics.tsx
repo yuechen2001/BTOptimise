@@ -76,12 +76,14 @@ export default function StepDemographics() {
                 <label>Your age</label>
                 <input
                     className="form-input"
-                    type="number"
-                    min={minimumAge}
-                    max={80}
+                    type="text"
+                    inputMode="numeric"
                     placeholder={p.applicantType === 'single' ? 'e.g. 35' : 'e.g. 28'}
                     value={p.age ?? ''}
-                    onChange={(e) => update({ age: Number(e.target.value) })}
+                    onChange={(e) => {
+                        const value = e.target.value.replace(/[^\d]/g, '');
+                        update({ age: value === '' ? undefined : Number(value) });
+                    }}
                 />
                 {p.age !== undefined && p.age < minimumAge && (
                     <span className="hint" style={{ color: 'var(--clr-red)' }}>
@@ -98,12 +100,14 @@ export default function StepDemographics() {
                     <label>Partner's age</label>
                     <input
                         className="form-input"
-                        type="number"
-                        min={21}
-                        max={80}
+                        type="text"
+                        inputMode="numeric"
                         placeholder="e.g. 27"
                         value={p.partnerAge ?? ''}
-                        onChange={(e) => update({ partnerAge: Number(e.target.value) })}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/[^\d]/g, '');
+                            update({ partnerAge: value === '' ? undefined : Number(value) });
+                        }}
                     />
                     {p.partnerAge !== undefined && p.partnerAge < 21 && (
                         <span className="hint" style={{ color: 'var(--clr-red)' }}>

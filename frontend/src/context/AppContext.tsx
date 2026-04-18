@@ -1,10 +1,15 @@
 /**
  * Application-wide state management via React Context.
- * Holds the session ID, onboarding profile, matched results, and comparison selections.
+ * Holds the session ID, onboarding profile, matched results, comparison selections, and timeline config.
  */
 
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
-import type { UserProfile, ProjectAffordabilityResult, OnboardingState } from '../types';
+import type {
+    UserProfile,
+    ProjectAffordabilityResult,
+    OnboardingState,
+    ProjectTimelineRequest,
+} from '../types';
 import { getResultIdentity } from '../utils/resultIdentity';
 
 /* ─── Storage Keys ────────────────────────────────────────────────── */
@@ -18,6 +23,7 @@ interface AppState {
     onboarding: OnboardingState;
     results: ProjectAffordabilityResult[];
     comparison: ProjectAffordabilityResult[]; // up to 3
+    timeline: ProjectTimelineRequest[]; // up to 3 projects, synced with comparison
     isLoading: boolean;
     error: string | null;
 }
@@ -31,6 +37,7 @@ const initialState: AppState = {
     },
     results: [],
     comparison: [],
+    timeline: [],
     isLoading: false,
     error: null,
 };
@@ -83,19 +90,41 @@ function reducer(state: AppState, action: Action): AppState {
                 (c) => getResultIdentity(c) === getResultIdentity(action.result)
             );
             if (exists) {
+                // Remove from both comparison and timeline
+                const projectId = action.result.project.projectCode;
+                const flatType = action.result.selectedFlat.type;
                 return {
                     ...state,
                     comparison: state.comparison.filter(
                         (c) => getResultIdentity(c) !== getResultIdentity(action.result)
                     ),
+                    timeline: state.timeline.filter(
+                        (p) => !(p.projectId === projectId && p.flatType === flatType)
+                    ),
                 };
             }
             if (state.comparison.length >= 3) return state; // max 3
-            return { ...state, comparison: [...state.comparison, action.result] };
+            
+            // Add to both comparison and timeline
+            const { project, selectedFlat } = action.result;
+            const timelineProject: ProjectTimelineRequest = {
+                projectId: project.projectCode,
+                projectName: project.name,
+                flatType: selectedFlat.type as import('../types').FlatTypePreference,
+                price: selectedFlat.maxIndicativePrice || selectedFlat.minIndicativePrice || 0,
+                classification: project.classification,
+                estimatedLaunchDate: project.launchdate || undefined,
+            };
+            
+            return { 
+                ...state, 
+                comparison: [...state.comparison, action.result],
+                timeline: [...state.timeline, timelineProject],
+            };
         }
 
         case 'CLEAR_COMPARISON':
-            return { ...state, comparison: [] };
+            return { ...state, comparison: [], timeline: [] };
 
         case 'SET_LOADING':
             return { ...state, isLoading: action.isLoading };

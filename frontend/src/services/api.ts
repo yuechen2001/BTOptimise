@@ -378,3 +378,47 @@ export async function calculateMatching(input: MatchingInput): Promise<MatchingR
         })),
     };
 }
+
+/* ─── Timeline Visualizer API ──────────────────────────────────────── */
+
+import type {
+    TimelineConfig,
+    TimelineProjectionResult,
+} from '../types';
+
+// Re-export timeline types for useApi.ts
+export type { TimelineProjectionResult };
+
+export interface TimelineProjectionInput {
+    sessionId: string;
+    config: TimelineConfig;
+    projects?: import('../types').ProjectTimelineRequest[];
+}
+
+/**
+ * Generate timeline projection with financial snapshots over time
+ */
+export async function generateTimelineProjection(
+    input: TimelineProjectionInput
+): Promise<TimelineProjectionResult> {
+    const url = `${API_BASE_URL}/timeline/project`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+    });
+
+    const data: ApiResponse<TimelineProjectionResult> = await response.json();
+
+    if (!response.ok || !data.success || !data.data) {
+        throw new ApiError(
+            data.message || 'Failed to generate timeline projection',
+            response.status,
+            data.errors
+        );
+    }
+
+    return data.data;
+}

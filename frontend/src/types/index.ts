@@ -202,3 +202,123 @@ export interface SessionState {
     isLoading: boolean;
     error: string | null;
 }
+
+/* ───────────────────────── Timeline Visualizer Types ──────────────────── */
+
+export type IncomeGrowthScenario = 'conservative' | 'moderate' | 'aggressive';
+export type PropertyType = 'BTO' | 'Resale' | 'EC';
+export type ComparisonStrategy = 'apply_now' | 'wait_6m' | 'wait_12m' | 'wait_24m' | 'custom';
+export type AffordabilityLevel = 'comfortable' | 'stretch' | 'unaffordable';
+
+export interface TimelineConfig {
+    startYear: number;
+    endYear: number;
+    intervalMonths: number;
+    incomeGrowthScenario: IncomeGrowthScenario;
+    assumeEmploymentDate?: string;
+    assumedStartingSalary?: number;
+    cpfContributionRate?: number;
+    cashSavingsRate?: number;
+}
+
+export interface TimelineSnapshot {
+    date: string;
+    monthsFromNow: number;
+    projectedMonthlyIncome: number;
+    projectedPartnerMonthlyIncome?: number;
+    projectedCPFOA: number;
+    projectedCashSavings: number;
+    totalHouseholdIncome: number;
+    age: number;
+    partnerAge?: number;
+    employmentStatus: EmploymentStatus;
+    isDeferredIncome: boolean;
+    eligibility: EligibilityResult;
+    grants: GrantResult;
+    maxLoan: LoanResult;
+    affordabilityBands: AffordabilityBand[];
+    opportunityCost?: OpportunityCostSnapshot;
+}
+
+export interface AffordabilityBand {
+    flatType: FlatTypePreference;
+    classification: ProjectClassification;
+    priceRange: { min: number; max: number };
+    affordabilityLevel: AffordabilityLevel;
+    cashRequired: number;
+    cpfRequired: number;
+    monthlyInstalment: number;
+    cashShortfall: number;
+    bufferPercentage: number;
+}
+
+export interface OpportunityCostSnapshot {
+    cumulativeRentPaid: number;
+    cpfInterestGained: number;
+    netOpportunityCost: number;
+}
+
+export type MilestoneType =
+    | 'dia_expires'
+    | 'grant_tier_drop'
+    | 'grant_disqualified'
+    | 'optimal_application_window'
+    | 'bto_launch_cycle'
+    | 'income_milestone';
+
+export interface TimelineMilestone {
+    date: string;
+    monthsFromNow: number;
+    type: MilestoneType;
+    title: string;
+    description: string;
+    significance: 'critical' | 'important' | 'informational';
+    impactOnGrants?: number;
+    impactOnEligibility?: string;
+    projectId?: string;
+    paymentAmount?: number;
+    cashAmount?: number;
+    cpfAmount?: number;
+    canAfford?: boolean;
+}
+
+export interface ProjectionAssumptions {
+    incomeGrowthRate: number;
+    cpfOAInterestRate: number;
+    cpfContributionRate: number;
+    cashSavingsRate: number;
+    rentInflationRate?: number;
+}
+
+export interface ProjectTimelineRequest {
+    projectId: string;
+    projectName: string;
+    flatType: FlatTypePreference;
+    price: number;
+    classification: 'Standard' | 'Plus' | 'Prime';
+    estimatedLaunchDate?: string;
+}
+
+export interface ProjectTimeline {
+    project: ProjectTimelineRequest;
+    milestones: TimelineMilestone[];
+    affordability: {
+        canAffordOptionFee: boolean;
+        canAffordSigning: boolean;
+        canAffordKeyCollection: boolean;
+        cashShortfall: number;
+        optionFeeShortfall: number;
+        signingShortfall: number;
+        keyCollectionShortfall: number;
+    };
+}
+
+export interface TimelineProjectionResult {
+    sessionId: string;
+    config: TimelineConfig;
+    generatedAt: string;
+    snapshots: TimelineSnapshot[];
+    milestones: TimelineMilestone[];
+    projectTimelines: ProjectTimeline[];
+    assumptions: ProjectionAssumptions;
+}

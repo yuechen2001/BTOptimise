@@ -5,6 +5,8 @@ import applicationRateRoutes from './modules/applicationRates/applicationRate.ro
 import userSessionRoutes from './modules/userSession/userSession.routes';
 import financialRulesRoutes from './modules/financialRules/financialRules.routes';
 import matchingRecommendationRules from './modules/matchingRecommendation/matchingRecommendation.routes';
+import timelineRoutes from './modules/timeline/timeline.routes';
+import { match } from 'node:assert';
 
 const app = express();
 
@@ -20,6 +22,7 @@ app.use('/api/application-rates', applicationRateRoutes);
 app.use('/api/sessions', userSessionRoutes);
 app.use('/api/financial-rules', financialRulesRoutes);
 app.use('/api/matching-recommendation', matchingRecommendationRules);
+app.use('/api/timeline', timelineRoutes);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err);

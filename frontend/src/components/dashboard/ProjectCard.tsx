@@ -178,13 +178,17 @@ export default function ProjectCard({ result }: Props) {
                       : `Monthly income buffer: $${financials.affordability.monthlyIncomeBuffer.toLocaleString()}.`}
             </p>
 
-            {/* Compare toggle */}
+            {/* Action button */}
             <button
                 className={`btn btn--small ${isSelected ? 'btn--primary' : 'btn--secondary'}`}
-                onClick={() => dispatch({ type: 'TOGGLE_COMPARISON', result })}
+                onClick={() => {
+                    // TOGGLE_COMPARISON now handles both comparison and timeline sync
+                    dispatch({ type: 'TOGGLE_COMPARISON', result });
+                }}
                 disabled={!isSelected && !canAdd}
+                style={{ width: '100%' }}
             >
-                {isSelected ? 'Remove from Comparison' : 'Add to Compare'}
+                {isSelected ? 'Remove from Selection' : 'Select Project'}
             </button>
         </div>
     );

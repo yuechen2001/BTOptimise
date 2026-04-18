@@ -12,6 +12,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import DashboardPage from './pages/DashboardPage';
 import ComparePage from './pages/ComparePage';
 import OversubscriptionPage from './pages/OversubscriptionPage';
+import TimelinePage from './pages/TimelinePage';
 
 /* ─── Route Definitions ───────────────────────────────────── */
 
@@ -53,12 +54,19 @@ const oversubscriptionRoute = createRoute({
     component: OversubscriptionPage,
 });
 
+const timelineRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/timeline',
+    component: TimelinePage,
+});
+
 const routeTree = rootRoute.addChildren([
     indexRoute,
     onboardingRoute,
     dashboardRoute,
     compareRoute,
     oversubscriptionRoute,
+    timelineRoute,
 ]);
 
 const router = createRouter({ routeTree });

@@ -1,5 +1,6 @@
 import { useAppState } from '../../context/AppContext';
 import type { EmploymentStatus } from '../../types';
+import { formatNumberWithCommas, parseFormattedNumber } from '../../utils/numberFormat';
 
 const INCOME_CEILING_COUPLE = 14000;
 
@@ -93,12 +94,11 @@ export default function StepFinancials() {
                 <span className="hint">Before CPF deductions</span>
                 <input
                     className="form-input"
-                    type="number"
-                    min={0}
-                    step={100}
-                    placeholder={isDeferred ? '0 (deferred)' : 'e.g. 4500'}
-                    value={p.monthlyIncome ?? ''}
-                    onChange={(e) => update({ monthlyIncome: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder={isDeferred ? '0 (deferred)' : 'e.g. 4,500'}
+                    value={formatNumberWithCommas(p.monthlyIncome)}
+                    onChange={(e) => update({ monthlyIncome: parseFormattedNumber(e.target.value) })}
                 />
             </div>
 
@@ -108,12 +108,11 @@ export default function StepFinancials() {
                     <label>Partner's gross monthly income (SGD)</label>
                     <input
                         className="form-input"
-                        type="number"
-                        min={0}
-                        step={100}
-                        placeholder="e.g. 3500"
-                        value={p.partnerMonthlyIncome ?? ''}
-                        onChange={(e) => update({ partnerMonthlyIncome: Number(e.target.value) })}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="e.g. 3,500"
+                        value={formatNumberWithCommas(p.partnerMonthlyIncome)}
+                        onChange={(e) => update({ partnerMonthlyIncome: parseFormattedNumber(e.target.value) })}
                     />
                 </div>
             )}
@@ -124,12 +123,11 @@ export default function StepFinancials() {
                 <span className="hint">Combined if applying as a couple</span>
                 <input
                     className="form-input"
-                    type="number"
-                    min={0}
-                    step={1000}
-                    placeholder="e.g. 50000"
-                    value={p.cpfOA ?? ''}
-                    onChange={(e) => update({ cpfOA: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="e.g. 50,000"
+                    value={formatNumberWithCommas(p.cpfOA)}
+                    onChange={(e) => update({ cpfOA: parseFormattedNumber(e.target.value) })}
                 />
             </div>
 
@@ -141,12 +139,11 @@ export default function StepFinancials() {
                 </span>
                 <input
                     className="form-input"
-                    type="number"
-                    min={0}
-                    step={1000}
-                    placeholder="e.g. 30000"
-                    value={p.cashSavings ?? ''}
-                    onChange={(e) => update({ cashSavings: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="e.g. 30,000"
+                    value={formatNumberWithCommas(p.cashSavings)}
+                    onChange={(e) => update({ cashSavings: parseFormattedNumber(e.target.value) })}
                 />
             </div>
         </div>

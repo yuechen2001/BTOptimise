@@ -146,14 +146,24 @@ export default function AffordabilityDashboard() {
                         projects.
                     </p>
                 </div>
-                {state.comparison.length > 0 && (
-                    <button
-                        className="btn btn--primary"
-                        onClick={() => navigate({ to: '/compare' })}
-                    >
-                        Compare ({state.comparison.length}/3)
-                    </button>
-                )}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    {state.comparison.length > 0 && (
+                        <>
+                            <button
+                                className="btn btn--secondary"
+                                onClick={() => navigate({ to: '/compare' })}
+                            >
+                                📊 Compare ({state.comparison.length}/3)
+                            </button>
+                            <button
+                                className="btn btn--secondary"
+                                onClick={() => navigate({ to: '/timeline' })}
+                            >
+                                📈 View Timeline ({state.timeline.length}/3)
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Affordability filters */}

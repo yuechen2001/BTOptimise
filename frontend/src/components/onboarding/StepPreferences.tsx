@@ -1,5 +1,6 @@
 import { useAppState } from '../../context/AppContext';
 import type { FlatTypePreference, Region } from '../../types';
+import { formatNumberWithCommas, parseFormattedNumber } from '../../utils/numberFormat';
 
 const FLAT_TYPES: FlatTypePreference[] = ['2-Room Flexi', '3-Room', '4-Room', '5-Room', '3Gen'];
 
@@ -125,16 +126,15 @@ export default function StepPreferences() {
                 <span className="hint">Hard ceiling in SGD — leave blank for no limit</span>
                 <input
                     className="form-input"
-                    type="number"
-                    min={0}
-                    step={10000}
-                    placeholder="e.g. 500000"
-                    value={p.maxBudget ?? ''}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="e.g. 500,000"
+                    value={formatNumberWithCommas(p.maxBudget)}
                     onChange={(e) =>
                         dispatch({
                             type: 'UPDATE_PROFILE',
                             payload: {
-                                maxBudget: e.target.value ? Number(e.target.value) : undefined,
+                                maxBudget: parseFormattedNumber(e.target.value),
                             },
                         })
                     }

@@ -19,11 +19,15 @@
 
     /* Neutrals */
     --clr-bg: #f8fafc;
+    --clr-bg-primary: #ffffff;
+    --clr-bg-secondary: #f8fafc;
+    --clr-bg-tertiary: #f1f5f9;
     --clr-surface: #ffffff;
     --clr-border: #e2e8f0;
     --clr-text: #1e293b;
     --clr-text-secondary: #64748b;
     --clr-text-muted: #94a3b8;
+    --clr-accent: #1a56db;
 
     /* Spacing */
     --sp-xs: 0.25rem;
@@ -542,17 +546,6 @@ tr:hover td {
     max-width: 720px;
 }
 
-.landing__premium-action {
-    background: #e4572e;
-    border-color: #e4572e;
-    color: #ffffff;
-}
-
-.landing__premium-action:hover {
-    background: #c94421;
-    color: #ffffff;
-}
-
 .landing__body {
     display: grid;
     flex: 1;
@@ -868,5 +861,74 @@ tr:hover td {
     }
     .stepper__line {
         width: 30px;
+    }
+}
+
+/* ── Radix UI Animations ───────────────────────────────────── */
+
+/* Tooltip animations */
+@keyframes tooltip-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes tooltip-fade-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+/* Dialog animations */
+@keyframes dialog-overlay-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes dialog-content-fade-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Accordion animations */
+@keyframes accordion-slide-down {
+    from {
+        height: 0;
+        opacity: 0;
+    }
+    to {
+        height: var(--radix-accordion-content-height);
+        opacity: 1;
+    }
+}
+
+@keyframes accordion-slide-up {
+    from {
+        height: var(--radix-accordion-content-height);
+        opacity: 1;
+    }
+    to {
+        height: 0;
+        opacity: 0;
     }
 }

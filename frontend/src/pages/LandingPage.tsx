@@ -57,8 +57,8 @@ export default function LandingPage() {
                                 <li key={feature}>{feature}</li>
                             ))}
                         </ul>
-                        <Link to="/onboarding" className="btn btn--secondary landing__tier-button">
-                            Use Free
+                        <Link to="/onboarding" className="btn btn--primary landing__tier-button">
+                            Use Free Now
                         </Link>
                     </article>
 
@@ -78,10 +78,10 @@ export default function LandingPage() {
                         </ul>
                         <button
                             type="button"
-                            className="btn landing__tier-button landing__premium-action"
+                            className="btn landing__tier-button btn--secondary"
                             onClick={showComingSoonToast}
                         >
-                            Purchase Premium
+                            Coming Soon
                         </button>
                     </article>
                 </div>
