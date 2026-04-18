@@ -1,8 +1,3 @@
-/**
- * Import Projects Script
- * This script reads project data from CSV files
- * and imports it into the MongoDB database using the Project model.
- */
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -12,9 +7,6 @@ import Project, { IFlatType } from '../modules/projectCatalog/project.model';
 
 dotenv.config();
 
-/**
- * Interfaces
- */
 interface CsvRow {
     project_code?: string;
     name?: string;
@@ -42,12 +34,6 @@ interface GroupedProject {
     lastVerifiedAt: Date | null;
 }
 
-/**
- * Utility functions for parsing CSV data
- */
-/**
- * Parse string and trims the string.
- */
 function safeTrim(value: unknown): string | null {
     if (value === undefined || value === null) {
         return null;
@@ -57,9 +43,6 @@ function safeTrim(value: unknown): string | null {
     return trimmed === '' ? null : trimmed;
 }
 
-/**
- * Parses a string value to a number, removing any non-numeric characters.
- */
 function parseNumber(value: unknown): number | null {
     if (value === undefined || value === null) {
         return null;
@@ -69,9 +52,6 @@ function parseNumber(value: unknown): number | null {
     return cleaned === '' ? null : Number(cleaned);
 }
 
-/**
- * Parses a date string in the format "DD/MM/YYYY" and returns a Date object.
- */
 function parseDateDDMMYYYY(value: unknown): Date | null {
     const v = safeTrim(value);
     if (!v) {
@@ -91,9 +71,6 @@ function parseDateDDMMYYYY(value: unknown): Date | null {
     return new Date(year, month - 1, day);
 }
 
-/**
- * Reads the CSV file and returns an array of rows as objects.
- */
 async function readCSV(filePath: string): Promise<CsvRow[]> {
     const rows: CsvRow[] = [];
 
@@ -108,11 +85,6 @@ async function readCSV(filePath: string): Promise<CsvRow[]> {
     return rows;
 }
 
-/**
- * Main function to run the import process:
- * - Connects to MongoDB using the MONGO_URI from environment variables.
- * - Reads project data from the specified CSV file.
- */
 async function run(): Promise<void> {
     const mongoURI = process.env.MONGO_URI;
     console.log('Loaded MONGO_URI:', mongoURI);
@@ -138,7 +110,6 @@ async function run(): Promise<void> {
 
     const groupedProjects = new Map();
 
-    // Group rows by project code to aggregate flat types under the same project
     for (const row of rows) {
         const projectCode = safeTrim(row.project_code);
         const name = safeTrim(row.name);
@@ -153,7 +124,6 @@ async function run(): Promise<void> {
             continue;
         }
 
-        // If the project code is not already in the map, add it with the basic project info
         if (!groupedProjects.has(projectCode)) {
             groupedProjects.set(projectCode, {
                 projectCode,
@@ -167,7 +137,6 @@ async function run(): Promise<void> {
             });
         }
 
-        // Add the flat type information to the corresponding project in the map
         groupedProjects.get(projectCode).flatTypes.push({
             type: safeTrim(row.flat_type) || 'Unknown',
             estimatedFloorArea: parseNumber(row.estimated_floor_area),

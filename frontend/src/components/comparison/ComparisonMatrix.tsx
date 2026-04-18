@@ -1,6 +1,98 @@
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
 import { getFlatVariantLabel, getResultIdentity } from '../../utils/resultIdentity';
+
+function TooltipTrigger({
+    text,
+    children,
+    triggerClassName,
+}: {
+    text: string;
+    children: ReactNode;
+    triggerClassName: string;
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isFocusVisible, setIsFocusVisible] = useState(false);
+    const wrapperRef = useRef<HTMLSpanElement | null>(null);
+    const isTouchLikeDevice = () =>
+        typeof window !== 'undefined' &&
+        window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+    useEffect(() => {
+        if (!isOpen) {
+            return;
+        }
+
+        const handlePointerDown = (event: PointerEvent) => {
+            if (!wrapperRef.current?.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen]);
+
+    return (
+        <span
+            ref={wrapperRef}
+            className={`metric-help${isOpen ? ' is-open' : ''}${
+                isFocusVisible ? ' is-focus-visible' : ''
+            }`}
+            onMouseLeave={() => setIsOpen(false)}
+        >
+            <button
+                type="button"
+                className={triggerClassName}
+                aria-label={text}
+                aria-expanded={isOpen}
+                onFocus={(event) => {
+                    setIsFocusVisible(event.currentTarget.matches(':focus-visible'));
+                }}
+                onBlur={() => setIsFocusVisible(false)}
+                onClick={() => {
+                    if (!isTouchLikeDevice()) {
+                        return;
+                    }
+                    setIsOpen((current) => !current);
+                }}
+            >
+                {children}
+            </button>
+            <span className="metric-help__tooltip" role="tooltip">
+                {text}
+            </span>
+        </span>
+    );
+}
+
+function InfoTooltip({ text }: { text: string }) {
+    return (
+        <TooltipTrigger text={text} triggerClassName="metric-help__button">
+            i
+        </TooltipTrigger>
+    );
+}
+
+function TextTooltip({ text, children }: { text: string; children: ReactNode }) {
+    return (
+        <TooltipTrigger text={text} triggerClassName="metric-help__text-trigger">
+            {children}
+        </TooltipTrigger>
+    );
+}
 
 export default function ComparisonMatrix() {
     const { state, dispatch } = useAppState();
@@ -44,7 +136,22 @@ export default function ComparisonMatrix() {
         background: columnTone[colour].background,
         borderLeft: '1px solid rgba(148, 163, 184, 0.35)',
     });
-    const renderSectionHeader = (title: string) => (
+
+    const getCashFlowStageTooltip = (stage: string) => {
+        const normalizedStage = stage.trim().toLowerCase();
+        const shouldShowTooltip =
+            normalizedStage.includes('option fee') ||
+            normalizedStage.includes('signing of agreement') ||
+            normalizedStage.includes('key collection');
+
+        if (!shouldShowTooltip) {
+            return null;
+        }
+
+        return 'Cash is the minimum amount you need to pay out-of-pocket, while CPF is the maximum amount that can be paid using CPF at this stage.';
+    };
+
+    const renderSectionHeader = (title: string, tooltipText?: string) => (
         <tr>
             <td
                 colSpan={items.length + 1}
@@ -57,15 +164,19 @@ export default function ComparisonMatrix() {
             >
                 <div
                     style={{
+                        alignItems: 'center',
                         fontSize: '0.95rem',
                         fontWeight: 800,
+                        gap: '0.45rem',
                         letterSpacing: '0.04em',
+                        display: 'inline-flex',
                         textTransform: 'uppercase',
                         color: 'var(--clr-text)',
                         marginBottom: 0,
                     }}
                 >
                     {title}
+                    {tooltipText ? <InfoTooltip text={tooltipText} /> : null}
                 </div>
             </td>
         </tr>
@@ -89,7 +200,8 @@ export default function ComparisonMatrix() {
                     <h2 className="section-title">Comparison</h2>
                     <p className="section-subtitle" style={{ marginBottom: 0 }}>
                         Side-by-side view of your shortlisted projects, grouped into overview,
-                        financing, cash flow, and timeline.
+                        financing, cash flow, and timeline. <br />
+                        <em>Note that all calculations are based on the minimum price.</em>
                     </p>
                 </div>
                 <div className="flex-gap">
@@ -152,7 +264,11 @@ export default function ComparisonMatrix() {
                                         <span
                                             className={`badge badge--${item.selectedFlat.affordability.colour}`}
                                         >
-                                            {affordabilityLabel[item.selectedFlat.affordability.status]}
+                                            {
+                                                affordabilityLabel[
+                                                    item.selectedFlat.affordability.status
+                                                ]
+                                            }
                                         </span>
                                         <span
                                             className={`badge badge--${item.project.classification.toLowerCase()}`}
@@ -252,7 +368,12 @@ export default function ComparisonMatrix() {
                             ))}
                         </tr>
                         <tr>
-                            <td>MSR Usage</td>
+                            <td>
+                                <span className="metric-with-help">
+                                    <TextTooltip text="Mortgage Servicing Ratio">MSR</TextTooltip>
+                                    <span>Usage</span>
+                                </span>
+                            </td>
                             {items.map((item) => (
                                 <td
                                     key={`${getResultIdentity(item)}-msr`}
@@ -278,14 +399,34 @@ export default function ComparisonMatrix() {
                         {items[0].selectedFlat.financials.cashFlow.milestones.map((_, mi) => (
                             <tr key={`milestone-${mi}`}>
                                 <td>
-                                    {items[0].selectedFlat.financials.cashFlow.milestones[mi].stage}
+                                    <span className="metric-with-help">
+                                        {
+                                            items[0].selectedFlat.financials.cashFlow.milestones[mi]
+                                                .stage
+                                        }
+                                        {getCashFlowStageTooltip(
+                                            items[0].selectedFlat.financials.cashFlow.milestones[mi]
+                                                .stage
+                                        ) ? (
+                                            <InfoTooltip
+                                                text={
+                                                    getCashFlowStageTooltip(
+                                                        items[0].selectedFlat.financials.cashFlow
+                                                            .milestones[mi].stage
+                                                    )!
+                                                }
+                                            />
+                                        ) : null}
+                                    </span>
                                 </td>
                                 {items.map((item) => (
                                     <td
                                         key={`${getResultIdentity(item)}-m${mi}`}
                                         className="font-mono"
                                         style={{
-                                            ...getColumnStyle(item.selectedFlat.affordability.colour),
+                                            ...getColumnStyle(
+                                                item.selectedFlat.affordability.colour
+                                            ),
                                             fontSize: '0.82rem',
                                         }}
                                     >

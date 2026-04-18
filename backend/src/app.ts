@@ -1,6 +1,3 @@
-/**
- * Main application setup.
- */
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import projectRoutes from './modules/projectCatalog/project.routes';

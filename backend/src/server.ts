@@ -1,8 +1,3 @@
-/**
- * - Loads environment variables using dotenv.
- * - Connects to MongoDB using Mongoose.
- * - Starts the Express server on the specified port.
- */
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import app from './app';

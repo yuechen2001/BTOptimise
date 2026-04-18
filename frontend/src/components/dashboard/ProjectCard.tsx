@@ -14,9 +14,7 @@ export default function ProjectCard({ result }: Props) {
     const resultIdentity = getResultIdentity(result);
     const flatVariantLabel = getFlatVariantLabel(result);
 
-    const isSelected = state.comparison.some(
-        (c) => getResultIdentity(c) === resultIdentity
-    );
+    const isSelected = state.comparison.some((c) => getResultIdentity(c) === resultIdentity);
     const canAdd = state.comparison.length < 3;
 
     const classificationBadge: Record<string, string> = {
@@ -100,7 +98,8 @@ export default function ProjectCard({ result }: Props) {
                         Price Range
                     </div>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem' }} className="font-mono">
-                        {selectedFlat.minIndicativePrice != null && selectedFlat.maxIndicativePrice != null
+                        {selectedFlat.minIndicativePrice != null &&
+                        selectedFlat.maxIndicativePrice != null
                             ? `$${selectedFlat.minIndicativePrice.toLocaleString()} - $${selectedFlat.maxIndicativePrice.toLocaleString()}`
                             : 'TBA'}
                     </div>

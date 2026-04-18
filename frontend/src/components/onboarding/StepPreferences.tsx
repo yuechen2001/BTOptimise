@@ -35,10 +35,17 @@ export default function StepPreferences() {
     const { state, dispatch } = useAppState();
     const p = state.onboarding.profile;
 
-    const selectedFlatTypes = p.preferredFlatTypes ?? [];
+    const availableFlatTypes = p.applicantType === 'single' ? ['2-Room Flexi'] : FLAT_TYPES;
+    const selectedFlatTypes = (p.preferredFlatTypes ?? []).filter((ft) =>
+        availableFlatTypes.includes(ft)
+    );
     const selectedRegions = p.preferredRegions ?? [];
 
     function toggleFlatType(ft: FlatTypePreference) {
+        if (p.applicantType === 'single' && ft !== '2-Room Flexi') {
+            return;
+        }
+
         const next = selectedFlatTypes.includes(ft)
             ? selectedFlatTypes.filter((x) => x !== ft)
             : [...selectedFlatTypes, ft];
@@ -63,21 +70,31 @@ export default function StepPreferences() {
             {/* Flat types */}
             <div className="form-group">
                 <label>Preferred flat types</label>
-                <span className="hint">Select one or more, or leave empty for all</span>
+                <span className="hint">
+                    {p.applicantType === 'single'
+                        ? 'Singles can only select 2-Room Flexi.'
+                        : 'Select one or more, or leave empty for all'}
+                </span>
                 <div className="check-group">
-                    {FLAT_TYPES.map((ft) => (
-                        <label
-                            key={ft}
-                            className={`check-chip ${selectedFlatTypes.includes(ft) ? 'selected' : ''}`}
-                        >
-                            <input
-                                type="checkbox"
-                                checked={selectedFlatTypes.includes(ft)}
-                                onChange={() => toggleFlatType(ft)}
-                            />
-                            {ft}
-                        </label>
-                    ))}
+                    {FLAT_TYPES.map((ft) => {
+                        const isDisabled = p.applicantType === 'single' && ft !== '2-Room Flexi';
+
+                        return (
+                            <label
+                                key={ft}
+                                aria-disabled={isDisabled}
+                                className={`check-chip ${selectedFlatTypes.includes(ft) ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={selectedFlatTypes.includes(ft)}
+                                    disabled={isDisabled}
+                                    onChange={() => toggleFlatType(ft)}
+                                />
+                                {ft}
+                            </label>
+                        );
+                    })}
                 </div>
             </div>
 

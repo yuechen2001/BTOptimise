@@ -84,17 +84,10 @@ export interface FinancialCalculationResult {
 }
 
 /* ─── Helper Functions ─────────────────────────────────────────────── */
-
-/**
- * Returns true if the employment status qualifies for deferred income assessment.
- */
 function isDeferredIncome(employmentStatus?: string): boolean {
     return employmentStatus === 'student' || employmentStatus === 'nsf';
 }
 
-/**
- * Calculate total household income from session.
- */
 function getTotalIncome(session: IUserSession): number {
     return (session.monthlyIncome || 0) + (session.partnerMonthlyIncome || 0);
 }
@@ -118,7 +111,10 @@ export function checkEligibility(session: IUserSession, flatType?: string): Elig
     if (!session.citizenship) {
         reasons.push('Citizenship status not provided');
         canPurchase = false;
-    } else if (!['SC/SC', 'SC/PR'].includes(session.citizenship)) {
+    } else if (
+        session.applicantType === 'couple' &&
+        !['SC/SC', 'SC/PR'].includes(session.citizenship)
+    ) {
         reasons.push('At least one Singapore Citizen required');
         canPurchase = false;
     }
@@ -483,13 +479,9 @@ export function calculateFinancials(
     flatPrice: number,
     flatType: string
 ): FinancialCalculationResult {
-    // 1. Eligibility check
     const eligibility = checkEligibility(session, flatType);
-
-    // 2. Calculate grants
     const grants = calculateEHG(session);
 
-    // 3. Calculate cash flow
     const cashFlow = calculateCashFlow(
         flatPrice,
         grants.totalGrant,
@@ -500,11 +492,9 @@ export function calculateFinancials(
         session.employmentStatus
     );
 
-    // 4. Calculate loan (actual)
     const totalDownpayment = cashFlow.totalCashRequired + cashFlow.totalCPFRequired;
     const loan = calculateActualLoan(session, flatPrice, grants.totalGrant, totalDownpayment);
 
-    // 5. Check affordability
     const totalIncome = getTotalIncome(session);
     const affordability = checkAffordability(
         cashFlow,

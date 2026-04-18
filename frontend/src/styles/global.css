@@ -319,6 +319,16 @@ a:hover {
     color: var(--clr-primary);
     font-weight: 600;
 }
+.check-chip.disabled {
+    background: var(--clr-surface);
+    border-color: var(--clr-border);
+    color: var(--clr-text-secondary);
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+.check-chip.disabled:hover {
+    border-color: var(--clr-border);
+}
 .check-chip input {
     display: none;
 }
@@ -707,6 +717,89 @@ tr:hover td {
     margin-bottom: var(--sp-lg);
 }
 
+/* ── Inline Help ───────────────────────────────────────────── */
+
+.metric-with-help {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.45rem;
+    position: relative;
+}
+
+.metric-help {
+    display: inline-flex;
+    position: relative;
+}
+
+.metric-help__button {
+    align-items: center;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 6px;
+    color: #3730a3;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.72rem;
+    font-weight: 800;
+    height: 1.15rem;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    width: 1.15rem;
+}
+
+.metric-help__text-trigger {
+    background: none;
+    border: none;
+    color: var(--clr-primary-dark);
+    cursor: help;
+    font: inherit;
+    font-weight: 700;
+    line-height: inherit;
+    padding: 0;
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.16em;
+}
+
+.metric-help__tooltip {
+    background: #17221f;
+    border-radius: 8px;
+    bottom: calc(100% + 0.45rem);
+    color: #ffffff;
+    font-size: 0.86rem;
+    font-weight: 500;
+    left: 0;
+    letter-spacing: 0;
+    line-height: 1.35;
+    max-width: 220px;
+    opacity: 0;
+    padding: 0.55rem 0.65rem;
+    pointer-events: none;
+    position: absolute;
+    text-transform: none;
+    transform: translateY(4px);
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+    white-space: normal;
+    width: max-content;
+    z-index: 10;
+}
+
+.metric-help.is-open .metric-help__tooltip,
+.metric-help.is-focus-visible .metric-help__tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .metric-help:hover .metric-help__tooltip {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
@@ -723,6 +816,15 @@ tr:hover td {
     }
     .layout__main {
         padding: var(--sp-md);
+    }
+    .metric-help__tooltip {
+        left: 0;
+        max-width: 180px;
+        transform: translateY(4px);
+    }
+    .metric-help.is-open .metric-help__tooltip,
+    .metric-help.is-focus-visible .metric-help__tooltip {
+        transform: translateY(0);
     }
     .layout__main--landing {
         padding: 0;

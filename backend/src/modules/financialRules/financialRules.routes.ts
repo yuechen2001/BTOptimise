@@ -27,10 +27,6 @@ import {
 const router = express.Router();
 
 /* ─── Helpers ──────────────────────────────────────────────────────── */
-
-/**
- * Validates numeric input to ensure it's a positive number.
- */
 function validatePositiveNumber(value: unknown, fieldName: string): string | null {
     if (typeof value !== 'number' || isNaN(value) || value < 0) {
         return `${fieldName} must be a non-negative number`;
@@ -38,9 +34,6 @@ function validatePositiveNumber(value: unknown, fieldName: string): string | nul
     return null;
 }
 
-/**
- * Validates that a value is within a reasonable range.
- */
 function validateRange(value: number, fieldName: string, min: number, max: number): string | null {
     if (value < min || value > max) {
         return `${fieldName} must be between ${min} and ${max}`;
@@ -67,7 +60,6 @@ router.post('/calculate', async (req: Request, res: Response) => {
             });
         }
 
-        // Fetch user session
         const session = await UserSession.findOne({ sessionId });
         if (!session) {
             return res.status(404).json({
