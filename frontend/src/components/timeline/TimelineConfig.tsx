@@ -21,6 +21,14 @@ export default function TimelineConfigComponent({ config, onSave, profile }: Tim
         onSave(localConfig);
     };
 
+    // Calculate monthly income for savings rate context
+    const monthlyIncome = profile.monthlyIncome || 0;
+    const partnerIncome = profile.partnerMonthlyIncome || 0;
+    const totalMonthlyIncome = monthlyIncome + partnerIncome;
+    const savingsRate =
+        localConfig.cashSavingsRate !== undefined ? localConfig.cashSavingsRate : 0.1;
+    const monthlySavings = totalMonthlyIncome * savingsRate;
+
     return (
         <div>
             <div
@@ -31,6 +39,113 @@ export default function TimelineConfigComponent({ config, onSave, profile }: Tim
                     paddingBottom: '1rem',
                 }}
             >
+                {/* Cash Savings Rate Configuration */}
+                <div>
+                    <h4
+                        style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            color: 'var(--clr-accent)',
+                        }}
+                    >
+                        Monthly Cash Savings
+                    </h4>
+                    <span
+                        className="hint"
+                        style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--clr-text-muted)',
+                            display: 'block',
+                            marginTop: '0.25rem',
+                            marginBottom: '0.50rem',
+                        }}
+                    >
+                        Percentage of monthly income saved as cash (excludes CPF contributions)
+                    </span>
+                    <div className="form-group">
+                        <label
+                            htmlFor="savings-rate"
+                            style={{
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                marginBottom: '0.5rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <span>Savings Rate</span>
+                            <span style={{ color: 'var(--clr-accent)' }}>
+                                {Math.round(savingsRate * 100)}%
+                            </span>
+                        </label>
+                        <input
+                            id="savings-rate"
+                            type="range"
+                            min="0"
+                            max="50"
+                            step="5"
+                            value={Math.round(savingsRate * 100)}
+                            onChange={(e) => {
+                                const percentage = parseInt(e.target.value);
+                                updateConfig({
+                                    cashSavingsRate: percentage / 100,
+                                });
+                            }}
+                            style={{
+                                width: '100%',
+                                accentColor: 'var(--clr-accent)',
+                            }}
+                        />
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                fontSize: '0.7rem',
+                                color: 'var(--clr-text-muted)',
+                                marginTop: '0.25rem',
+                            }}
+                        >
+                            <span>0%</span>
+                            <span>50%</span>
+                        </div>
+                        {totalMonthlyIncome > 0 && (
+                            <div
+                                style={{
+                                    marginTop: '0.75rem',
+                                    padding: '0.75rem',
+                                    background: 'var(--clr-bg-tertiary)',
+                                    borderRadius: '6px',
+                                    border: '1px solid var(--clr-border)',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: '1.2rem',
+                                        fontWeight: 600,
+                                        color: 'var(--clr-accent)',
+                                    }}
+                                >
+                                    $
+                                    {monthlySavings.toLocaleString(undefined, {
+                                        maximumFractionDigits: 0,
+                                    })}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        color: 'var(--clr-text-muted)',
+                                        marginTop: '0.25rem',
+                                    }}
+                                >
+                                    {savingsRate * 100}% of ${totalMonthlyIncome.toLocaleString()}{' '}
+                                    household income
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 {/* Deferred Income Assessment */}
                 {isDeferredIncome && (
                     <>

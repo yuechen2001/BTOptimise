@@ -1,15 +1,25 @@
+import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAppState } from '../../context/AppContext';
 import type { ProjectTimelineRequest } from '../../types';
+import { formatNumberWithCommas, parseFormattedNumber } from '../../utils/numberFormat';
 
 interface ProjectSelectorProps {
     onProjectsChange?: () => void; // Callback to trigger timeline refetch
 }
 
+// Helper to create unique key for each project variant
+const getProjectKey = (
+    projectId: string,
+    flatType: string,
+    estimatedFloorArea: number | null
+) => `${projectId}-${flatType}-${estimatedFloorArea}`;
+
 export default function ProjectSelector({ onProjectsChange }: ProjectSelectorProps) {
     const { state, dispatch } = useAppState();
     const navigate = useNavigate();
     const selectedProjects = state.timeline;
+    const [editingProjectKey, setEditingProjectKey] = useState<string | null>(null);
 
     const handleRemoveProject = (
         projectId: string,
@@ -28,6 +38,35 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
         }
     };
 
+    const handleEditProject = (
+        projectId: string,
+        flatType: string,
+        estimatedFloorArea: number | null
+    ) => {
+        setEditingProjectKey(getProjectKey(projectId, flatType, estimatedFloorArea));
+    };
+
+    const handleSaveProject = (
+        projectId: string,
+        flatType: string,
+        estimatedFloorArea: number | null,
+        newPrice: number
+    ) => {
+        dispatch({
+            type: 'UPDATE_TIMELINE_PROJECT',
+            projectId,
+            flatType,
+            estimatedFloorArea,
+            updates: { price: newPrice },
+        });
+        setEditingProjectKey(null);
+        onProjectsChange?.();
+    };
+
+    const handleCancelEdit = () => {
+        setEditingProjectKey(null);
+    };
+
     const handleAddProject = () => {
         // TODO: Open modal to select from Dashboard projects
         alert(
@@ -36,14 +75,7 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
     };
 
     return (
-        <div
-            style={{
-                padding: '1rem',
-                background: 'var(--clr-bg-secondary)',
-                borderRadius: '8px',
-                border: '1px solid var(--clr-border)',
-            }}
-        >
+        <div>
             <div
                 style={{
                     display: 'flex',
@@ -52,7 +84,7 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
                     marginBottom: '0.75rem',
                 }}
             >
-                <h3 style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--clr-accent)' }}>
                     Selected Projects ({selectedProjects.length}/3)
                 </h3>
                 {selectedProjects.length < 3 && (
@@ -108,19 +140,43 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
             {/* Selected Projects List */}
             {selectedProjects.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {selectedProjects.map((project) => (
-                        <ProjectCard
-                            key={project.projectId}
-                            project={project}
-                            onRemove={() =>
-                                handleRemoveProject(
-                                    project.projectId,
-                                    project.flatType,
-                                    project.estimatedFloorArea
-                                )
-                            }
-                        />
-                    ))}{' '}
+                    {selectedProjects.map((project) => {
+                        const projectKey = getProjectKey(
+                            project.projectId,
+                            project.flatType,
+                            project.estimatedFloorArea
+                        );
+                        return (
+                            <ProjectCard
+                                key={projectKey}
+                                project={project}
+                                isEditing={editingProjectKey === projectKey}
+                                onEdit={() =>
+                                    handleEditProject(
+                                        project.projectId,
+                                        project.flatType,
+                                        project.estimatedFloorArea
+                                    )
+                                }
+                                onSave={(newPrice) =>
+                                    handleSaveProject(
+                                        project.projectId,
+                                        project.flatType,
+                                        project.estimatedFloorArea,
+                                        newPrice
+                                    )
+                                }
+                                onCancel={handleCancelEdit}
+                                onRemove={() =>
+                                    handleRemoveProject(
+                                        project.projectId,
+                                        project.flatType,
+                                        project.estimatedFloorArea
+                                    )
+                                }
+                            />
+                        );
+                    })}
                 </div>
             )}
         </div>
@@ -129,25 +185,59 @@ export default function ProjectSelector({ onProjectsChange }: ProjectSelectorPro
 
 interface ProjectCardProps {
     project: ProjectTimelineRequest;
+    isEditing: boolean;
+    onEdit: () => void;
+    onSave: (newPrice: number) => void;
+    onCancel: () => void;
     onRemove: () => void;
 }
 
-function ProjectCard({ project, onRemove }: ProjectCardProps) {
+function ProjectCard({ project, isEditing, onEdit, onSave, onCancel, onRemove }: ProjectCardProps) {
+    const [editedPrice, setEditedPrice] = useState(project.price);
+
+    const handleSave = () => {
+        if (editedPrice > 0) {
+            onSave(editedPrice);
+        }
+    };
+
+    const handleCancel = () => {
+        setEditedPrice(project.price);
+        onCancel();
+    };
+
+    const handlePriceChange = (value: string) => {
+        const parsed = parseFormattedNumber(value);
+        if (parsed !== undefined) {
+            setEditedPrice(parsed);
+        } else if (value === '') {
+            setEditedPrice(0);
+        }
+    };
     return (
         <div
             style={{
                 display: 'flex',
-                alignItems: 'center',
+                flexDirection: isEditing ? 'column' : 'row',
+                alignItems: isEditing ? 'stretch' : 'center',
                 justifyContent: 'space-between',
                 gap: '0.5rem',
                 padding: '0.75rem',
                 background: 'var(--clr-bg-primary)',
-                border: '1px solid var(--clr-border)',
+                border: `1px solid ${isEditing ? 'var(--clr-accent)' : 'var(--clr-border)'}`,
                 borderRadius: '6px',
-                transition: 'box-shadow 200ms ease',
+                transition: 'box-shadow 200ms ease, border-color 200ms ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)')}
-            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'none')}
+            onMouseEnter={(e) => {
+                if (!isEditing) {
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (!isEditing) {
+                    e.currentTarget.style.boxShadow = 'none';
+                }
+            }}
         >
             {/* Project Info */}
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -182,48 +272,181 @@ function ProjectCard({ project, onRemove }: ProjectCardProps) {
                     </span>
                 </div>
                 <div
-                    style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', lineHeight: 1.4 }}
+                    style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--clr-text-muted)',
+                        lineHeight: 1.4,
+                    }}
                 >
                     {project.flatType}
                     {project.estimatedFloorArea && ` (${project.estimatedFloorArea} sqm)`}
                 </div>
+
+                {/* Price Section */}
+                <div style={{ marginTop: '0.5rem' }}>
+                    {isEditing ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <label
+                                style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600,
+                                    color: 'var(--clr-text-secondary)',
+                                }}
+                            >
+                                Price (SGD)
+                            </label>
+                            <input
+                                className="form-input"
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="e.g. 450,000"
+                                value={formatNumberWithCommas(editedPrice)}
+                                onChange={(e) => handlePriceChange(e.target.value)}
+                                style={{
+                                    fontSize: '0.85rem',
+                                    padding: '0.5rem 0.75rem',
+                                }}
+                            />
+                        </div>
+                    ) : (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-secondary)' }}>
+                            💰 ${project.price.toLocaleString()}
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Remove Button */}
-            <button
-                onClick={onRemove}
-                style={{
-                    flexShrink: 0,
-                    padding: '0.4rem',
-                    background: 'transparent',
-                    border: '1px solid var(--clr-border)',
-                    borderRadius: '4px',
-                    color: 'var(--clr-text-muted)',
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    transition: 'all 200ms ease',
-                    lineHeight: 1,
-                    width: '28px',
-                    height: '28px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--clr-red)';
-                    e.currentTarget.style.borderColor = 'var(--clr-red)';
-                    e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.borderColor = 'var(--clr-border)';
-                    e.currentTarget.style.color = 'var(--clr-text-muted)';
-                }}
-                title={`Remove ${project.projectName}`}
-                aria-label={`Remove ${project.projectName}`}
-            >
-                ✕
-            </button>
+            {/* Action Buttons */}
+            {isEditing ? (
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                        width: '100%',
+                        marginTop: '0.5rem',
+                    }}
+                >
+                    {/* Save Button */}
+                    <button
+                        onClick={handleSave}
+                        style={{
+                            flex: 1,
+                            padding: '0.5rem 1rem',
+                            background: 'var(--clr-green)',
+                            border: 'none',
+                            borderRadius: '6px',
+                            color: 'white',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'opacity 200ms ease',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                        title="Save price"
+                    >
+                        Save
+                    </button>
+                    {/* Cancel Button */}
+                    <button
+                        onClick={handleCancel}
+                        style={{
+                            flex: 1,
+                            padding: '0.5rem 1rem',
+                            background: 'transparent',
+                            border: '1px solid var(--clr-border)',
+                            borderRadius: '6px',
+                            color: 'var(--clr-text-secondary)',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 200ms ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--clr-bg-secondary)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                        }}
+                        title="Cancel edit"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            ) : (
+                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                    {/* Edit Button */}
+                    <button
+                        onClick={onEdit}
+                        style={{
+                            flexShrink: 0,
+                            padding: '0.4rem',
+                            background: 'transparent',
+                            border: '1px solid var(--clr-border)',
+                            borderRadius: '4px',
+                            color: 'var(--clr-text-muted)',
+                            fontSize: '0.9rem',
+                            cursor: 'pointer',
+                            transition: 'all 200ms ease',
+                            lineHeight: 1,
+                            width: '28px',
+                            height: '28px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--clr-accent)';
+                            e.currentTarget.style.borderColor = 'var(--clr-accent)';
+                            e.currentTarget.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.borderColor = 'var(--clr-border)';
+                            e.currentTarget.style.color = 'var(--clr-text-muted)';
+                        }}
+                        title="Edit price"
+                        aria-label={`Edit price for ${project.projectName}`}
+                    >
+                        ✎
+                    </button>
+                    {/* Remove Button */}
+                    <button
+                        onClick={onRemove}
+                        style={{
+                            flexShrink: 0,
+                            padding: '0.4rem',
+                            background: 'transparent',
+                            border: '1px solid var(--clr-border)',
+                            borderRadius: '4px',
+                            color: 'var(--clr-text-muted)',
+                            fontSize: '0.9rem',
+                            cursor: 'pointer',
+                            transition: 'all 200ms ease',
+                            lineHeight: 1,
+                            width: '28px',
+                            height: '28px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--clr-red)';
+                            e.currentTarget.style.borderColor = 'var(--clr-red)';
+                            e.currentTarget.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.borderColor = 'var(--clr-border)';
+                            e.currentTarget.style.color = 'var(--clr-text-muted)';
+                        }}
+                        title={`Remove ${project.projectName}`}
+                        aria-label={`Remove ${project.projectName}`}
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

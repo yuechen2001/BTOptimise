@@ -237,6 +237,198 @@ export default function MilestoneDetailsPanel({
                 </div>
             )}
 
+            {/* Projected Balances */}
+            {(milestone.projectedCashSavings !== undefined ||
+                milestone.projectedCPFOA !== undefined) && (
+                <div
+                    style={{
+                        marginBottom: '1.5rem',
+                        padding: '1rem',
+                        background: 'var(--clr-bg-secondary)',
+                        borderRadius: '6px',
+                    }}
+                >
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem' }}>
+                        📊 Projected Balances at Milestone
+                    </h4>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                            gap: '1rem',
+                        }}
+                    >
+                        {milestone.projectedCashSavings !== undefined && (
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: '0.8rem',
+                                        color: 'var(--clr-text-muted)',
+                                        marginBottom: '0.25rem',
+                                    }}
+                                >
+                                    💵 Cash Savings
+                                </div>
+                                <div style={{ fontSize: '1.3rem', fontWeight: 600 }}>
+                                    ${milestone.projectedCashSavings.toLocaleString()}
+                                </div>
+                                {milestone.cashAmount !== undefined && (
+                                    <div
+                                        style={{
+                                            fontSize: '0.75rem',
+                                            color:
+                                                milestone.projectedCashSavings >=
+                                                milestone.cashAmount
+                                                    ? 'var(--clr-green)'
+                                                    : 'var(--clr-red)',
+                                            marginTop: '0.25rem',
+                                        }}
+                                    >
+                                        {milestone.projectedCashSavings >= milestone.cashAmount
+                                            ? '✓ Sufficient'
+                                            : `✗ Short by $${(milestone.cashAmount - milestone.projectedCashSavings).toLocaleString()}`}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {milestone.projectedCPFOA !== undefined && (
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: '0.8rem',
+                                        color: 'var(--clr-text-muted)',
+                                        marginBottom: '0.25rem',
+                                    }}
+                                >
+                                    🏦 CPF-OA Balance
+                                </div>
+                                <div style={{ fontSize: '1.3rem', fontWeight: 600 }}>
+                                    ${milestone.projectedCPFOA.toLocaleString()}
+                                </div>
+                                {milestone.cpfAmount !== undefined && milestone.cpfAmount > 0 && (
+                                    <div
+                                        style={{
+                                            fontSize: '0.75rem',
+                                            color:
+                                                milestone.projectedCPFOA >= milestone.cpfAmount
+                                                    ? 'var(--clr-green)'
+                                                    : 'var(--clr-red)',
+                                            marginTop: '0.25rem',
+                                        }}
+                                    >
+                                        {milestone.projectedCPFOA >= milestone.cpfAmount
+                                            ? '✓ Sufficient'
+                                            : `✗ Short by $${(milestone.cpfAmount - milestone.projectedCPFOA).toLocaleString()}`}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Required Savings Rate */}
+            {milestone.requiredMonthlySavingsRate !== undefined &&
+                milestone.monthlyIncomeAtMilestone !== undefined && (
+                    <div
+                        style={{
+                            marginBottom: '1.5rem',
+                            padding: '1rem',
+                            background: milestone.canAfford
+                                ? 'rgba(16, 185, 129, 0.1)'
+                                : 'rgba(255, 193, 7, 0.1)',
+                            borderRadius: '6px',
+                            border: `2px solid ${
+                                milestone.canAfford
+                                    ? 'rgba(16, 185, 129, 0.3)'
+                                    : 'rgba(255, 193, 7, 0.5)'
+                            }`,
+                        }}
+                    >
+                        <h4
+                            style={{
+                                fontSize: '0.95rem',
+                                fontWeight: 600,
+                                marginBottom: '0.75rem',
+                                color: milestone.canAfford
+                                    ? 'var(--clr-green)'
+                                    : 'var(--clr-accent)',
+                            }}
+                        >
+                            💰 Required Monthly Savings
+                        </h4>
+                        <div style={{ marginBottom: '0.75rem' }}>
+                            <div
+                                style={{
+                                    fontSize: '2rem',
+                                    fontWeight: 700,
+                                    color: milestone.canAfford
+                                        ? 'var(--clr-green)'
+                                        : 'var(--clr-accent)',
+                                }}
+                            >
+                                {Math.round(milestone.requiredMonthlySavingsRate * 100)}%
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: '0.85rem',
+                                    color: 'var(--clr-text-muted)',
+                                    marginTop: '0.25rem',
+                                }}
+                            >
+                                of your household income
+                            </div>
+                        </div>
+                        <div
+                            style={{
+                                padding: '0.75rem',
+                                background: 'var(--clr-bg-primary)',
+                                borderRadius: '4px',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: '0.8rem',
+                                    color: 'var(--clr-text-muted)',
+                                    marginBottom: '0.25rem',
+                                }}
+                            >
+                                Monthly Savings Required
+                            </div>
+                            <div style={{ fontSize: '1.3rem', fontWeight: 600 }}>
+                                $
+                                {(
+                                    milestone.monthlyIncomeAtMilestone *
+                                    milestone.requiredMonthlySavingsRate
+                                ).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: '0.75rem',
+                                    color: 'var(--clr-text-muted)',
+                                    marginTop: '0.25rem',
+                                }}
+                            >
+                                Based on projected income of $
+                                {milestone.monthlyIncomeAtMilestone.toLocaleString()} /month
+                            </div>
+                        </div>
+                        <p
+                            style={{
+                                fontSize: '0.85rem',
+                                color: 'var(--clr-text-secondary)',
+                                marginTop: '0.75rem',
+                                marginBottom: 0,
+                                lineHeight: 1.5,
+                            }}
+                        >
+                            {milestone.canAfford
+                                ? '✓ Good news! Your current savings rate should allow you to meet this milestone comfortably.'
+                                : '⚠️ To afford this milestone on time, you need to save this percentage of your income each month. Adjust your savings rate in the configuration panel.'}
+                        </p>
+                    </div>
+                )}
+
             {/* Affordability Status (if applicable) */}
             {milestone.canAfford !== undefined && (
                 <div

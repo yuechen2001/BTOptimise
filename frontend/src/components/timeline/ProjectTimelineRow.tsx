@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import * as Accordion from '@radix-ui/react-accordion';
 import type { ProjectTimeline, TimelineMilestone } from '../../types';
 import MilestoneTooltipContent from './MilestoneTooltipContent';
 
@@ -210,36 +209,48 @@ export default function ProjectTimelineRow({
                     </div>
                 ))}
 
-                {/* Today Marker */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        left: '0%',
-                        top: '30px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        zIndex: 15,
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '2px',
-                            height: '25px',
-                            background: 'var(--clr-primary)',
-                        }}
-                    />
-                    <span
-                        style={{
-                            fontSize: '0.7rem',
-                            color: 'var(--clr-primary)',
-                            marginTop: '0.25rem',
-                            fontWeight: 600,
-                        }}
-                    >
-                        Today
-                    </span>
-                </div>
+                {/* Estimated Completion Marker */}
+                {(() => {
+                    const completionMilestone = milestones.find(
+                        (m) => m.type === 'key_collection_payment_due'
+                    );
+                    if (!completionMilestone) return null;
+                    
+                    const position = getMilestonePosition(completionMilestone.date);
+                    return (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                left: `${position}%`,
+                                top: '65px',
+                                transform: 'translateX(-50%)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                zIndex: 15,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    width: '2px',
+                                    height: '20px',
+                                    background: 'var(--clr-primary)',
+                                }}
+                            />
+                            <span
+                                style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--clr-primary)',
+                                    marginTop: '0.25rem',
+                                    fontWeight: 600,
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                Est. Completion
+                            </span>
+                        </div>
+                    );
+                })()}
 
                 {/* Milestone Markers */}
                 {milestones.map((milestone, index) => {
@@ -327,144 +338,11 @@ export default function ProjectTimelineRow({
                 })}
             </div>
 
-            {/* Affordability Summary (Accordion) */}
-            <Accordion.Root type="single" collapsible style={{ marginTop: '1rem' }}>
-                <Accordion.Item value="affordability">
-                    <Accordion.Header>
-                        <Accordion.Trigger
-                            style={{
-                                all: 'unset',
-                                boxSizing: 'border-box',
-                                width: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '0.75rem 1rem',
-                                background: 'var(--clr-bg-tertiary)',
-                                border: '1px solid var(--clr-border)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                fontSize: '0.9rem',
-                                fontWeight: 600,
-                                color: 'var(--clr-text)',
-                                transition: 'background 200ms ease',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'var(--clr-bg-secondary)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'var(--clr-bg-tertiary)';
-                            }}
-                        >
-                            <span style={{ paddingLeft: '1rem' }}>View Details</span>
-                            <span
-                                style={{
-                                    fontSize: '1rem',
-                                    transition: 'transform 200ms ease',
-                                }}
-                                className="accordion-chevron"
-                            >
-                                ▼
-                            </span>
-                        </Accordion.Trigger>
-                    </Accordion.Header>
-                    <Accordion.Content
-                        style={{
-                            overflow: 'hidden',
-                            fontSize: '0.85rem',
-                        }}
-                        className="accordion-content"
-                    >
-                        <div
-                            style={{
-                                padding: '1rem',
-                                background: 'var(--clr-bg-tertiary)',
-                                borderRadius: '0 0 var(--radius-md) var(--radius-md)',
-                                overflowX: 'auto',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                                    gap: '1rem',
-                                    minWidth: '0',
-                                }}
-                            >
-                                <div>
-                                    <strong>Affordability Status:</strong>
-                                    <div>
-                                        Option Fee:{' '}
-                                        {affordability.canAffordOptionFee
-                                            ? '✓ Can Afford'
-                                            : '✗ Cannot Afford'}
-                                    </div>
-                                    <div>
-                                        Signing:{' '}
-                                        {affordability.canAffordSigning
-                                            ? '✓ Can Afford'
-                                            : '✗ Cannot Afford'}
-                                    </div>
-                                    <div>
-                                        Key Collection:{' '}
-                                        {affordability.canAffordKeyCollection
-                                            ? '✓ Can Afford'
-                                            : '✗ Cannot Afford'}
-                                    </div>
-                                </div>
-                                <div>
-                                    <strong>Cash Shortfalls:</strong>
-                                    <div style={{ fontSize: '0.85rem' }}>
-                                        Option: ${affordability.optionFeeShortfall.toLocaleString()}
-                                    </div>
-                                    <div style={{ fontSize: '0.85rem' }}>
-                                        Signing: ${affordability.signingShortfall.toLocaleString()}
-                                    </div>
-                                    <div style={{ fontSize: '0.85rem' }}>
-                                        Key Collection: $
-                                        {affordability.keyCollectionShortfall.toLocaleString()}
-                                    </div>
-                                </div>
-                                <div>
-                                    <strong>Total Cash Shortfall:</strong>
-                                    <div
-                                        style={{
-                                            fontSize: '1.1rem',
-                                            fontWeight: 600,
-                                            color:
-                                                affordability.cashShortfall > 0
-                                                    ? 'var(--clr-red)'
-                                                    : 'var(--clr-green)',
-                                        }}
-                                    >
-                                        ${affordability.cashShortfall.toLocaleString()}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Accordion.Content>
-                </Accordion.Item>
-            </Accordion.Root>
-
             {/* Pulse Animation for Critical Milestones */}
             <style>{`
                 @keyframes pulse {
                     0%, 100% { transform: scale(1); opacity: 1; }
                     50% { transform: scale(1.2); opacity: 0.8; }
-                }
-                
-                /* Accordion animations */
-                .accordion-content[data-state='open'] {
-                    animation: accordion-slide-down 200ms ease-out;
-                }
-                .accordion-content[data-state='closed'] {
-                    animation: accordion-slide-up 200ms ease-out;
-                }
-                .accordion-chevron {
-                    transform: rotate(0deg);
-                }
-                [data-state='open'] .accordion-chevron {
-                    transform: rotate(180deg);
                 }
             `}</style>
         </div>

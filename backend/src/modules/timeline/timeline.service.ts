@@ -485,6 +485,11 @@ export function generateProjectTimeline(
 ): import('./timeline.types').ProjectTimeline {
     const milestones: TimelineMilestone[] = [];
     const now = new Date();
+    const annualGrowthRate = INCOME_GROWTH_RATES[config.incomeGrowthScenario];
+    const currentMonthlyIncome = getTotalIncome(
+        session.monthlyIncome || 0,
+        session.partnerMonthlyIncome
+    );
 
     const launchDate = parseEstimatedLaunchDate(project.estimatedLaunchDate);
     const launchMonthsFromNow = Math.round(
@@ -529,6 +534,14 @@ export function generateProjectTimeline(
             ? optionFeeSnapshot.projectedCashSavings >= optionFeeAmount
             : false;
 
+        const requiredSavingsRateOption = calculateRequiredSavingsRate(
+            session.cashSavings || 0,
+            optionFeeMonthsFromNow,
+            currentMonthlyIncome,
+            optionFeeAmount,
+            annualGrowthRate
+        );
+
         milestones.push({
             date: optionFeeDate.toISOString(),
             monthsFromNow: optionFeeMonthsFromNow,
@@ -541,6 +554,10 @@ export function generateProjectTimeline(
             cashAmount: optionFeeAmount,
             cpfAmount: 0,
             canAfford: canAffordOption,
+            projectedCashSavings: optionFeeSnapshot?.projectedCashSavings,
+            projectedCPFOA: optionFeeSnapshot?.projectedCPFOA,
+            requiredMonthlySavingsRate: requiredSavingsRateOption,
+            monthlyIncomeAtMilestone: optionFeeSnapshot?.totalHouseholdIncome,
         });
 
         const signingDate = new Date(launchDate);
@@ -555,6 +572,14 @@ export function generateProjectTimeline(
               signingSnapshot.projectedCPFOA >= signingMilestone.amountCPF
             : false;
 
+        const requiredSavingsRateSigning = calculateRequiredSavingsRate(
+            session.cashSavings || 0,
+            signingMonthsFromNow,
+            currentMonthlyIncome,
+            signingMilestone.cumulativeCash,
+            annualGrowthRate
+        );
+
         milestones.push({
             date: signingDate.toISOString(),
             monthsFromNow: signingMonthsFromNow,
@@ -567,6 +592,10 @@ export function generateProjectTimeline(
             cashAmount: signingMilestone.amountCash,
             cpfAmount: signingMilestone.amountCPF,
             canAfford: canAffordSigning,
+            projectedCashSavings: signingSnapshot?.projectedCashSavings,
+            projectedCPFOA: signingSnapshot?.projectedCPFOA,
+            requiredMonthlySavingsRate: requiredSavingsRateSigning,
+            monthlyIncomeAtMilestone: signingSnapshot?.totalHouseholdIncome,
         });
 
         const keyDate = new Date(launchDate);
@@ -581,6 +610,14 @@ export function generateProjectTimeline(
               keySnapshot.projectedCPFOA >= keyMilestone.cumulativeCPF
             : false;
 
+        const requiredSavingsRateKey = calculateRequiredSavingsRate(
+            session.cashSavings || 0,
+            keyMonthsFromNow,
+            currentMonthlyIncome,
+            keyMilestone.cumulativeCash,
+            annualGrowthRate
+        );
+
         milestones.push({
             date: keyDate.toISOString(),
             monthsFromNow: keyMonthsFromNow,
@@ -593,6 +630,10 @@ export function generateProjectTimeline(
             cashAmount: keyMilestone.amountCash,
             cpfAmount: keyMilestone.amountCPF,
             canAfford: canAffordKey,
+            projectedCashSavings: keySnapshot?.projectedCashSavings,
+            projectedCPFOA: keySnapshot?.projectedCPFOA,
+            requiredMonthlySavingsRate: requiredSavingsRateKey,
+            monthlyIncomeAtMilestone: keySnapshot?.totalHouseholdIncome,
         });
 
         const savingsMilestones = detectSavingsMilestones(
@@ -663,6 +704,52 @@ function findSnapshotByDate(
 
         return snapshotDiff < closestDiff ? snapshot : closest;
     });
+}
+
+/**
+ * Calculate the required monthly savings rate to afford a milestone
+ * @param currentCashSavings Current cash available
+ * @param monthsUntilMilestone Months from now until milestone
+ * @param currentMonthlyIncome Current total household monthly income
+ * @param requiredCashAmount Cash amount needed at milestone
+ * @param annualGrowthRate Annual income growth rate
+ * @returns Required savings rate (0.0 to 1.0) or undefined if already affordable
+ */
+function calculateRequiredSavingsRate(
+    currentCashSavings: number,
+    monthsUntilMilestone: number,
+    currentMonthlyIncome: number,
+    requiredCashAmount: number,
+    annualGrowthRate: number
+): number | undefined {
+    // If already have enough cash, no savings rate needed
+    if (currentCashSavings >= requiredCashAmount) {
+        return undefined;
+    }
+
+    // If no income or no time, can't calculate
+    if (currentMonthlyIncome <= 0 || monthsUntilMilestone <= 0) {
+        return undefined;
+    }
+
+    const cashShortfall = requiredCashAmount - currentCashSavings;
+
+    // Calculate total income over the period accounting for growth
+    let totalIncomeOverPeriod = 0;
+    for (let month = 1; month <= monthsUntilMilestone; month++) {
+        const projectedIncome = projectIncome(currentMonthlyIncome, month, annualGrowthRate);
+        totalIncomeOverPeriod += projectedIncome;
+    }
+
+    if (totalIncomeOverPeriod <= 0) {
+        return undefined;
+    }
+
+    // Required savings rate = shortfall / total income
+    const requiredRate = cashShortfall / totalIncomeOverPeriod;
+
+    // Cap at 100% and return
+    return Math.min(requiredRate, 1.0);
 }
 
 function detectSavingsMilestones(
