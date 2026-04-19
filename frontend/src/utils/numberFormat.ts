@@ -1,10 +1,3 @@
-/**
- * Number formatting utilities for input fields
- */
-
-/**
- * Format a number with comma separators (e.g., 3500 → "3,500")
- */
 export function formatNumberWithCommas(value: number | string | undefined): string {
     if (value === undefined || value === null || value === '') return '';
 
@@ -21,14 +14,9 @@ export function formatNumberWithCommas(value: number | string | undefined): stri
     return decimalPart !== undefined ? `${formatted}.${decimalPart}` : formatted;
 }
 
-/**
- * Parse a formatted number string back to a number (removes commas)
- * Returns undefined if the string is empty
- */
 export function parseFormattedNumber(value: string): number | undefined {
     if (!value || value.trim() === '') return undefined;
 
-    // Remove commas
     const cleaned = value.replace(/,/g, '');
     const num = parseFloat(cleaned);
 

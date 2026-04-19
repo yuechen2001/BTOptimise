@@ -1,23 +1,9 @@
-/**
- * Timeline Projection Cache Utility
- *
- * Implements hybrid caching strategy using localStorage:
- * - Stores timeline projections keyed by sessionId + profile hash
- * - Invalidates cache when user profile changes
- * - Works alongside React Query cache for optimal performance
- */
-
 import type { TimelineProjectionResult, UserProfile } from '../types';
 
 const CACHE_KEY_PREFIX = 'btoptimise_timeline_';
 const PROFILE_HASH_KEY_PREFIX = 'btoptimise_timeline_hash_';
 
-/**
- * Generate a simple hash from a profile object
- * Used to detect if profile has changed since last cache
- */
 function generateProfileHash(profile: Partial<UserProfile>): string {
-    // Include only fields that affect timeline calculations
     const relevantFields = {
         age: profile.age,
         partnerAge: profile.partnerAge,
@@ -31,7 +17,6 @@ function generateProfileHash(profile: Partial<UserProfile>): string {
         firstTimer: profile.firstTimer,
     };
 
-    // Simple hash: JSON stringify and create hash from length and content sample
     const str = JSON.stringify(relevantFields);
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -42,29 +27,16 @@ function generateProfileHash(profile: Partial<UserProfile>): string {
     return hash.toString(36);
 }
 
-/**
- * Get cache key for timeline data
- */
 function getCacheKey(sessionId: string): string {
     return `${CACHE_KEY_PREFIX}${sessionId}`;
 }
 
-/**
- * Get cache key for profile hash
- */
 function getHashKey(sessionId: string): string {
     return `${PROFILE_HASH_KEY_PREFIX}${sessionId}`;
 }
 
 /* ─── Public API ──────────────────────────────────────────────────── */
 
-/**
- * Save timeline projection to cache with profile fingerprint
- *
- * @param sessionId - User session ID
- * @param profile - Current user profile
- * @param timelineData - Timeline projection result
- */
 export function saveTimelineToCache(
     sessionId: string,
     profile: Partial<UserProfile>,
@@ -79,17 +51,9 @@ export function saveTimelineToCache(
         localStorage.setItem(hashKey, profileHash);
     } catch (error) {
         console.warn('Failed to save timeline to cache:', error);
-        // Fail silently - cache is nice-to-have, not critical
     }
 }
 
-/**
- * Retrieve timeline projection from cache if profile hasn't changed
- *
- * @param sessionId - User session ID
- * @param profile - Current user profile
- * @returns Cached timeline data or null if cache miss/stale
- */
 export function getTimelineFromCache(
     sessionId: string,
     profile: Partial<UserProfile>
@@ -121,12 +85,6 @@ export function getTimelineFromCache(
     }
 }
 
-/**
- * Invalidate timeline cache for a session
- * Call this when user updates their profile
- *
- * @param sessionId - User session ID
- */
 export function invalidateTimelineCache(sessionId: string): void {
     try {
         const cacheKey = getCacheKey(sessionId);
@@ -139,9 +97,6 @@ export function invalidateTimelineCache(sessionId: string): void {
     }
 }
 
-/**
- * Clear all timeline  caches (useful for debugging or logout)
- */
 export function clearAllTimelineCaches(): void {
     try {
         const keys = Object.keys(localStorage);
@@ -155,12 +110,6 @@ export function clearAllTimelineCaches(): void {
     }
 }
 
-/**
- * Check if timeline cache exists for a session
- *
- * @param sessionId - User session ID
- * @returns True if cache exists (may still be stale)
- */
 export function hasTimelineCache(sessionId: string): boolean {
     try {
         const cacheKey = getCacheKey(sessionId);

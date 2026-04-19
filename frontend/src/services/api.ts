@@ -328,24 +328,15 @@ export async function checkEligibility(sessionId: string): Promise<EligibilityCh
 
 /* ─── Matching & Recommendation API ────────────────────────────────── */
 
-/**
- * Input for the matching service
- */
 export interface MatchingInput {
     sessionId: string;
 }
 
-/**
- * Result from the matching service for a single project-flat combination
- */
 export interface MatchingResultItem {
     project: Project;
     selectedFlat: LegacyMatchingSelectedFlat;
 }
 
-/**
- * Response from the matching service
- */
 export interface MatchingResponse {
     recommendations: MatchingResultItem[];
 }
@@ -376,7 +367,6 @@ export async function calculateMatching(input: MatchingInput): Promise<MatchingR
 
 import type { TimelineConfig, TimelineProjectionResult } from '../types';
 
-// Re-export timeline types for useApi.ts
 export type { TimelineProjectionResult };
 
 export interface TimelineProjectionInput {
@@ -385,9 +375,6 @@ export interface TimelineProjectionInput {
     projects?: import('../types').ProjectTimelineRequest[];
 }
 
-/**
- * Generate timeline projection with financial snapshots over time
- */
 export async function generateTimelineProjection(
     input: TimelineProjectionInput
 ): Promise<TimelineProjectionResult> {
