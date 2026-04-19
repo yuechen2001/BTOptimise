@@ -132,6 +132,12 @@ export interface TimelineMilestone {
     cashAmount?: number;
     cpfAmount?: number;
     canAfford?: boolean;
+    // Projected balances at milestone date
+    projectedCashSavings?: number;
+    projectedCPFOA?: number;
+    // Required savings rate to afford this milestone
+    requiredMonthlySavingsRate?: number; // e.g., 0.15 = 15% of income
+    monthlyIncomeAtMilestone?: number; // Total household income at this milestone
 }
 
 /* ─── Main Timeline Result ─────────────────────────────────────────── */

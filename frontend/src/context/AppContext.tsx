@@ -49,6 +49,13 @@ type Action =
     | { type: 'CLEAR_COMPARISON' }
     | { type: 'SET_LOADING'; isLoading: boolean }
     | { type: 'SET_ERROR'; error: string | null }
+    | {
+          type: 'UPDATE_TIMELINE_PROJECT';
+          projectId: string;
+          flatType: string;
+          estimatedFloorArea: number | null;
+          updates: Partial<ProjectTimelineRequest>;
+      }
     | { type: 'RESET' };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -125,6 +132,18 @@ function reducer(state: AppState, action: Action): AppState {
 
         case 'CLEAR_COMPARISON':
             return { ...state, comparison: [], timeline: [] };
+
+        case 'UPDATE_TIMELINE_PROJECT':
+            return {
+                ...state,
+                timeline: state.timeline.map((project) =>
+                    project.projectId === action.projectId &&
+                    project.flatType === action.flatType &&
+                    project.estimatedFloorArea === action.estimatedFloorArea
+                        ? { ...project, ...action.updates }
+                        : project
+                ),
+            };
 
         case 'SET_LOADING':
             return { ...state, isLoading: action.isLoading };

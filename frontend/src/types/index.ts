@@ -264,7 +264,14 @@ export type MilestoneType =
     | 'grant_disqualified'
     | 'optimal_application_window'
     | 'bto_launch_cycle'
-    | 'income_milestone';
+    | 'income_milestone'
+    | 'bto_launch'
+    | 'option_fee_due'
+    | 'signing_payment_due'
+    | 'key_collection_payment_due'
+    | 'cash_ready_option_fee'
+    | 'downpayment_saved'
+    | 'monthly_payment_affordable';
 
 export interface TimelineMilestone {
     date: string;
@@ -280,6 +287,12 @@ export interface TimelineMilestone {
     cashAmount?: number;
     cpfAmount?: number;
     canAfford?: boolean;
+    // Projected balances at milestone date
+    projectedCashSavings?: number;
+    projectedCPFOA?: number;
+    // Required savings rate to afford this milestone
+    requiredMonthlySavingsRate?: number; // e.g., 0.15 = 15% of income
+    monthlyIncomeAtMilestone?: number; // Total household income at this milestone
 }
 
 export interface ProjectionAssumptions {
