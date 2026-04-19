@@ -706,15 +706,6 @@ function findSnapshotByDate(
     });
 }
 
-/**
- * Calculate the required monthly savings rate to afford a milestone
- * @param currentCashSavings Current cash available
- * @param monthsUntilMilestone Months from now until milestone
- * @param currentMonthlyIncome Current total household monthly income
- * @param requiredCashAmount Cash amount needed at milestone
- * @param annualGrowthRate Annual income growth rate
- * @returns Required savings rate (0.0 to 1.0) or undefined if already affordable
- */
 function calculateRequiredSavingsRate(
     currentCashSavings: number,
     monthsUntilMilestone: number,
@@ -722,19 +713,16 @@ function calculateRequiredSavingsRate(
     requiredCashAmount: number,
     annualGrowthRate: number
 ): number | undefined {
-    // If already have enough cash, no savings rate needed
     if (currentCashSavings >= requiredCashAmount) {
         return undefined;
     }
 
-    // If no income or no time, can't calculate
     if (currentMonthlyIncome <= 0 || monthsUntilMilestone <= 0) {
         return undefined;
     }
 
     const cashShortfall = requiredCashAmount - currentCashSavings;
 
-    // Calculate total income over the period accounting for growth
     let totalIncomeOverPeriod = 0;
     for (let month = 1; month <= monthsUntilMilestone; month++) {
         const projectedIncome = projectIncome(currentMonthlyIncome, month, annualGrowthRate);
@@ -745,10 +733,8 @@ function calculateRequiredSavingsRate(
         return undefined;
     }
 
-    // Required savings rate = shortfall / total income
     const requiredRate = cashShortfall / totalIncomeOverPeriod;
 
-    // Cap at 100% and return
     return Math.min(requiredRate, 1.0);
 }
 

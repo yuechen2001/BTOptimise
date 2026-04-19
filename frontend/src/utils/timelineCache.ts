@@ -71,7 +71,6 @@ export function getTimelineFromCache(
             return null;
         }
 
-        // Profile changed - cache is stale
         if (cachedHash !== currentProfileHash) {
             invalidateTimelineCache(sessionId); // Clean up stale data
             return null;

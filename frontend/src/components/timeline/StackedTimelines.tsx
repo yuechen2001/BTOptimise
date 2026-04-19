@@ -15,7 +15,6 @@ export default function StackedTimelines({
         onMilestoneClick?.(milestone, projectId);
     };
 
-    // Empty state
     if (projectTimelines.length === 0) {
         return (
             <div

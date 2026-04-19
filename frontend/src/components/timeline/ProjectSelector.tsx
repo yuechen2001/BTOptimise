@@ -8,7 +8,6 @@ interface ProjectSelectorProps {
     onProjectsChange?: () => void; // Callback to trigger timeline refetch
 }
 
-// Helper to create unique key for each project variant
 const getProjectKey = (
     projectId: string,
     flatType: string,

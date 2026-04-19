@@ -21,7 +21,6 @@ export default function TimelineConfigComponent({ config, onSave, profile }: Tim
         onSave(localConfig);
     };
 
-    // Calculate monthly income for savings rate context
     const monthlyIncome = profile.monthlyIncome || 0;
     const partnerIncome = profile.partnerMonthlyIncome || 0;
     const totalMonthlyIncome = monthlyIncome + partnerIncome;
@@ -239,7 +238,7 @@ export default function TimelineConfigComponent({ config, onSave, profile }: Tim
                 )}
             </div>
 
-            {/* Save Button - Sticky at bottom, only show when there are changes */}
+            {/* Save Button */}
             {hasChanges && (
                 <div
                     style={{

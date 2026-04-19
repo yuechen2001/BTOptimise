@@ -15,15 +15,15 @@ export interface UserProfile {
 
     /* Step 2 – Financials */
     employmentStatus: EmploymentStatus;
-    monthlyIncome: number; // applicant's gross monthly income
+    monthlyIncome: number;
     partnerMonthlyIncome?: number;
-    cpfOA: number; // current CPF-OA balance
+    cpfOA: number;
     cashSavings: number;
 
     /* Step 3 – Preferences */
     preferredFlatTypes: FlatTypePreference[];
     preferredRegions: Region[];
-    maxBudget?: number; // optional hard ceiling
+    maxBudget?: number;
 }
 
 /* ───────────────────────── Project Catalogue Types ───────────────────── */
